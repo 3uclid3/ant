@@ -1,0 +1,28 @@
+---
+coverage:
+  precision: 2
+  round: down
+  range: "85...100"
+  status:
+    project:
+      default:
+        threshold: 1%
+        target: auto
+        paths:
+          - "app/**"
+          - "lib/**"
+    patch:
+      default:
+        target: 85%
+        threshold: 1%
+
+comment:
+  layout: "condensed_header, components, tree, condensed_footer"
+  show_critical_paths: true
+
+ignore:
+  - ".devcontainer/**"
+  - ".github/**"
+  - ".xmake/**"
+  - "build/**"
+  - "tests/**"

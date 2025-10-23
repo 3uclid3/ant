@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - "main"
+  push:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux (${{ matrix.build_type }})
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository }}-ubuntu-ci:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [debug, release, coverage]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Cache xmake packages (xrepo)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.xmake
+          key: xmake-${{ runner.os }}-${{ hashFiles('**/xmake.lua', '**/xmake-requires.lock') }}
+          restore-keys: |
+            xmake-${{ runner.os }}-
+
+      - name: Configure
+        run: xmake f -m ${{ matrix.build_type }} -y
+
+      - name: Build
+        run: xmake build -y
+
+      - name: Run unit tests
+        run: xmake test -g tests.unit */junit
+
+      - name: Upload test results to Codecov
+        if: always()
+        uses: codecov/test-results-action@v1
+        with:
+          files: build/*.junit.xml
+          flags: unit-tests-linux-${{ matrix.build_type }}
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Generate coverage report
+        if: matrix.build_type == 'coverage'
+        run: |
+          gcovr \
+            --root "$GITHUB_WORKSPACE" \
+            --filter "$GITHUB_WORKSPACE/app" \
+            --filter "$GITHUB_WORKSPACE/lib" \
+            --gcov-executable "llvm-cov gcov" \
+            --object-directory "build/.objs" \
+            --xml --xml-pretty \
+            -o "build/coverage.xml"
+
+      - name: Upload coverage to Codecov
+        if: matrix.build_type == 'coverage'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          disable_search: true
+          plugins: noop
+          file: build/coverage.xml
+
+  windows:
+    name: Windows (${{ matrix.build_type }})
+    runs-on: windows-latest
+    permissions:
+      actions: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [debug, release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        
+      - name: Cache xmake packages (xrepo)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.xmake
+          key: xmake-${{ runner.os }}-${{ hashFiles('**/xmake.lua', '**/xmake-requires.lock') }}
+          restore-keys: |
+            xmake-${{ runner.os }}-
+
+      - name: Configure
+        run: xmake f -m ${{ matrix.build_type }} -y
+
+      - name: Build
+        run: xmake build -y
+
+      - name: Run unit tests
+        run: xmake test -g tests.unit */default
+
+

@@ -1,0 +1,74 @@
+name: Build Images
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-images.yml
+      - Dockerfile
+  schedule:
+    - cron: "0 3 * * 1"
+
+jobs:
+  build-and-push:
+    name: Build and Push
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      IMAGE_FILE: Dockerfile
+      IMAGE_BASE_NAME: ${{ github.event.repository.name }}-ubuntu
+      UBUNTU_VERSION: "24.04"
+      LLVM_VERSION: "21"
+      GCC_VERSION: "14"
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [ci, dev]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set created timestamp
+        shell: bash
+        run: |
+          echo "CREATED=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ env.IMAGE_FILE }}
+          target: ${{ matrix.target }}
+          push: true
+          build-args: |
+            LLVM_VERSION=${{ env.LLVM_VERSION }}
+            GCC_VERSION=${{ env.GCC_VERSION }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_BASE_NAME }}-${{ matrix.target }}:${{ env.UBUNTU_VERSION }}-${{ env.LLVM_VERSION }}-${{ env.GCC_VERSION }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_BASE_NAME }}-${{ matrix.target }}:latest
+          labels: |
+            org.opencontainers.image.title=${{ env.IMAGE_BASE_NAME }}-${{ matrix.target }}
+            org.opencontainers.image.version=${{ env.UBUNTU_VERSION }}-${{ env.LLVM_VERSION }}-${{ env.GCC_VERSION }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.created=${{ env.CREATED }}
+            org.opencontainers.image.run_id=${{ github.run_id }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          no-cache: ${{ github.event_name == 'schedule' }}

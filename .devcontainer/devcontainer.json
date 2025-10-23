@@ -1,0 +1,21 @@
+{
+  "name": "tpl-cpp",
+  "image": "ghcr.io/3uclid3/tpl-cpp-ubuntu-dev:latest",
+  "mounts": [
+    "source=${localEnv:HOME}/.codex,target=/home/ubuntu/.codex,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "DavidAnson.vscode-markdownlint",
+        "eamodio.gitlens",
+        "github.vscode-github-actions",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "openai.chatgpt",
+        "redhat.vscode-yaml",
+        "tboox.xmake-vscode",
+        "vadimcn.vscode-lldb"
+      ]
+    }
+  }
+}
