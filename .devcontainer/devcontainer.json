@@ -1,6 +1,6 @@
 {
-  "name": "tpl-cpp",
-  "image": "ghcr.io/3uclid3/tpl-cpp-ubuntu-dev:latest",
+  "name": "ant",
+  "image": "ghcr.io/3uclid3/ant-ubuntu-dev:latest",
   "mounts": [
     "source=${localEnv:HOME}/.codex,target=/home/ubuntu/.codex,type=bind"
   ],
