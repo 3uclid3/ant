@@ -1,6 +1,6 @@
-set_project("tpl-cpp")
+set_project("ant")
 set_version("v0.1.0")
-set_license("GPL-3.0-or-later")
+set_license("MIT")
 
 set_languages("cxx23")
 set_exceptions("no-cxx")
@@ -17,8 +17,15 @@ end
 add_rules("mode.debug", "mode.release", "mode.coverage")
 add_rules("plugin.compile_commands.autoupdate", { outputdir = "$(builddir)" })
 
-includes(
-    "app",
-    "lib",
-    "tests"
-)
+option("junit_report")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable JUnit test report generation")
+
+target("ant")
+    set_kind("headeronly")
+
+    add_includedirs("include", { public = true })
+    add_headerfiles("include/**.hpp")
+    
+includes("tests")

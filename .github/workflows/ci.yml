@@ -43,19 +43,19 @@ jobs:
             xmake-${{ runner.os }}-
 
       - name: Configure
-        run: xmake f -m ${{ matrix.build_type }} -y
-
-      - name: Build
-        run: xmake build -y
+        run: xmake f -m ${{ matrix.build_type }} --junit_report=y -y
 
       - name: Run unit tests
-        run: xmake test -g tests.unit */junit
+        run: xmake test -g tests/unit
+
+      - name: Run compile tests
+        run: xmake test -g tests/compile
 
       - name: Upload test results to Codecov
         if: always()
         uses: codecov/test-results-action@v1
         with:
-          files: build/*.junit.xml
+          files: build/**.junit.xml
           flags: unit-tests-linux-${{ matrix.build_type }}
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -65,8 +65,7 @@ jobs:
         run: |
           gcovr \
             --root "$GITHUB_WORKSPACE" \
-            --filter "$GITHUB_WORKSPACE/app" \
-            --filter "$GITHUB_WORKSPACE/lib" \
+            --filter "$GITHUB_WORKSPACE/include" \
             --gcov-executable "llvm-cov gcov" \
             --object-directory "build/.objs" \
             --xml --xml-pretty \
@@ -111,10 +110,10 @@ jobs:
       - name: Configure
         run: xmake f -m ${{ matrix.build_type }} -y
 
-      - name: Build
-        run: xmake build -y
-
       - name: Run unit tests
-        run: xmake test -g tests.unit */default
+        run: xmake test -g tests/unit
+
+      - name: Run compile tests
+        run: xmake test -g tests/compile
 
 
