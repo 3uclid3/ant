@@ -17,6 +17,7 @@
         "DavidAnson.vscode-markdownlint",
         "eamodio.gitlens",
         "github.vscode-github-actions",
+        "jebbs.plantuml",
         "llvm-vs-code-extensions.vscode-clangd",
         "openai.chatgpt",
         "redhat.vscode-yaml",

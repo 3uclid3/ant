@@ -64,7 +64,9 @@ FROM base AS dev
 # pre-commit + Node.js + Codex CLI (via npm)
 RUN set -eux; \
     apt-get update -y; \
-    apt-get install -y --no-install-recommends pre-commit nodejs npm; \
+    apt-get install -y --no-install-recommends \
+      pre-commit nodejs npm \
+      default-jre-headless graphviz plantuml; \
     npm i -g @openai/codex; \
     npm cache clean --force; \
     rm -rf /var/lib/apt/lists/*
