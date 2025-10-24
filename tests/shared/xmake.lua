@@ -5,6 +5,6 @@ target("ant.test.shared")
 
     add_deps("ant")
 
-    add_includedirs(".")
+    add_includedirs(".", { public = true })
     add_headerfiles("ant.test.shared/**.hpp")
 
