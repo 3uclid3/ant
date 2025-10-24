@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
-#include <ant.test.shared/assert_error.hpp>
+#include <ant.test.shared/core/assert_error.hpp>
 #include <ant/core/assert.hpp>
 
 auto main(int argc, char** argv) -> int

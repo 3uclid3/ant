@@ -4,7 +4,7 @@
 
 #if ANT_ASSERT_ENABLED
 
-#include <ant.test.shared/assert_error.hpp>
+#include <ant.test.shared/core/assert_error.hpp>
 
 namespace ant { namespace {
 
