@@ -3,7 +3,6 @@ set_version("0.1.0")
 set_license("MIT")
 
 set_languages("cxx23")
-set_exceptions("no-cxx")
 set_warnings("allextra", "error")
 
 set_toolchains("llvm")
