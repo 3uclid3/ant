@@ -19,7 +19,7 @@ struct uint_for_bits
 };
 
 template<std::size_t Bits>
-using uint_for_bits_t = uint_for_bits<Bits>::type;
+using uint_for_bits_t = typename uint_for_bits<Bits>::type;
 
 template<typename Integral>
 constexpr auto compute_mask(std::size_t bits, std::size_t shift = 0) -> Integral
