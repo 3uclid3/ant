@@ -9,8 +9,7 @@ coverage:
         threshold: 1%
         target: auto
         paths:
-          - "app/**"
-          - "lib/**"
+          - "include/**"
     patch:
       default:
         target: 85%
@@ -19,10 +18,3 @@ coverage:
 comment:
   layout: "condensed_header, components, tree, condensed_footer"
   show_critical_paths: true
-
-ignore:
-  - ".devcontainer/**"
-  - ".github/**"
-  - ".xmake/**"
-  - "build/**"
-  - "tests/**"
