@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <format>
 #include <initializer_list>
 #include <iterator>
 #include <optional>
@@ -63,10 +64,15 @@ constexpr auto make_range(Ts&&... xs)
         std::size_t gen_idx = 0; \
         for (const auto& gen_in : gen_range) \
         { \
-            DOCTEST_SUBCASE((std::string(#__VA_ARGS__ " [") + std::to_string(gen_idx++) + "]").c_str()) \
+            std::string gen_subcase_name = std::format("Index = {}", gen_idx++); \
+            DOCTEST_SUBCASE(gen_subcase_name.c_str()) \
             { \
                 gen_value = gen_in; \
             } \
+        } \
+        if (!gen_value.has_value()) \
+        { \
+            DOCTEST_FAIL("GENERATE(...) was called with an empty range or no values."); \
         } \
         return *gen_value; \
     }())
