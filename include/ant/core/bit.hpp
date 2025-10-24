@@ -24,6 +24,7 @@ using uint_for_bits_t = typename uint_for_bits<Bits>::type;
 template<typename Integral>
 constexpr auto compute_mask(std::size_t bits, std::size_t shift = 0) -> Integral
 {
+    static_assert(std::is_integral_v<Integral> && std::is_unsigned_v<Integral>, "Integral must be an unsigned integral type");
     return (bits >= (sizeof(Integral) * 8 - shift)) ? (~Integral{0} << shift) : (((Integral{1} << bits) - 1) << shift);
 }
 
