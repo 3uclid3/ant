@@ -32,6 +32,10 @@ target("ant")
     add_includedirs("include", { public = true })
     add_headerfiles("include/**.hpp")
 
+    if is_mode("coverage") then
+        add_defines("ANT_ASSERT_ENABLED=0", { public = true })
+    end
+
     on_load(function(t)
         import("core.project.project")
         import("core.base.semver")
