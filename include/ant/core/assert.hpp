@@ -1,6 +1,6 @@
 #pragma once
 
-#include <exception>
+#include <cstdlib>
 #include <format>
 #include <source_location>
 #include <string_view>
@@ -25,10 +25,10 @@
             ::ant::assertion::fail(#condition, std::string_view{__VA_OPT__(std::format(__VA_ARGS__))}, std::source_location::current()); \
         } \
     } while (false)
-#define ANT_ASSERT_CODE(...) __VA__ARGS__
+#define ANT_ASSERT_CODE(...) __VA_ARGS__
 #else
 #define ANT_ASSERT(condition, ...) (void)0
-#define ANT_ASSERT_CODE(...) (void)0
+#define ANT_ASSERT_CODE(...)
 #endif
 
 namespace ant {
