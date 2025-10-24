@@ -1,5 +1,5 @@
 {
-  "name": "tpl-cpp (local Dockerfile)",
+  "name": "ant (local Dockerfile)",
   "build": {
     "dockerfile": "../../Dockerfile",
     "target": "dev",

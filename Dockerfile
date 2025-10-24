@@ -15,7 +15,7 @@ RUN set -eux; \
       gcc-${GCC_VERSION} g++-${GCC_VERSION} libc6-dev libstdc++-${GCC_VERSION}-dev libstdc++6 \
       gcovr \
       curl ca-certificates gnupg lsb-release software-properties-common \
-      git unzip xz-utils; \
+      git unzip xz-utils openssh-client; \
     ln -sf "/usr/bin/gcc-${GCC_VERSION}" /usr/bin/gcc; \
     ln -sf "/usr/bin/g++-${GCC_VERSION}" /usr/bin/g++; \
     ln -sf "/usr/bin/gcov-${GCC_VERSION}" /usr/bin/gcov; \

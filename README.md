@@ -1,74 +1,49 @@
-# tpl-cpp
+# ant - a simple, modern ECS that swarms efficiently
 
-A modern C++ template scaffolded around the [xmake](https://xmake.io) build system. It provides a minimal application entry point, a modular library layout, and pre-wired unit, fuzz, and benchmark harnesses so new projects can focus on domain logic immediately.
-
-## Features
-
-- C++23 toolchain with LLVM, extra warnings, and warnings-as-errors enabled by default.
-- Separated `app/` and `lib/` targets to encourage layered architecture.
-- Testing skeletons for doctest-based unit tests, fuzz targets, and benchmarks.
-- Continuous integration friendly layout with generated `compile_commands.json`.
+`ant` is a header-only, C++23 entity component system focused on clarity, fast iteration, and predictable performance. The project leans on a modern LLVM + xmake toolchain and keeps tests first-class so changes remain easy to validate.
 
 ## Prerequisites
 
-- [xmake](https://xmake.io) (tested with 2.8+).
-- LLVM toolchain (`clang`, `clang++`, `lld`) available on `PATH`.
-- A C++ standard library providing static runtimes (`libc++` on Linux by default).
+- [xmake](https://xmake.io/) 2.8+ with the LLVM toolchain available.
+- A C++23-capable compiler (LLVM/Clang is the curated default).
 
-## Getting Started
+Running inside the provided devcontainer automatically satisfies these requirements.
 
-```bash
-git clone <your-new-repo-url> project-name
-cd project-name
-xmake f -m debug   # configure for debug (or release/coverage)
-xmake              # build all default targets
-```
-
-### Run the Sample Application
+## Build and Test
 
 ```bash
-xmake run tpl-cpp
+# configure for debug (default) or release (-m release)
+xmake f -m debug
+
+# build the library and supporting test artifacts
+xmake build
+
+# run unit tests (produces doctest output)
+xmake run ant.test.unit
+
+# optional: generate JUnit XML alongside test runs
+xmake f --junit_report=y
+xmake run ant.test.unit
 ```
 
-The default `main.cpp` simply returns success. Replace it with your application logic under `app/tpl-cpp/`.
+Compile-time checks are modelled as build targets. You can validate them with:
 
-### Execute Tests
+```bash
+xmake build ant.some_feature.test.compile.pass
+```
 
-- Run unit tests: `xmake run tpl-cpp.core.tests.unit`
-- Enable JUnit output: `xmake run tpl-cpp.core.tests.unit --reporters=junit --out=report.xml`
-- Add fuzz or benchmark targets under `tests/fuzz/` and `tests/benchmark/`, then invoke with `xmake run <target-name>`.
+Targets ending in `.compile.fail` are expected to fail to build; xmake will mark them as passed when compilation stops with an error.
 
-## Project Layout
+## Benchmarks
 
-- `app/` – application entry points grouped by executable.
-- `lib/` – reusable libraries (`tpl-cpp.core` is the default static library target).
-- `tests/` – doctest-based unit tests plus optional fuzz and benchmark targets.
-- `build/` – generated artifacts (ignored from version control).
-- `AGENTS.md` – contribution expectations for humans and AI collaborators.
+Benchmark targets are gated behind an optional configuration so the `benchmark` dependency is only fetched when needed:
 
-## Development Environment
-
-- A ready-to-use devcontainer lives in `.devcontainer/devcontainer.json`; open the repository in VS Code or GitHub Codespaces to get the curated toolchain automatically.
-- For local Docker builds, use `.devcontainer/local/devcontainer.json`, which reuses the included `Dockerfile` to match CI defaults.
-- Both devcontainer definitions mount `${HOME}/.codex` into the container, enabling Codex CLI authentication and tooling required by this template.
-- If you work outside the devcontainer, replicate its dependencies (LLVM, xmake, Codex CLI) and confirm commands still succeed.
-
-## Development Tips
-
-- Use `xmake f --menu` for an interactive configuration UI.
-- Generate compilation database (auto-enabled) under `build/compile_commands.json` for editor tooling.
-- Extend `lib/core` with headers and source files; they are exported to dependents automatically.
-- Keep tests close to the code they exercise for discoverability.
+```bash
+xmake f --benchmarks=y
+xmake build ant.my_benchmark.test.bench
+xmake run ant.my_benchmark.test.bench
+```
 
 ## Contributing
 
-Follow the workflow, style, and commit conventions defined in `AGENTS.md`. In short:
-
-- Use descriptive branch names and conventional commits.
-- Document tooling and manual verification steps in pull requests.
-- Add or update tests for every behavior change.
-- Run Codex CLI within the provided devcontainer (or identical setup) when submitting AI-assisted changes.
-
-## License
-
-GPL-3.0-or-later. See [`LICENSE`](LICENSE) for full terms.
+The [AGENTS Contribution Guide](AGENTS.md) in this repository captures additional expectations for reviews and commit formatting.
