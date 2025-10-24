@@ -44,5 +44,4 @@ target("ant")
         t:add("defines", string.format("ANT_VERSION_PATCH=%d", v:patch()), { public = true })
         t:add("defines", string.format("ANT_VERSION_SEMVER=\"%s\"", tostring(v)), { public = true })
     end)
-    
 includes("tests")
