@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <type_traits>
 
+#include <ant/core/assert.hpp>
+
 namespace ant {
 
 template<std::size_t Bits>
@@ -25,6 +27,7 @@ template<typename Integral>
 constexpr auto compute_mask(std::size_t bits, std::size_t shift = 0) -> Integral
 {
     static_assert(std::is_integral_v<Integral> && std::is_unsigned_v<Integral>, "Integral must be an unsigned integral type");
+    ANT_ASSERT(shift < sizeof(Integral) * 8, "Shift must be less than the number of bits in Integral");
     return (bits >= (sizeof(Integral) * 8 - shift)) ? (~Integral{0} << shift) : (((Integral{1} << bits) - 1) << shift);
 }
 
