@@ -20,7 +20,12 @@ add_rules("plugin.compile_commands.autoupdate", { outputdir = "$(builddir)" })
 option("junit_report")
     set_default(false)
     set_showmenu(true)
-    set_description("Enable JUnit test report generation")
+    set_description("Enable JUnit XML report generation for tests")
+
+option("benchmarks")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable Benchmark test targets")
 
 target("ant")
     set_kind("headeronly")
