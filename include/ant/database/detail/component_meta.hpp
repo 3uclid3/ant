@@ -81,13 +81,14 @@ constexpr auto component_vtable::invoke_relocate(void* dst, void* src) noexcept 
 {
     T* src_v = std::launder(reinterpret_cast<T*>(src));
     new (dst) T(std::move(*src_v));
+
     std::destroy_at(src_v);
 }
 
 template<typename T>
 constexpr auto component_vtable::invoke_clone(void* dst, const void* src) -> void
 {
-    const T* src_v = reinterpret_cast<const T*>(src);
+    const T* src_v = std::launder(reinterpret_cast<const T*>(src));
     new (dst) T(*src_v);
 }
 
