@@ -1,5 +1,4 @@
 
-#include "ant/database/detail/component_meta.hpp"
 #include <doctest/doctest.h>
 
 #include <ant/database/schema.hpp>
@@ -21,12 +20,14 @@ TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly",
     schema built_schema = builder.build();
 
     const auto meta = built_schema.meta_of<T>();
+
     CHECK_EQ(meta.id, schema::id_of<T>());
     CHECK_EQ(meta.name, type_name<T>::value());
     CHECK_EQ(meta.version, version);
     CHECK_EQ(meta.size, sizeof(T));
     CHECK_EQ(meta.alignment, alignof(T));
     CHECK_EQ(meta.vtable, detail::component_vtable::of<T>());
+    CHECK_NE(meta.vtable, detail::component_vtable::of<short>());
 
     ++version;
 }
