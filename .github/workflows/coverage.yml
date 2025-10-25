@@ -45,12 +45,6 @@ jobs:
         run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
         shell: bash
 
-      # Install xmake
-      - name: Setup xmake
-        uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
-
       # Update xmake repository (in order to have the file that will be cached)
       - name: Update xmake repository
         run: xmake repo --update
