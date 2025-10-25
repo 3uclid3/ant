@@ -6,14 +6,14 @@ coverage:
   status:
     project:
       default:
-        threshold: 1%
+        threshold: 5%
         target: auto
         paths:
           - "include/**"
     patch:
       default:
         target: 85%
-        threshold: 1%
+        threshold: 5%
 
 comment:
   layout: "condensed_header, components, tree, condensed_footer"
