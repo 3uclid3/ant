@@ -3,11 +3,12 @@
 #include <string_view>
 
 #include <ant/config.hpp>
+#include <ant/core/coverage.hpp>
 
 namespace ant::detail {
 
 template<typename T>
-[[nodiscard]] constexpr auto type_name() noexcept
+ANT_COVERAGE_FUNCTION_DISABLED [[nodiscard]] constexpr auto type_name() noexcept
 {
 #if defined ANT_PRETTY_FUNCTION
     std::string_view str{static_cast<const char*>(ANT_PRETTY_FUNCTION)};
