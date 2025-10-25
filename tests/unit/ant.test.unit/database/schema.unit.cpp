@@ -27,7 +27,7 @@ TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly",
     CHECK_EQ(meta.size, sizeof(T));
     CHECK_EQ(meta.alignment, alignof(T));
     CHECK_EQ(meta.vtable, detail::component_vtable::of<T>());
-    CHECK_NE(meta.vtable, detail::component_vtable::of<short>());
+    CHECK_NE(meta.vtable, detail::component_vtable::of<schema>());
 
     ++version;
 }
