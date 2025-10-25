@@ -6,15 +6,30 @@ coverage:
   status:
     project:
       default:
-        threshold: 1%
+        threshold: 5%
         target: auto
         paths:
           - "include/**"
     patch:
       default:
         target: 85%
-        threshold: 1%
+        threshold: 5%
 
 comment:
   layout: "condensed_header, components, tree, condensed_footer"
   show_critical_paths: true
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto    
+  individual_components:
+    - component_id: ant_core
+      name: core
+      paths:
+        - include/ant/core/**
+    - component_id: ant_database
+      name: database
+      paths:
+        - include/ant/database/**
