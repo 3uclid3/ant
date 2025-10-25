@@ -34,8 +34,8 @@ public:
     [[nodiscard]] constexpr auto name() const noexcept -> std::string_view;
 
 private:
-    std::uint32_t _hash;
     std::string_view _name;
+    std::uint32_t _hash;
 };
 
 template<typename Type>
@@ -44,7 +44,7 @@ template<typename Type>
 template<typename Type>
 [[nodiscard]] constexpr auto type_id(Type&&) noexcept -> type_info;
 
-[[nodiscard]] constexpr auto operator<=>(type_info, type_info) -> std::strong_ordering;
+[[nodiscard]] constexpr auto operator<=>(type_info lhs, type_info rhs) noexcept -> std::strong_ordering;
 
 template<typename T>
 constexpr auto type_hash<T>::value() noexcept -> std::uint32_t
@@ -72,8 +72,8 @@ constexpr type_name<T>::operator std::string_view() const noexcept
 
 template<typename Type>
 constexpr type_info::type_info(std::in_place_type_t<Type>) noexcept
-    : _hash{type_hash<Type>::value()}
-    , _name{type_name<Type>::value()}
+    : _name{type_name<Type>::value()}
+    , _hash{type_hash<Type>::value()}
 {
 }
 
@@ -106,7 +106,7 @@ constexpr auto type_id(T&&) noexcept -> type_info
     return type_id<std::remove_cvref_t<T>>();
 }
 
-constexpr auto operator<=>(const type_info& lhs, const type_info& rhs) noexcept -> std::strong_ordering
+constexpr auto operator<=>(type_info lhs, type_info rhs) noexcept -> std::strong_ordering
 {
     return lhs.hash() <=> rhs.hash();
 }

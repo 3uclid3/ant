@@ -38,5 +38,12 @@ TEST_CASE("type_info")
     CHECK_EQ(type_id<int>().name(), type_name<int>());
 }
 
+TEST_CASE("type_info: comparison")
+{
+    const auto result = type_id<int>() <=> type_id<int>();
+
+    CHECK_EQ(result, std::strong_ordering::equal);
+}
+
 } // namespace
 } // namespace ant
