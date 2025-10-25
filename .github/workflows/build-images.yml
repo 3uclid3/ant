@@ -7,13 +7,13 @@ on:
       - main
     paths:
       - .github/workflows/build-images.yml
+      - .devcontainer/**
       - Dockerfile
   schedule:
     - cron: "0 3 * * 1"
 
 jobs:
-  build-and-push:
-    name: Build and Push
+  build:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
