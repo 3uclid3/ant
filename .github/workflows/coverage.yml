@@ -34,7 +34,8 @@ jobs:
     steps:
       - name: Get current date as package key
         id: cache_key
-        run: echo "key=$(date +'%'V')" >> $GITHUB_OUTPUT
+        shell: bash
+        run: echo "key=$(date +'%V')" >> $GITHUB_OUTPUT
 
       - name: Checkout
         uses: actions/checkout@v4
