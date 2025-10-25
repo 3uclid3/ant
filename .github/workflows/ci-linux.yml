@@ -74,6 +74,7 @@ jobs:
           restore-keys: |
             linux-${{ matrix.build_type }}-${{ steps.dependency_hash.outputs.hash }}-
 
+      # Configure build
       - name: Configure
         run: xmake f -m ${{ matrix.build_type }} --junit_report=y -y
 

@@ -70,6 +70,7 @@ jobs:
           restore-keys: |
             linux-coverage-${{ steps.dependency_hash.outputs.hash }}-
 
+      # Configure build
       - name: Configure
         run: xmake f -m coverage --junit_report=y -y
 

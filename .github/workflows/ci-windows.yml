@@ -72,6 +72,7 @@ jobs:
           restore-keys: |
             MSVC-${{ matrix.build_type }}-${{ steps.dependency_hash.outputs.hash }}-
 
+      # Configure build
       - name: Configure
         run: xmake f -m ${{ matrix.build_type }} -y
 
