@@ -1,9 +1,9 @@
 #include <doctest/doctest.h>
 
-#include <ant/entity/entity_traits.hpp>
+#include <ant/database/entity_traits.hpp>
 
+#include <ant.test.shared/database/entity_types.hpp>
 #include <ant.test.shared/doctest/generator.hpp>
-#include <ant.test.shared/entity/entity.hpp>
 
 namespace ant { namespace {
 

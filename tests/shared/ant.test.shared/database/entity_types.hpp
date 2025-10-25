@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ant/entity/entity_layout.hpp>
+#include <ant/database/entity_traits.hpp>
 
 namespace ant::test {
 
