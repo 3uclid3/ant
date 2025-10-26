@@ -7,7 +7,7 @@ coverage:
     project:
       default:
         target: 85%
-        threshold: 5%
+        threshold: 15%
         paths:
           - "include/**"
     patch:

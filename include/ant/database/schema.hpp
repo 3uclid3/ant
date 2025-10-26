@@ -94,6 +94,7 @@ private:
     allocator_type _allocator;
     component_metas_type _metas;
 };
+
 template<typename Database>
 template<typename T>
 constexpr auto basic_schema<Database>::id_of() noexcept -> component_id_type
