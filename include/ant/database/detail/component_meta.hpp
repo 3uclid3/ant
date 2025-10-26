@@ -5,6 +5,7 @@
 #include <memory>
 #include <new>
 #include <string_view>
+#include <vector>
 
 #include <ant/core/type_info.hpp>
 
@@ -53,6 +54,12 @@ struct component_meta
     std::size_t alignment{0};
     std::string_view name{};
 };
+
+template<typename Database>
+using basic_component_metas = std::vector<component_meta, typename std::allocator_traits<typename Database::allocator_type>::template rebind_alloc<component_meta>>;
+
+template<typename Database>
+using basic_component_ids = std::vector<component_id, typename std::allocator_traits<typename Database::allocator_type>::template rebind_alloc<component_id>>;
 
 template<typename T>
 consteval auto component_vtable::of() noexcept -> component_vtable
