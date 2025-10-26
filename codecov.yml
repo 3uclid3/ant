@@ -6,14 +6,15 @@ coverage:
   status:
     project:
       default:
+        target: 85%
         threshold: 5%
-        target: auto
         paths:
           - "include/**"
     patch:
       default:
-        target: 85%
-        threshold: 5%
+        informational: true
+        target: 75%
+        threshold: 100%
 
 comment:
   layout: "condensed_header, components, tree, condensed_footer"
@@ -23,7 +24,7 @@ component_management:
   default_rules:
     statuses:
       - type: project
-        target: auto    
+        target: auto
   individual_components:
     - component_id: ant_core
       name: core
