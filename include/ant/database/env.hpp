@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <new>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -21,6 +22,13 @@ public:
 
 public:
     explicit basic_env(const schema_type& schema, const allocator_type& allocator = {}) noexcept;
+
+    basic_env(const basic_env&) = delete;
+    auto operator=(const basic_env&) -> basic_env& = delete;
+
+    basic_env(basic_env&&) noexcept(is_nothrow_move_constructible) = default;
+    auto operator=(basic_env&&) noexcept(is_nothrow_move_assignable) -> basic_env& = default;
+
     ~basic_env();
 
     template<typename T>
@@ -54,6 +62,16 @@ private:
 
     using slots_type = std::vector<slot, typename std::allocator_traits<allocator_type>::template rebind_alloc<slot>>;
     using slot_indexes_type = std::vector<slot_index, typename std::allocator_traits<allocator_type>::template rebind_alloc<slot_index>>;
+
+    // clang-format off
+    static constexpr bool is_nothrow_move_constructible = std::is_nothrow_move_constructible_v<slots_type> && 
+                                                          std::is_nothrow_move_constructible_v<slot_indexes_type> && 
+                                                          std::is_nothrow_move_constructible_v<allocator_type>;
+
+    static constexpr bool is_nothrow_move_assignable = std::is_nothrow_move_assignable_v<slots_type> &&
+                                                       std::is_nothrow_move_assignable_v<slot_indexes_type> &&
+                                                       std::is_nothrow_move_assignable_v<allocator_type>;
+    // clang-format on  
 
     template<typename T>
     auto index_of() const noexcept -> component_index;
