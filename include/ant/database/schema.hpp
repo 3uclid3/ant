@@ -45,7 +45,7 @@ public:
 
     template<typename T>
     constexpr auto meta_of() const noexcept -> const component_meta_type&;
-    constexpr auto meta_of(component_index idx) const noexcept -> const component_meta_type&;
+    constexpr auto meta_of(component_index index) const noexcept -> const component_meta_type&;
 
     constexpr auto empty() const noexcept -> bool;
     constexpr auto size() const noexcept -> size_type;
@@ -134,9 +134,9 @@ constexpr auto basic_schema<Database>::meta_of() const noexcept -> const compone
 }
 
 template<typename Database>
-constexpr auto basic_schema<Database>::meta_of(component_index idx) const noexcept -> const component_meta_type&
+constexpr auto basic_schema<Database>::meta_of(component_index index) const noexcept -> const component_meta_type&
 {
-    const size_type raw_index = static_cast<size_type>(idx);
+    const auto raw_index = static_cast<component_metas_type::size_type>(index);
     ANT_ASSERT(raw_index < _metas.size(), "Component index out of bounds");
     return _metas[raw_index];
 }
