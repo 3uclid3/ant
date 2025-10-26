@@ -43,18 +43,18 @@ private:
 
     allocator_type _allocator;
 
-    std::vector<table_location, rebind_alloc_t<allocator_type, table_location>> _location;
-    std::vector<version_type, rebind_alloc_t<allocator_type, version_type>> _versions;
+    std::vector<table_location, rebind_allocator_t<table_location, allocator_type>> _location;
+    std::vector<version_type, rebind_allocator_t<version_type, allocator_type>> _versions;
 
-    std::vector<index_type, rebind_alloc_t<allocator_type, index_type>> _free;
+    std::vector<index_type, rebind_allocator_t<index_type, allocator_type>> _free;
 };
 
 template<typename Database>
 basic_entity_index<Database>::basic_entity_index(const allocator_type& allocator) noexcept
     : _allocator{allocator}
-    , _location{rebind_alloc_t<allocator_type, table_location>{_allocator}}
-    , _versions{rebind_alloc_t<allocator_type, version_type>{_allocator}}
-    , _free{rebind_alloc_t<allocator_type, index_type>{_allocator}}
+    , _location{rebind_allocator<table_location>(_allocator)}
+    , _versions{rebind_allocator<version_type>(_allocator)}
+    , _free{rebind_allocator<index_type>(_allocator)}
 {
 }
 
