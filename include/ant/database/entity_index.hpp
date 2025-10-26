@@ -129,6 +129,7 @@ auto basic_entity_index<Database>::version(entity_type entity) const noexcept ->
     const auto idx = traits::to_identifier(entity);
     return _versions[idx];
 }
+
 template<typename Database>
 auto basic_entity_index<Database>::empty() const noexcept -> bool
 {
