@@ -91,7 +91,7 @@ TEST_CASE_TEMPLATE("bitset::count: counts set bits", T, std::uint32_t, std::uint
     CHECK_EQ(bitset.count(), 3);
 }
 
-TEST_CASE_TEMPLATE("bitset::none: ", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("bitset::none", T, std::uint32_t, std::uint64_t)
 {
     basic_bitset<T> bitset{128};
     CHECK(bitset.none());
@@ -100,7 +100,7 @@ TEST_CASE_TEMPLATE("bitset::none: ", T, std::uint32_t, std::uint64_t)
     CHECK_FALSE(bitset.none());
 }
 
-TEST_CASE_TEMPLATE("bitset::all: ", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("bitset::all", T, std::uint32_t, std::uint64_t)
 {
     basic_bitset<T> bitset{64};
     CHECK_FALSE(bitset.all());
