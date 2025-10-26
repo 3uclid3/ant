@@ -132,7 +132,7 @@ auto basic_entity_index<Database>::version(entity_type entity) const noexcept ->
 template<typename Database>
 auto basic_entity_index<Database>::empty() const noexcept -> bool
 {
-    return _versions.empty();
+    return size() == 0;
 }
 
 template<typename Database>
