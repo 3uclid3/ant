@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include <ant/core/allocator.hpp>
 #include <ant/core/assert.hpp>
 #include <ant/database/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
@@ -60,8 +61,8 @@ private:
 
     using slot_index = component_index;
 
-    using slots_type = std::vector<slot, typename std::allocator_traits<allocator_type>::template rebind_alloc<slot>>;
-    using slot_indexes_type = std::vector<slot_index, typename std::allocator_traits<allocator_type>::template rebind_alloc<slot_index>>;
+    using slots_type = std::vector<slot, rebind_allocator_t<slot, allocator_type>>;
+    using slot_indexes_type = std::vector<slot_index, rebind_allocator_t<slot_index, allocator_type>>;
 
     // clang-format off
     static constexpr bool is_nothrow_move_constructible = std::is_nothrow_move_constructible_v<slots_type> && 
@@ -148,7 +149,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         // Prevent vector reallocation after constructing T to avoid leaks on throw
         _slots.reserve(_slots.size() + 1);
 
-        auto allocator = typename std::allocator_traits<allocator_type>::template rebind_alloc<T>{_allocator};
+        auto allocator = rebind_allocator<T>(_allocator);
         T* ptr = allocator.allocate(1);
 
         std::construct_at(ptr, std::forward<Args>(args)...);
@@ -159,7 +160,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         new_slot.deleter = [](allocator_type& raw_allocator, void* ptr) noexcept {
             std::destroy_at(static_cast<T*>(ptr));
 
-            auto allocator = typename std::allocator_traits<allocator_type>::template rebind_alloc<T>{raw_allocator};
+            auto allocator = rebind_allocator<T>(raw_allocator);
             allocator.deallocate(static_cast<T*>(ptr), 1);
         };
 

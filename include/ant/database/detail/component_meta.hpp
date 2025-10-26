@@ -7,6 +7,7 @@
 #include <string_view>
 #include <vector>
 
+#include <ant/core/allocator.hpp>
 #include <ant/core/type_info.hpp>
 
 namespace ant::detail {
@@ -56,10 +57,10 @@ struct component_meta
 };
 
 template<typename Database>
-using basic_component_metas = std::vector<component_meta, typename std::allocator_traits<typename Database::allocator_type>::template rebind_alloc<component_meta>>;
+using basic_component_metas = std::vector<component_meta, rebind_allocator_t<component_meta, typename Database::allocator_type>>;
 
 template<typename Database>
-using basic_component_ids = std::vector<component_id, typename std::allocator_traits<typename Database::allocator_type>::template rebind_alloc<component_id>>;
+using basic_component_ids = std::vector<component_id, rebind_allocator_t<component_id, typename Database::allocator_type>>;
 
 template<typename T>
 consteval auto component_vtable::of() noexcept -> component_vtable
