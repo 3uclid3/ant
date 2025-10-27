@@ -9,6 +9,7 @@ on:
       - ".github/workflows/ci-windows.yml"
       - ".gitignore"
       - "AGENTS.md"
+      - "CHANGELOG.md"
       - "Dockerfile"
       - "LICENSE"
       - "README.md"
