@@ -1,19 +1,13 @@
 #pragma once
 
 #include <cstdint>
-#include <limits>
+
+#include <ant/core/index.hpp>
 
 namespace ant {
 
-enum class table_index : std::uint32_t
-{
-    npos = std::numeric_limits<std::uint32_t>::max()
-};
-
-enum class table_row_index : std::uint32_t
-{
-    npos = std::numeric_limits<std::uint32_t>::max()
-};
+using table_index = basic_index<struct table_index_tag, std::uint32_t>;
+using table_row_index = basic_index<struct table_row_index_tag, std::uint32_t>;
 
 struct table_location
 {
