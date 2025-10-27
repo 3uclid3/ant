@@ -14,9 +14,6 @@ updates:
       prefix: "build(deps)"
       prefix-development: "build(deps)"
       include: "scope"
-    pull-request-branch-name:
-      prefix: "build/dependabot"
-      separator: "/"
     groups:
       actions-minor-patch:
         patterns:
@@ -39,9 +36,6 @@ updates:
       prefix: "build(deps)"
       prefix-development: "build(deps)"
       include: "scope"
-    pull-request-branch-name:
-      prefix: "build/dependabot"
-      separator: "/"
     groups:
       docker-minor-patch:
         patterns:
