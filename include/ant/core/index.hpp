@@ -13,7 +13,7 @@ public:
     using tag_type = Tag;
     using value_type = T;
 
-    static const basic_index npos;
+    static constexpr auto npos() noexcept -> basic_index;
 
     constexpr basic_index() noexcept = default;
     constexpr basic_index(const basic_index&) noexcept = default;
@@ -57,7 +57,10 @@ private:
 };
 
 template<typename Tag, std::integral T, T Npos>
-constexpr basic_index<Tag, T, Npos> basic_index<Tag, T, Npos>::npos{Npos};
+constexpr auto basic_index<Tag, T, Npos>::npos() noexcept -> basic_index
+{
+    return basic_index{Npos};
+}
 
 template<typename Tag, std::integral T, T Npos>
 template<std::integral U>

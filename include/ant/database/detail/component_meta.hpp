@@ -50,7 +50,7 @@ struct component_meta
     static constexpr auto make(std::string_view name, component_version version = 0) noexcept -> component_meta;
 
     component_id id{};
-    component_index index{component_index::npos};
+    component_index index{component_index::npos()};
     component_version version{0};
     component_vtable vtable{};
     std::size_t size{0};

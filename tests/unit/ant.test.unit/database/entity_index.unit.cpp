@@ -33,8 +33,8 @@ TEST_CASE("entity_index: create -> contains and size")
     CHECK_EQ(traits::to_version(e), 0);
 
     const auto loc = index.locate(e); // default location
-    CHECK(loc.table == table_index::npos);
-    CHECK(loc.row == table_row_index::npos);
+    CHECK(loc.table == table_index::npos());
+    CHECK(loc.row == table_row_index::npos());
 }
 
 TEST_CASE("entity_index: relocate and locate roundtrip")
