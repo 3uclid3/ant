@@ -102,4 +102,72 @@ TEST_CASE("basic_table::remove_row(index): removes and compacts")
     CHECK_EQ(tbl.rows().size(), 1);
 }
 
+TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::add_row: grows all columns and default constructs")
+{
+    constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
+
+    table::columns_type columns{};
+    columns.emplace_back(meta_tr);
+    columns.emplace_back(meta_tr);
+
+    table tbl{table_signature{}, std::move(columns)};
+
+    const row_index idx = tbl.add_row(make_entity(100));
+
+    CHECK(idx == row_index{0});
+    CHECK_EQ(tbl.columns().size(), 2);
+
+    for (const auto& col : tbl.columns())
+    {
+        const auto* ptr = static_cast<const test::tracked*>(col.row(idx));
+        REQUIRE_NE(ptr, nullptr);
+        CHECK_EQ(ptr->value, 7);
+        CHECK_EQ(col.size(), 1);
+    }
+
+    CHECK_EQ(test::tracked::ctor_count, 2);
+}
+
+TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(entity): updates columns with relocate")
+{
+    constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
+
+    table::columns_type columns{};
+    columns.emplace_back(meta_tr);
+
+    table tbl{table_signature{}, std::move(columns)};
+
+    const auto e0 = make_entity(200);
+    const auto e1 = make_entity(201);
+    const row_index i0 = tbl.add_row(e0);
+    const row_index i1 = tbl.add_row(e1);
+
+    const auto* cptr0 = static_cast<const test::tracked*>(tbl.columns()[0].row(i0));
+    const auto* cptr1 = static_cast<const test::tracked*>(tbl.columns()[0].row(i1));
+    const_cast<test::tracked*>(cptr0)->value = 1;
+    const_cast<test::tracked*>(cptr1)->value = 9;
+
+    tbl.remove_row(e0);
+
+    CHECK_EQ(tbl.rows().size(), 1);
+    const auto* moved = static_cast<const test::tracked*>(tbl.columns()[0].row(row_index{0}));
+    CHECK_EQ(moved->value, 9);
+}
+
+TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(index): last element triggers destroy in columns")
+{
+    constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
+
+    table::columns_type columns{};
+    columns.emplace_back(meta_tr);
+
+    table tbl{table_signature{}, std::move(columns)};
+
+    const row_index idx = tbl.add_row(make_entity(300));
+    tbl.remove_row(idx);
+
+    CHECK_EQ(tbl.rows().size(), 0);
+    CHECK_EQ(test::tracked::dtor_count, 1);
+}
+
 }} // namespace ant
