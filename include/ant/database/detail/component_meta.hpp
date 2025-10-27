@@ -9,6 +9,7 @@
 
 #include <ant/core/allocator.hpp>
 #include <ant/core/type_info.hpp>
+#include <ant/database/component_index.hpp>
 
 namespace ant::detail {
 
@@ -49,10 +50,12 @@ struct component_meta
     static constexpr auto make(std::string_view name, component_version version = 0) noexcept -> component_meta;
 
     component_id id{};
+    component_index index{component_index::npos};
     component_version version{0};
     component_vtable vtable{};
     std::size_t size{0};
     std::size_t alignment{0};
+    std::size_t block_size{32}; // T components per block
     std::string_view name{};
 };
 
