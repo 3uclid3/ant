@@ -11,12 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - New PlantUML class diagrams under `docs/uml/class/` for `core` and `database`.
 - Draft/aspirational database diagram under `docs/uml/class/draft/`.
 - Contribution guide overhaul in `AGENTS.md` (concise, human/AI-friendly); formatting aligned to repository `.clang-format`.
+- Dependabot configuration for GitHub Actions and Docker; PRs labeled `build` and `deps`, with minor/patch updates grouped.
 
 ### Changed
 
 - README simplified with a quick start, small layout overview, and a link to `AGENTS.md`.
 - Documented verbose test/benchmark output via `xmake test -v …` in README and `AGENTS.md`.
 - CI workflows now also trigger on documentation changes (`docs/**`).
+- CI: ignore `.github/dependabot.yml` on push; PR checks still run.
 - No public API or library behavior changes.
 
 ### Removed
