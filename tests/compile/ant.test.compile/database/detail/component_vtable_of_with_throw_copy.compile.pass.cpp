@@ -4,9 +4,6 @@
 
 namespace ant::detail { namespace {
 
-[[maybe_unused]] auto func() -> void
-{
-    [[maybe_unused]] auto vtable = component_vtable::of<test::with_throw_copy>();
-}
+[[maybe_unused]] auto vtable = component_vtable::of<test::with_throw_copy>();
 
 }} // namespace ant::detail

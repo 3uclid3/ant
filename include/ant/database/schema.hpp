@@ -113,7 +113,7 @@ template<typename Database>
 template<typename T>
 constexpr auto basic_schema<Database>::contains() const noexcept -> bool
 {
-    return index_of<T>() != component_index::npos;
+    return index_of<T>() != component_index::npos();
 }
 
 template<typename Database>
@@ -124,7 +124,7 @@ constexpr auto basic_schema<Database>::index_of() const noexcept -> component_in
 
     auto it = std::ranges::lower_bound(_ids, id);
 
-    return it != _ids.end() && *it == id ? component_index(static_cast<component_index::value_type>(std::distance(_ids.begin(), it))) : component_index::npos;
+    return it != _ids.end() && *it == id ? component_index(static_cast<component_index::value_type>(std::distance(_ids.begin(), it))) : component_index::npos();
 }
 
 template<typename Database>

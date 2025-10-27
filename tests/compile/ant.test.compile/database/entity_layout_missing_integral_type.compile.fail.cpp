@@ -7,8 +7,11 @@ namespace ant { namespace {
 
 struct entity_class
 {
+#ifdef ANT_COMPILE_TEST_FORCE_PASS
+    using integral_type = std::uint32_t;
+#endif
 };
 
-static_assert(std::is_same_v<entity_layout<entity_class>::value_type, std::uint32_t>);
+auto is_version = entity_traits<entity_class>::is_versioned;
 
 }} // namespace ant

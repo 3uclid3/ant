@@ -4,20 +4,16 @@
 #include <ant/database/env.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
+#include <ant.test.shared/database/shim_database.hpp>
 
 namespace ant { namespace {
 
-struct shim_database
-{
-    using allocator_type = std::allocator<std::byte>;
-};
-
-using env = basic_env<shim_database>;
+using env = basic_env<test::shim_naked_database>;
 
 struct fixture
 {
     fixture()
-        : schema(basic_schema_builder<shim_database>()
+        : schema(basic_schema_builder<test::shim_naked_database>()
                      .define<bool>("bool")
                      .define<int>("int")
                      .define<test::empty>("empty")
@@ -28,7 +24,7 @@ struct fixture
     {
     }
 
-    basic_schema<shim_database> schema;
+    basic_schema<test::shim_naked_database> schema;
     env env;
 };
 

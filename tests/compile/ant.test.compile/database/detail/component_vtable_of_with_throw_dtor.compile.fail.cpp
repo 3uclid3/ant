@@ -4,9 +4,11 @@
 
 namespace ant::detail { namespace {
 
-[[maybe_unused]] auto func() -> void
+auto func() -> void
 {
-    [[maybe_unused]] auto vtable = component_vtable::of<test::with_throw_dtor>();
+#ifndef ANT_COMPILE_TEST_FORCE_PASS
+    auto vtable = component_vtable::of<test::with_throw_dtor>();
+#endif
 }
 
 }} // namespace ant::detail

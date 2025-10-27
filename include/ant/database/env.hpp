@@ -55,7 +55,7 @@ private:
     {
         using deleter_fn = void (*)(allocator_type&, void*) noexcept;
 
-        component_index index{component_index::npos};
+        component_index index{component_index::npos()};
         void* ptr{nullptr};
         deleter_fn deleter{nullptr};
     };
@@ -99,7 +99,7 @@ basic_env<Database>::basic_env(const schema_type& schema, const allocator_type& 
     : _allocator{allocator}, _schema{&schema}
 {
     // Pre-size sparse mapping to the full schema size to eliminate per-set resize branches
-    _slot_indexes.resize(_schema->size(), slot_index::npos);
+    _slot_indexes.resize(_schema->size(), slot_index{slot_index::npos()});
 }
 
 template<typename Database>
@@ -122,7 +122,7 @@ template<typename Database>
 template<typename T>
 auto basic_env<Database>::get() const noexcept -> const T*
 {
-    ANT_ASSERT(index_of<T>() != component_index::npos, "component type is not registered in schema");
+    ANT_ASSERT(index_of<T>() != component_index::npos(), "component type is not registered in schema");
     const auto index = slot_index_of<T>();
     return index < _slots.size() ? static_cast<const T*>(_slots[index].ptr) : nullptr;
 }
@@ -131,7 +131,7 @@ template<typename Database>
 template<typename T>
 auto basic_env<Database>::get() noexcept -> T*
 {
-    ANT_ASSERT(index_of<T>() != component_index::npos, "component type is not registered in schema");
+    ANT_ASSERT(index_of<T>() != component_index::npos(), "component type is not registered in schema");
     const auto index = slot_index_of<T>();
     return index < _slots.size() ? (static_cast<T*>(_slots[index].ptr)) : nullptr;
 }
@@ -141,9 +141,9 @@ template<typename T, typename... Args>
 auto basic_env<Database>::set(Args&&... args) -> T&
 {
     const auto idx = index_of<T>();
-    ANT_ASSERT(idx != component_index::npos, "component type is not registered in schema");
+    ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
 
-    if (_slot_indexes[idx] == slot_index::npos)
+    if (_slot_indexes[idx] == slot_index::npos())
     {
         // Prevent vector reallocation after constructing T to avoid leaks on throw
         _slots.reserve(_slots.size() + 1);
@@ -181,10 +181,10 @@ template<typename T>
 auto basic_env<Database>::unset() -> void
 {
     const auto idx = index_of<T>();
-    ANT_ASSERT(idx != component_index::npos, "component type is not registered in schema");
+    ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
 
     const auto slot_idx = _slot_indexes[idx];
-    if (slot_idx == slot_index::npos)
+    if (slot_idx == slot_index::npos())
     {
         return;
     }
@@ -203,7 +203,7 @@ auto basic_env<Database>::unset() -> void
     }
 
     _slots.pop_back();
-    _slot_indexes[idx] = slot_index::npos;
+    _slot_indexes[idx] = slot_index::npos();
 }
 
 template<typename Database>

@@ -3,17 +3,12 @@
 #include <ant/database/entity_index.hpp>
 
 #include <ant.test.shared/database/entity_types.hpp>
+#include <ant.test.shared/database/shim_database.hpp>
 
 namespace ant { namespace {
 
-struct shim_database
-{
-    using entity_type = test::entity32;
-    using allocator_type = std::allocator<entity_type>;
-};
-
-using entity_index = basic_entity_index<shim_database>;
-using traits = entity_traits<shim_database::entity_type>;
+using entity_index = basic_entity_index<test::shim_naked_database>;
+using traits = entity_traits<test::shim_naked_database::entity_type>;
 
 TEST_CASE("entity_index: initially empty")
 {
@@ -33,8 +28,8 @@ TEST_CASE("entity_index: create -> contains and size")
     CHECK_EQ(traits::to_version(e), 0);
 
     const auto loc = index.locate(e); // default location
-    CHECK(loc.table == table_index::npos);
-    CHECK(loc.row == table_row_index::npos);
+    CHECK(loc.table == table_index::npos());
+    CHECK(loc.row == row_index::npos());
 }
 
 TEST_CASE("entity_index: relocate and locate roundtrip")
@@ -42,10 +37,10 @@ TEST_CASE("entity_index: relocate and locate roundtrip")
     entity_index index;
     const auto e = index.create();
 
-    index.relocate(e, static_cast<table_index>(1), static_cast<table_row_index>(7));
+    index.relocate(e, static_cast<table_index>(1), static_cast<row_index>(7));
     const auto loc = index.locate(e);
     CHECK(loc.table == static_cast<table_index>(1));
-    CHECK(loc.row == static_cast<table_row_index>(7));
+    CHECK(loc.row == static_cast<row_index>(7));
 }
 
 TEST_CASE("entity_index: destroy invalidates; recreate bumps version and reuses id")

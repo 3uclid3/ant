@@ -31,7 +31,7 @@ public:
     [[nodiscard]] auto create() -> entity_type;
     auto destroy(entity_type entity) noexcept -> void;
 
-    auto relocate(entity_type entity, table_index table, table_row_index row) noexcept -> void;
+    auto relocate(entity_type entity, table_index table, row_index row) noexcept -> void;
     [[nodiscard]] auto locate(entity_type entity) const noexcept -> table_location;
     [[nodiscard]] auto version(entity_type entity) const noexcept -> version_type;
 
@@ -104,7 +104,7 @@ auto basic_entity_index<Database>::destroy(entity_type entity) noexcept -> void
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::relocate(entity_type entity, table_index table, table_row_index row) noexcept -> void
+auto basic_entity_index<Database>::relocate(entity_type entity, table_index table, row_index row) noexcept -> void
 {
     ANT_ASSERT(contains(entity), "entity does not exist");
 

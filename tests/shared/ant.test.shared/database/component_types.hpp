@@ -72,6 +72,50 @@ struct with_throw_dtor
     int value{0};
 };
 
+// A tracked component used by tests to verify default construction, relocation and destruction paths
+struct tracked
+{
+    static inline int ctor_count = 0;
+    static inline int dtor_count = 0;
+    static inline int move_count = 0;
+
+    static constexpr auto reset() -> void
+    {
+        ctor_count = 0;
+        dtor_count = 0;
+        move_count = 0;
+    }
+
+    constexpr tracked() noexcept
+        : value(7)
+    {
+        ++ctor_count;
+    }
+    constexpr tracked(tracked&& other) noexcept
+        : value(other.value)
+    {
+        other.value = -1;
+        ++move_count;
+    }
+    constexpr tracked(const tracked& other) noexcept
+        : value(other.value)
+    {}
+    constexpr ~tracked() noexcept
+    {
+        ++dtor_count;
+    }
+
+    int value{0};
+};
+
+struct tracked_fixture
+{
+    tracked_fixture()
+    {
+        tracked::reset();
+    }
+};
+
 // validate types
 
 static_assert(std::is_empty_v<empty>);
