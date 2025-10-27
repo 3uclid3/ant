@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     paths-ignore:
+      - ".github/dependabot.yml"
       - ".github/workflows/build-images.yml"
       - ".github/workflows/coverage.yml"
       - ".github/workflows/ci-windows.yml"
