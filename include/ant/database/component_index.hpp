@@ -1,13 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <limits>
+
+#include <ant/core/index.hpp>
 
 namespace ant {
 
-enum class component_index : std::uint32_t
-{
-    npos = std::numeric_limits<std::uint32_t>::max()
-};
+using component_index = basic_index<struct component_index_tag, std::uint32_t>;
 
 } // namespace ant
