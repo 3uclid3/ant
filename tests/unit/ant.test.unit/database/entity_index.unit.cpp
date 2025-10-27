@@ -3,17 +3,12 @@
 #include <ant/database/entity_index.hpp>
 
 #include <ant.test.shared/database/entity_types.hpp>
+#include <ant.test.shared/database/shim_database.hpp>
 
 namespace ant { namespace {
 
-struct shim_database
-{
-    using entity_type = test::entity32;
-    using allocator_type = std::allocator<entity_type>;
-};
-
-using entity_index = basic_entity_index<shim_database>;
-using traits = entity_traits<shim_database::entity_type>;
+using entity_index = basic_entity_index<test::shim_naked_database>;
+using traits = entity_traits<test::shim_naked_database::entity_type>;
 
 TEST_CASE("entity_index: initially empty")
 {

@@ -4,16 +4,12 @@
 #include <ant/database/schema.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
+#include <ant.test.shared/database/shim_database.hpp>
 
 namespace ant { namespace {
 
-struct shim_database
-{
-    using allocator_type = std::allocator<std::byte>;
-};
-
-using schema_builder = basic_schema_builder<shim_database>;
-using schema = basic_schema<shim_database>;
+using schema_builder = basic_schema_builder<test::shim_naked_database>;
+using schema = basic_schema<test::shim_naked_database>;
 
 TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly", T, bool, int, float, double, test::empty, test::trivial, test::non_trivial_copy, test::non_trivial)
 {

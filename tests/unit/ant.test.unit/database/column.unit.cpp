@@ -3,16 +3,12 @@
 #include <ant/database/column.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
+#include <ant.test.shared/database/shim_database.hpp>
 #include <ant/database/schema.hpp>
 
 namespace ant { namespace {
 
-struct shim_database
-{
-    using allocator_type = std::allocator<std::byte>;
-};
-
-using column = basic_column<shim_database>;
+using column = basic_column<test::shim_naked_database>;
 
 static constexpr auto meta = detail::component_meta::make<test::trivial>("trivial");
 
