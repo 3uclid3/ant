@@ -23,7 +23,7 @@ public:
     using component_meta_type = component_metas_type::value_type;
     using component_id_type = component_ids_type::value_type;
 
-    using size_type = std::underlying_type_t<component_index>;
+    using size_type = component_index::value_type;
 
     using const_iterator = typename component_metas_type::const_iterator;
     using const_reverse_iterator = typename component_metas_type::const_reverse_iterator;
@@ -124,7 +124,7 @@ constexpr auto basic_schema<Database>::index_of() const noexcept -> component_in
 
     auto it = std::ranges::lower_bound(_ids, id);
 
-    return it != _ids.end() && *it == id ? static_cast<component_index>(std::distance(_ids.begin(), it)) : component_index::npos;
+    return it != _ids.end() && *it == id ? component_index(static_cast<component_index::value_type>(std::distance(_ids.begin(), it))) : component_index::npos;
 }
 
 template<typename Database>

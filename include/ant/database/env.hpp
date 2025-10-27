@@ -8,6 +8,7 @@
 
 #include <ant/core/allocator.hpp>
 #include <ant/core/assert.hpp>
+#include <ant/core/index.hpp>
 #include <ant/database/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/schema.hpp>
@@ -59,7 +60,7 @@ private:
         deleter_fn deleter{nullptr};
     };
 
-    using slot_index = component_index;
+    using slot_index = basic_index<struct slot_index_tag, component_index::value_type>;
 
     using slots_type = std::vector<slot, rebind_allocator_t<slot, allocator_type>>;
     using slot_indexes_type = std::vector<slot_index, rebind_allocator_t<slot_index, allocator_type>>;
@@ -122,7 +123,7 @@ template<typename T>
 auto basic_env<Database>::get() const noexcept -> const T*
 {
     ANT_ASSERT(index_of<T>() != component_index::npos, "component type is not registered in schema");
-    const auto index = std::to_underlying(slot_index_of<T>());
+    const auto index = slot_index_of<T>();
     return index < _slots.size() ? static_cast<const T*>(_slots[index].ptr) : nullptr;
 }
 
@@ -131,7 +132,7 @@ template<typename T>
 auto basic_env<Database>::get() noexcept -> T*
 {
     ANT_ASSERT(index_of<T>() != component_index::npos, "component type is not registered in schema");
-    const auto index = std::to_underlying(slot_index_of<T>());
+    const auto index = slot_index_of<T>();
     return index < _slots.size() ? (static_cast<T*>(_slots[index].ptr)) : nullptr;
 }
 
@@ -139,10 +140,8 @@ template<typename Database>
 template<typename T, typename... Args>
 auto basic_env<Database>::set(Args&&... args) -> T&
 {
-    const auto raw_idx = index_of<T>();
-    const auto idx = std::to_underlying(raw_idx);
-
-    ANT_ASSERT(raw_idx != component_index::npos, "component type is not registered in schema");
+    const auto idx = index_of<T>();
+    ANT_ASSERT(idx != component_index::npos, "component type is not registered in schema");
 
     if (_slot_indexes[idx] == slot_index::npos)
     {
@@ -155,7 +154,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         std::construct_at(ptr, std::forward<Args>(args)...);
 
         auto& new_slot = _slots.emplace_back();
-        new_slot.index = raw_idx;
+        new_slot.index = idx;
         new_slot.ptr = ptr;
         new_slot.deleter = [](allocator_type& raw_allocator, void* ptr) noexcept {
             std::destroy_at(static_cast<T*>(ptr));
@@ -164,31 +163,28 @@ auto basic_env<Database>::set(Args&&... args) -> T&
             allocator.deallocate(static_cast<T*>(ptr), 1);
         };
 
-        _slot_indexes[idx] = static_cast<slot_index>(_slots.size() - 1);
+        _slot_indexes[idx] = slot_index(static_cast<slot_index::value_type>(_slots.size() - 1));
     }
     else
     {
-        auto& slot = _slots[std::to_underlying(_slot_indexes[idx])];
+        auto& slot = _slots[_slot_indexes[idx]];
         auto* p = static_cast<T*>(slot.ptr);
         std::destroy_at(p);
         std::construct_at(p, std::forward<Args>(args)...);
     }
 
-    return *std::launder(static_cast<T*>(_slots[std::to_underlying(_slot_indexes[idx])].ptr));
+    return *std::launder(static_cast<T*>(_slots[_slot_indexes[idx]].ptr));
 }
 
 template<typename Database>
 template<typename T>
 auto basic_env<Database>::unset() -> void
 {
-    const auto raw_idx = index_of<T>();
-    const auto idx = std::to_underlying(raw_idx);
+    const auto idx = index_of<T>();
+    ANT_ASSERT(idx != component_index::npos, "component type is not registered in schema");
 
-    ANT_ASSERT(raw_idx != component_index::npos, "component type is not registered in schema");
-
-    const auto raw_slot_idx = _slot_indexes[idx];
-    const auto slot_idx = std::to_underlying(raw_slot_idx);
-    if (raw_slot_idx == slot_index::npos)
+    const auto slot_idx = _slot_indexes[idx];
+    if (slot_idx == slot_index::npos)
     {
         return;
     }
@@ -203,7 +199,7 @@ auto basic_env<Database>::unset() -> void
         auto& last_slot = _slots.back();
 
         slot = std::move(last_slot);
-        _slot_indexes[std::to_underlying(slot.index)] = raw_slot_idx;
+        _slot_indexes[slot.index] = slot_idx;
     }
 
     _slots.pop_back();
@@ -227,7 +223,7 @@ template<typename Database>
 template<typename T>
 auto basic_env<Database>::slot_index_of() const noexcept -> slot_index
 {
-    const auto index = std::to_underlying(index_of<T>());
+    const auto index = index_of<T>();
     ANT_ASSERT(index < _slot_indexes.size(), "component index out of bounds for slot indexes");
     return _slot_indexes[index];
 }
