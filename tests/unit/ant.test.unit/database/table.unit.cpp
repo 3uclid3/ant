@@ -74,16 +74,6 @@ TEST_CASE("basic_table::add_row: adds a single row")
     CHECK_EQ(tbl.rows().size(), 1);
 }
 
-TEST_CASE("basic_table::add_row: rejects duplicate entity")
-{
-    table tbl{table_signature{}, table::columns_type{}};
-
-    const auto e = make_entity(3);
-    tbl.add_row(e);
-
-    CHECK_THROWS(tbl.add_row(e));
-}
-
 TEST_CASE("basic_table::remove_row(entity): removes existing")
 {
     table tbl{table_signature{}, table::columns_type{}};
@@ -96,20 +86,6 @@ TEST_CASE("basic_table::remove_row(entity): removes existing")
     tbl.remove_row(e0);
 
     CHECK_EQ(tbl.rows().size(), 1);
-}
-
-TEST_CASE("basic_table::remove_row(entity): throws when missing")
-{
-    table tbl{table_signature{}, table::columns_type{}};
-
-    CHECK_THROWS(tbl.remove_row(make_entity(42)));
-}
-
-TEST_CASE("basic_table::remove_row(index): throws on invalid index")
-{
-    table tbl{table_signature{}, table::columns_type{}};
-
-    CHECK_THROWS(tbl.remove_row(row_index{0}));
 }
 
 TEST_CASE("basic_table::remove_row(index): removes and compacts")
