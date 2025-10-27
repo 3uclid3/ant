@@ -29,7 +29,7 @@ TEST_CASE("entity_index: create -> contains and size")
 
     const auto loc = index.locate(e); // default location
     CHECK(loc.table == table_index::npos());
-    CHECK(loc.row == table_row_index::npos());
+    CHECK(loc.row == row_index::npos());
 }
 
 TEST_CASE("entity_index: relocate and locate roundtrip")
@@ -37,10 +37,10 @@ TEST_CASE("entity_index: relocate and locate roundtrip")
     entity_index index;
     const auto e = index.create();
 
-    index.relocate(e, static_cast<table_index>(1), static_cast<table_row_index>(7));
+    index.relocate(e, static_cast<table_index>(1), static_cast<row_index>(7));
     const auto loc = index.locate(e);
     CHECK(loc.table == static_cast<table_index>(1));
-    CHECK(loc.row == static_cast<table_row_index>(7));
+    CHECK(loc.row == static_cast<row_index>(7));
 }
 
 TEST_CASE("entity_index: destroy invalidates; recreate bumps version and reuses id")

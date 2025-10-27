@@ -15,6 +15,12 @@ TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly",
 {
     static detail::component_version version = 0;
 
+    struct dummy_type
+    {
+        dummy_type() { value = -1; }
+        int value;
+    };
+
     schema_builder builder;
     builder.define<T>(type_name<T>::value(), version);
 
@@ -28,7 +34,7 @@ TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly",
     CHECK_EQ(meta.size, sizeof(T));
     CHECK_EQ(meta.alignment, alignof(T));
     CHECK_EQ(meta.vtable, detail::component_vtable::of<T>());
-    CHECK_NE(meta.vtable, detail::component_vtable::of<schema>());
+    CHECK_NE(meta.vtable, detail::component_vtable::of<dummy_type>());
 
     ++version;
 }

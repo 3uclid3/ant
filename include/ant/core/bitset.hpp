@@ -15,7 +15,7 @@ public:
     using block_type = T;
     using allocator_type = rebind_allocator_t<block_type, Allocator>;
 
-    constexpr basic_bitset() = default;
+    constexpr explicit basic_bitset(const allocator_type& allocator = {});
     constexpr explicit basic_bitset(std::size_t bits_size, const allocator_type& allocator = {});
 
     constexpr basic_bitset(const basic_bitset&) = default;
@@ -45,6 +45,12 @@ private:
 
     std::vector<block_type, allocator_type> _bits;
 };
+
+template<std::integral T, typename Allocator>
+constexpr basic_bitset<T, Allocator>::basic_bitset(const allocator_type& allocator)
+    : _bits(0, block_type{0}, allocator)
+{
+}
 
 template<std::integral T, typename Allocator>
 constexpr basic_bitset<T, Allocator>::basic_bitset(std::size_t size, const allocator_type& allocator)

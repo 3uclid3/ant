@@ -21,12 +21,16 @@ using component_version = std::uint32_t;
 
 struct component_vtable
 {
+    using default_construct_fn = void (*)(void*);
     using relocate_fn = void (*)(void*, void*) noexcept;
     using clone_fn = void (*)(void*, const void*);
     using destroy_fn = void (*)(void*) noexcept;
 
     template<typename T>
     static consteval auto of() noexcept -> component_vtable;
+
+    template<typename T>
+    static constexpr auto invoke_default_construct(void* storage) -> void;
 
     template<typename T>
     static constexpr auto invoke_relocate(void* dst, void* src) noexcept -> void;
@@ -39,6 +43,7 @@ struct component_vtable
 
     constexpr auto operator==(const component_vtable& other) const noexcept -> bool = default;
 
+    default_construct_fn default_construct{nullptr};
     relocate_fn relocate{nullptr};
     clone_fn clone{nullptr};
     destroy_fn destroy{nullptr};
@@ -73,6 +78,11 @@ consteval auto component_vtable::of() noexcept -> component_vtable
 
     component_vtable vtable{};
 
+    if constexpr (!std::is_trivially_default_constructible_v<T>)
+    {
+        vtable.default_construct = &invoke_default_construct<T>;
+    }
+
     if constexpr (!std::is_trivially_copyable_v<T>)
     {
         vtable.clone = &invoke_clone<T>;
@@ -85,6 +95,12 @@ consteval auto component_vtable::of() noexcept -> component_vtable
     }
 
     return vtable;
+}
+
+template<typename T>
+constexpr auto component_vtable::invoke_default_construct(void* storage) -> void
+{
+    std::construct_at(std::launder(reinterpret_cast<T*>(storage)));
 }
 
 template<typename T>

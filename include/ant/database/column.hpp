@@ -10,13 +10,9 @@
 #include <ant/core/assert.hpp>
 #include <ant/database/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
+#include <ant/database/table_index.hpp>
 
 namespace ant {
-
-enum class row_index : std::uint32_t
-{
-    npos = std::numeric_limits<std::uint32_t>::max()
-};
 
 template<typename Database>
 class basic_column
@@ -34,8 +30,9 @@ public:
     basic_column(basic_column&& other) noexcept = default;
     auto operator=(basic_column&& other) noexcept -> basic_column& = default;
 
-    template<typename T, typename... Args>
-    auto emplace_back(Args&&... args) -> row_index;
+    // template<typename T, typename... Args>
+    // auto emplace_back(Args&&... args) -> row_index;
+    auto emplace_back() -> row_index;
     auto swap_and_pop(row_index idx) noexcept -> void;
 
     auto row(row_index idx) const noexcept -> const void*;
@@ -77,13 +74,32 @@ basic_column<Database>::~basic_column()
     {
         for (std::size_t i = 0; i < _size; ++i)
         {
-            const block_loc loc = to_loc(static_cast<row_index>(i));
+            const block_loc loc = to_loc(row_index(static_cast<row_index::value_type>(i)));
 
             _meta->vtable.destroy(_blocks[loc.idx] + loc.off);
         }
     }
 }
+template<typename Database>
+auto basic_column<Database>::emplace_back() -> row_index
+{
+    if (_size >= _blocks.size() * _meta->block_size)
+    {
+        // allocate bytes: elements_per_block * element_size
+        _blocks.emplace_back(_allocator.allocate(_meta->block_size * _meta->size));
+    }
 
+    const block_loc loc = to_loc(row_index(static_cast<row_index::value_type>(_size++)));
+
+    if (_meta->vtable.default_construct)
+    {
+        _meta->vtable.default_construct(_blocks[loc.idx] + loc.off);
+    }
+
+    return row_index(static_cast<row_index::value_type>(_size - 1));
+}
+
+/*
 template<typename Database>
 template<typename T, typename... Args>
 auto basic_column<Database>::emplace_back(Args&&... args) -> row_index
@@ -102,13 +118,14 @@ auto basic_column<Database>::emplace_back(Args&&... args) -> row_index
 
     return static_cast<row_index>(_size - 1);
 }
+*/
 
 template<typename Database>
 auto basic_column<Database>::swap_and_pop(row_index idx) noexcept -> void
 {
     ANT_ASSERT(static_cast<std::size_t>(idx) < _size, "Row index out of bounds");
 
-    const auto last_idx = static_cast<row_index>(_size - 1);
+    const auto last_idx = row_index(static_cast<row_index::value_type>(_size - 1));
 
     if (idx != last_idx)
     {
