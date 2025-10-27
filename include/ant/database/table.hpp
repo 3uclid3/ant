@@ -82,18 +82,17 @@ auto basic_table<Database>::remove_row(entity_type entity) -> void
 template<typename Database>
 auto basic_table<Database>::remove_row(row_index index) -> void
 {
-    auto idx = static_cast<std::size_t>(index);
-    ANT_ASSERT(idx < _rows.size(), "Invalid row index");
+    ANT_ASSERT(index < _rows.size(), "Invalid row index");
 
     for (auto& column : _columns)
     {
         column.swap_and_pop(index);
     }
 
-    const bool is_last = (idx == _rows.size() - 1);
+    const bool is_last = (index == _rows.size() - 1);
     if (!is_last)
     {
-        _rows[idx] = _rows.back();
+        _rows[index] = _rows.back();
     }
 
     _rows.pop_back();
