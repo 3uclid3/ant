@@ -4,6 +4,25 @@ All notable changes to this project will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- New PlantUML class diagrams under `docs/uml/class/` for `core` and `database`.
+- Draft/aspirational database diagram under `docs/uml/class/draft/`.
+- Contribution guide overhaul in `AGENTS.md` (concise, human/AI-friendly); formatting aligned to repository `.clang-format`.
+
+### Changed
+
+- README simplified with a quick start, small layout overview, and a link to `AGENTS.md`.
+- Documented verbose test/benchmark output via `xmake test -v …` in README and `AGENTS.md`.
+- CI workflows now also trigger on documentation changes (`docs/**`).
+- No public API or library behavior changes.
+
+### Removed
+
+- Obsolete UML diagrams removed: `docs/uml/database.pu`, `docs/uml/attach-structural-migration.pu` (superseded by `docs/uml/class/**`).
+
 ## [0.5.0] - 2025-10-27
 
 ### Added
