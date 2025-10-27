@@ -30,8 +30,6 @@ public:
     basic_column(basic_column&& other) noexcept = default;
     auto operator=(basic_column&& other) noexcept -> basic_column& = default;
 
-    // template<typename T, typename... Args>
-    // auto emplace_back(Args&&... args) -> row_index;
     auto emplace_back() -> row_index;
     auto swap_and_pop(row_index idx) noexcept -> void;
 
@@ -79,7 +77,13 @@ basic_column<Database>::~basic_column()
             _meta->vtable.destroy(_blocks[loc.idx] + loc.off);
         }
     }
+
+    for (auto& block_ptr : _blocks)
+    {
+        _allocator.deallocate(block_ptr, _meta->block_size * _meta->size);
+    }
 }
+
 template<typename Database>
 auto basic_column<Database>::emplace_back() -> row_index
 {
@@ -98,27 +102,6 @@ auto basic_column<Database>::emplace_back() -> row_index
 
     return row_index(static_cast<row_index::value_type>(_size - 1));
 }
-
-/*
-template<typename Database>
-template<typename T, typename... Args>
-auto basic_column<Database>::emplace_back(Args&&... args) -> row_index
-{
-    if (_size >= _blocks.size() * _meta->block_size)
-    {
-        // allocate bytes: elements_per_block * element_size
-        _blocks.emplace_back(_allocator.allocate(_meta->block_size * _meta->size));
-    }
-
-    const block_loc loc = to_loc(static_cast<row_index>(_size++));
-
-    auto* ptr = std::launder(reinterpret_cast<T*>(_blocks[loc.idx] + loc.off));
-
-    std::construct_at(ptr, std::forward<Args>(args)...);
-
-    return static_cast<row_index>(_size - 1);
-}
-*/
 
 template<typename Database>
 auto basic_column<Database>::swap_and_pop(row_index idx) noexcept -> void
