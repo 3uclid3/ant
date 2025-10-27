@@ -18,12 +18,26 @@ public:
     constexpr basic_index() noexcept = default;
     constexpr basic_index(const basic_index&) noexcept = default;
     constexpr basic_index(basic_index&&) noexcept = default;
-    constexpr explicit basic_index(value_type value) noexcept;
+
+    template<std::integral U = T>
+    requires(sizeof(U) <= sizeof(T))
+    constexpr explicit basic_index(U value) noexcept;
+
+    template<typename Tag1, std::integral T1, T1 Npos1>
+    requires(!std::same_as<Tag1, Tag> || !std::same_as<T1, T> || Npos1 != Npos)
+    constexpr basic_index(const basic_index<Tag1, T1, Npos1>& other) = delete;
+
+    template<typename Tag1, std::integral T1, T1 Npos1>
+    requires(!std::same_as<Tag1, Tag> || !std::same_as<T1, T> || Npos1 != Npos)
+    constexpr basic_index(basic_index<Tag1, T1, Npos1>&& other) = delete;
+
+    template<typename Tag1, std::integral T1, T1 Npos1>
+    requires(!std::same_as<Tag1, Tag> || !std::same_as<T1, T> || Npos1 != Npos)
+    constexpr auto operator<=>(const basic_index<Tag1, T1, Npos1>& other) const -> std::strong_ordering = delete;
 
     constexpr auto operator=(const basic_index&) noexcept -> basic_index& = default;
     constexpr auto operator=(basic_index&&) noexcept -> basic_index& = default;
 
-    constexpr auto operator==(const basic_index& other) const noexcept -> bool = default;
     constexpr auto operator<=>(const basic_index& other) const noexcept -> std::strong_ordering = default;
 
     constexpr auto operator+=(value_type offset) noexcept -> basic_index&;
@@ -46,8 +60,10 @@ template<typename Tag, std::integral T, T Npos>
 constexpr basic_index<Tag, T, Npos> basic_index<Tag, T, Npos>::npos{Npos};
 
 template<typename Tag, std::integral T, T Npos>
-constexpr basic_index<Tag, T, Npos>::basic_index(value_type value) noexcept
-    : _value{value}
+template<std::integral U>
+requires(sizeof(U) <= sizeof(T))
+constexpr basic_index<Tag, T, Npos>::basic_index(U value) noexcept
+    : _value{static_cast<T>(value)}
 {
 }
 
