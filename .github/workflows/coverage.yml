@@ -8,6 +8,7 @@ on:
       - ".github/workflows/ci-linux.yml"
       - ".github/workflows/ci-windows.yml"
       - ".gitignore"
+      - "docs/**"
       - "AGENTS.md"
       - "CHANGELOG.md"
       - "Dockerfile"

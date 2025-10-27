@@ -1,0 +1,218 @@
+@startuml "ant - database"
+skinparam classAttributeIconSize 0
+set namespaceSeparator ::
+
+namespace ant {
+
+	' Aliases and simple types
+	class component_index <<alias>>
+	class table_index <<alias>>
+	class row_index <<alias>>
+
+	class table_location {
+		+table: table_index
+		+row: row_index
+		+{static} npos(): table_location
+	}
+
+	' Schema and builder
+	class "basic_schema<Database>" as basic_schema <<template>> {
+		+{static} id_of<T>(): component_id_type
+		+contains<T>(): bool
+		+index_of<T>(): component_index
+		+meta_of<T>(): const component_meta_type&
+		+meta_of(index: component_index): const component_meta_type&
+		+empty(): bool
+		+size(): size_type
+	}
+
+	class "basic_schema_builder<Database>" as basic_schema_builder <<template>> {
+		+define<T>(name: string_view, version: component_version_type): basic_schema_builder&
+		+build(): basic_schema<Database>
+	}
+
+	' Environment
+	class "basic_env<Database>" as basic_env <<template>> {
+		+basic_env(schema: basic_schema<Database>, allocator: allocator_type)
+		+has<T>(): bool
+		+get<T>(): const T*
+		+get<T>(): T*
+		+set<T, Args...>(args): T&
+		+unset<T>(): void
+		+empty(): bool
+	}
+
+	' Entity index
+	class "basic_entity_index<Database>" as basic_entity_index <<template>> {
+		+basic_entity_index(allocator: allocator_type)
+		+contains(entity: entity_type): bool
+		+create(): entity_type
+		+destroy(entity: entity_type): void
+		+relocate(entity: entity_type, table: table_index, row: row_index): void
+		+locate(entity: entity_type): table_location
+		+version(entity: entity_type): version_type
+		+empty(): bool
+		+size(): size_t
+	}
+
+	' Table signature
+	class "basic_table_signature<Database>" as basic_table_signature <<template>> {
+		+basic_table_signature(allocator: allocator_type)
+		+has(index: component_index): bool
+		+add(index: component_index): void
+		+remove(index: component_index): void
+		+empty(): bool
+	}
+
+	' Column
+	class "basic_column<Database>" as basic_column <<template>> {
+		+basic_column(meta: component_meta_type, allocator: allocator_type)
+		+~basic_column()
+		+emplace_back(): row_index
+		+swap_and_pop(idx: row_index): void
+		+row(idx: row_index): const void*
+		+row(idx: row_index): void*
+		+empty(): bool
+		+size(): size_t
+	}
+
+	' Table
+	class "basic_table<Database>" as basic_table <<template>> {
+		+basic_table(signature: basic_table_signature<Database>, columns: columns_type, allocator: allocator_type)
+		+add_row(entity: entity_type): row_index
+		+remove_row(entity: entity_type): void
+		+remove_row(index: row_index): void
+		+signature(): const basic_table_signature<Database>&
+		+columns(): span<const column_type>
+		+rows(): span<const entity_type>
+	}
+
+	' Relationships
+	basic_schema_builder ..> basic_schema : build()
+	basic_env ..> basic_schema : uses
+	basic_entity_index ..> table_location
+	basic_entity_index ..> table_index
+	basic_entity_index ..> row_index
+	basic_table ..> basic_table_signature
+	basic_table *-- basic_column : columns
+	basic_table ..> row_index
+
+	'============================================================
+	' Aspirational additions (draft-only, may not exist in code)
+	'============================================================
+
+	class "catalog" as Catalog {
+		+TableId get_or_create(basic_table_signature<Database>)
+		+const basic_table<Database>& get(TableId) const
+		--
+		-unordered_map<basic_table_signature<Database>, TableId> sig_to_id
+		-vector<basic_table<Database>*> id_to_ptr
+	}
+
+	class "clock" as Clock {
+		+u32 world_tick
+		+u32 next_tick()
+	}
+
+	' Mutation pipeline (aspirational)
+	class "transaction_log" as TxLog {
+		+append_insert(components...)
+		+append_erase(entity)
+		+append_attach(entity, components...)
+		+append_detach(entity, types...)
+		+append_replace(entity, components...)
+		--
+		-vector<Command> commands
+	}
+
+	class "session" as Session {
+		+insert(entity& out, components...)
+		+erase(entity)
+		+attach<T...>(entity, inits...)
+		+detach<T...>(entity)
+		+replace<T...>(entity, values...)
+		--
+		-TxLog* log
+		-database* db
+	}
+
+	class "alter_plan_cache" as AlterPlans {
+		+Plan plan(Signature from, Signature to)
+		--
+		-unordered_map<pair<Signature,Signature>, Plan> cache
+	}
+
+	class "committer" as Committer {
+		+apply(database&, TxLog&)
+	}
+
+	class "select<...>" as Select {
+		+shape() : QueryShape
+		--
+		-mask required_read
+		-mask required_write
+		-mask optional_read
+		-mask without
+	}
+
+	class "select_plan" as SelectPlan {
+		+tables_with_all() : vector<TableId>
+		+tables_with_missing_optionals() : vector<TableId>
+		+make_cursor() : Cursor
+		--
+		-vector<TableId> bucket_with
+		-vector<TableId> bucket_without
+		-cached column ptrs
+	}
+
+	class "cursor" as Cursor {
+		+bool next_chunk()
+		+tuple<spans...> chunk()
+	}
+
+	class "database" as DB {
+		+basic_schema& get_schema()
+		+Session begin_session()
+		+SelectPlan prepare(const Select&)
+		+commit(Session&)
+		--
+		-basic_schema schema
+		-Catalog catalog
+		-basic_entity_index entities
+		-basic_env env
+		-Clock clock
+		-AlterPlans alter_plans
+	}
+
+	' Relationships (aspirational)
+	DB --> basic_schema : owns
+	DB --> Catalog : owns
+	DB --> basic_entity_index : owns
+	DB --> basic_env : owns
+	DB --> Clock : owns
+	DB --> AlterPlans : owns
+
+	Catalog --> basic_table : manages
+	basic_table --> basic_column : owns *
+	basic_table --> basic_table_signature : has
+
+	basic_entity_index --> basic_table : locates rows in
+	basic_schema --> ComponentMeta : provides
+	Signature --> ComponentId : composed-of
+
+	Session --> TxLog : writes to
+	Committer --> DB : mutates tables/index
+	Committer --> TxLog : consumes
+	Committer --> AlterPlans : uses for migrations
+	SelectPlan --> Catalog : resolves tables
+	Cursor --> basic_table : iterates chunks
+
+}
+
+note as N1
+Aliases: component_index, table_index, row_index refer to ant::basic_index specializations.
+end note
+
+N1 .. ant
+
+@enduml

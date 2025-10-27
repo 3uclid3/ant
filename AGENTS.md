@@ -1,53 +1,82 @@
-# Repository Guidelines
+# Contribution Guide (for humans and AI)
 
-## Project Structure & Module Organization
+This page keeps the essentials short and easy to scan. If you follow these bullets, you’re aligned.
 
-- `include/`: Header-only ECS implementation exposed to consumers.
-- `tests/`: Split into `unit/`, `compile/`, `benchmark/`, and `shared/` helpers; each folder has its own `xmake.lua`.
-- `build/`: Generated artifacts, including optional JUnit XML when enabled.
-- `xmake.lua`: Root build configuration; references submodules under `tests/`.
+## Project layout
 
-## Build, Test, and Development Commands
+- `include/` — Header-only ECS library (public API).
+- `tests/` — `unit/`, `compile/`, `benchmark/`, `shared/` (each has its own `xmake.lua`).
+- `build/` — Artifacts and reports. `build/<platform>/x64/{debug,release,coverage}/`. JUnit XML (when enabled) is emitted under `build/`.
+- `docs/` — Documentation. UML diagrams live in `docs/uml/` (PlantUML `.pu`).
+- `xmake.lua` — Root build config, includes test submodules.
+- `Dockerfile` — Dev container with LLVM/xmake.
+- `codecov.yml` — Coverage config.
+- `README.md`, `LICENSE` — Overview and licensing.
+- `CHANGELOG.md` — Human-maintained change log.
 
-- `xmake f -m debug`: Configure the project (debug by default; pass `-m release` for optimized builds).
-- `xmake build`: Build all configured targets, including headers and tests.
-- `xmake run ant.test.unit`: Execute doctest-based unit tests; pass `--junit_report=y` during configure to emit XML into `build/`.
-- `xmake build ant.some_feature.test.compile.pass`: Validate compile-time expectations; `.fail` variants should fail to build.
-- `xmake f --benchmarks=y && xmake run ant.my_feature.test.bench`: Enable and run optional Google Benchmark targets.
+## Build and test (quick start)
 
-## Coding Style & Naming Conventions
+- Configure: `xmake f -m <debug|release|coverage> [--junit_report=y|n] [--benchmarks=y|n]`
+- Build all configured targets: `xmake build`
+- Run unit tests: `xmake test */unit`
+- Run compile tests: `xmake test */compile` (the only correct way)
+- Run benchmarks: `xmake test */bench` (requires `--benchmarks=y`)
+- Run all tests: `xmake test`
+- Show test/benchmark output (stdout/stderr): `xmake test -v */unit` or `xmake test -v */bench`
 
-- C++23 with Clang/LLVM toolchain; warnings are errors (`-Wall -Wextra` via xmake).
-- Four-space indentation; avoid tabs.
-- Use `snake_case` for all identifiers (files, directories, namespaces, types, functions, variables); reserve `UPPER_SNAKE_CASE` for macros.
-- Always use trailing return types for free functions, member functions, and lambdas.
-- Separate declarations (headers) from definitions (sources) for every class and function, even when inline definitions seem shorter.
-- Document rationale, not implementation; keep public headers self-explanatory.
+## Code style
 
-## Testing Guidelines
+- C++23, Clang/LLVM; warnings are errors (`-Wall -Wextra`).
+- Formatting: follow the repository’s `.clang-format` (run clang-format before committing).
+- Naming: `snake_case` for everything; `UPPER_SNAKE_CASE` for macros; template parameters use `PascalCase` (e.g., `Value`, `Index`).
+- Always use trailing return types for functions and lambdas.
+- Prefer header declarations with separate source definitions.
+- Document intent/rationale; keep public headers self-explanatory.
 
-- Unit tests rely on doctest; add new suites under `tests/unit`.
-- Compile tests live in `tests/compile/` and should be isolated per feature.
-- Benchmarks belong in `tests/benchmark/` and require the `benchmarks` option enabled.
-- Run `xmake test` before pushing; capture manual notes if automation cannot cover a change.
+## Tests
 
-## Commit & Pull Request Guidelines
+- Unit tests use doctest; add suites under `tests/unit`.
+- Compile tests live in `tests/compile/`, isolated per feature.
+- Benchmarks in `tests/benchmark/` (enable with `--benchmarks=y`).
+- Run tests before pushing; note any gaps automation can’t cover.
+- Show test/benchmark output (stdout/stderr): use `xmake test -v ...`.
 
-- Follow Conventional Commits (`feat:`, `fix:`, `build:`, etc.); keep commits focused.
-- All changes to `main` require a pull request; do not push directly.
-- Include verification steps and tool usage notes in every PR description.
-- AI-assisted contributions must be prepared via the Codex CLI and reviewed by a human maintainer before merge.
+## Versioning and changelog
 
-## Branch Naming
+- Keep `CHANGELOG.md` using Keep a Changelog with an `Unreleased` section; follow Conventional Commits.
+- For any user-visible change, add a concise entry under `Unreleased` (group by Added/Changed/Fixed/Removed/etc.).
+- Release checklist:
+  - Bump version in `xmake.lua`.
+  - Move `Unreleased` entries to a new version section with date (YYYY-MM-DD).
+  - Create a matching git tag.
+  - Ensure CI and coverage pass; publish artifacts/reports as needed.
 
-- Format: `type/short-description`. `type` must be a Conventional Commits type: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`. Examples: `feat/new-login`, `fix/header-styling`.
-- Lowercase and hyphen-separated: use lowercase and hyphens for words (e.g., `feat/new-login`).
-- Alphanumeric characters: only letters, numbers, and hyphens. Avoid spaces, punctuation, and underscores.
-- No continuous hyphens: avoid sequences like `feature--new-login`.
-- No trailing hyphens: do not end names with a hyphen (e.g., `feature-new-login-`).
-- Descriptive: keep the description concise and reflective of the change.
+## Commits and pull requests
 
-## Agent-Specific Notes
+- Use Conventional Commits (e.g., `feat:`, `fix:`, `docs:`, `test:`, etc.). Add `!` or a `BREAKING CHANGE:` footer for breaking APIs.
+- All changes to `main` go through a PR (no direct pushes).
+- Update `CHANGELOG.md` and UML diagrams when public APIs change—or state explicitly that no diagram update is needed.
+- Write clear PR descriptions with purpose and scope.
+- AI-generated changes must be reviewed by a human before merge. Record any generators/formatters/analysis tools used.
 
-- Operate inside the provided devcontainer for consistent LLVM/xmake tooling.
-- Record any generators, formatters, or analysis tools invoked while preparing a change.
+## Branch naming
+
+- Format: `type[optional-scope]/short-description`
+- Allowed types: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`
+- Use lowercase and hyphens; alphanumeric and `-` only.
+- Avoid repeated or trailing hyphens (e.g., no `new--thing`, no `name-`).
+- Keep descriptions short and specific. Examples: `feat/new-login`, `fix/header-styling`.
+
+## UML class diagrams
+
+- Location: `docs/uml/class/**`
+- Scope: public API only (classes and public members). Omit private/protected unless essential.
+- Drafts/proposals: use `docs/uml/class/draft/` and add a `README.md` describing intent.
+- Ignore internals: anything under `detail/` or in a `detail` namespace unless publicly aliased.
+- Format: PlantUML (`.pu`). Commit sources only.
+- Update diagrams in the same PR when public APIs change, or state that no update is needed.
+
+## Tooling and environment
+
+- Prefer the provided dev container (`Dockerfile`) for consistent LLVM/xmake tooling.
+- Record any generators, formatters, or analysis tools invoked while preparing changes.

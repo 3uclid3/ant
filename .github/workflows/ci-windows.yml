@@ -8,6 +8,7 @@ on:
       - ".github/workflows/coverage.yml"
       - ".github/workflows/ci-linux.yml"
       - ".gitignore"
+      - "docs/**"
       - "AGENTS.md"
       - "CHANGELOG.md"
       - "Dockerfile"
