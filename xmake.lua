@@ -14,7 +14,7 @@ elseif is_plat("linux") then
 end
 
 add_rules("mode.debug", "mode.release", "mode.coverage")
-add_rules("plugin.compile_commands.autoupdate", { outputdir = "$(builddir)" })
+add_rules("plugin.compile_commands.autoupdate", { outputdir = "build" })
 
 option("junit_report")
     set_default(false)
