@@ -3,7 +3,10 @@
 .vs/*
 .vscode/*
 
-# clandg
+# Codacy CLI
+.codacy
+
+# clangd
 .cache/*
 
 # xmake
