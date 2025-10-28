@@ -27,7 +27,7 @@ This file provides concise guidance for GitHub Copilot usage and expectations wh
 
 ## Pull Request Reviews
 - Ensure version bump consistency:
-  - If a PR includes features or bug fixes (`feat:` or `fix:` commits), check that `xmake.lua` have updated version numbers.
+  - If a PR includes features or bug fixes (`feat:` or `fix:` commits), check that `xmake.lua` has updated version numbers.
   - If not, request an update comment like:  
     “Version number not updated. Please adjust set_version() and version constants before merge.”
 
