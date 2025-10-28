@@ -76,7 +76,7 @@ jobs:
 
       # Configure build
       - name: Configure
-        run: xmake f -m ${{ matrix.build_type }} -y
+        run: xmake f -m ${{ matrix.build_type }} --toolchain=clang-cl -y
 
       # Save dependencies
       - name: Save cached xmake dependencies

@@ -74,7 +74,7 @@ jobs:
 
       # Configure build
       - name: Configure
-        run: xmake f -m ${{ matrix.build_type }} --junit_report=y -y
+        run: xmake f -m ${{ matrix.build_type }} --toolchain=llvm --junit_report=y -y
 
       # Save dependencies
       - name: Save cached xmake dependencies
