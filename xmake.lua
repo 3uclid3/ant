@@ -5,14 +5,6 @@ set_license("MIT")
 set_languages("cxx23")
 set_warnings("allextra", "error")
 
-set_toolchains("llvm")
-
-if is_plat("windows") then
-    set_runtimes("MT")
-elseif is_plat("linux") then 
-    set_runtimes("c++_static")
-end
-
 add_rules("mode.debug", "mode.release", "mode.coverage")
 add_rules("plugin.compile_commands.autoupdate", { outputdir = "build" })
 
