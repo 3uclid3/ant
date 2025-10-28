@@ -41,7 +41,7 @@ public:
     static auto set_handler(handler_type handler) noexcept -> void;
     static auto reset_handler() noexcept -> void;
 
-    [[noreturn]] static auto fail(std::string_view expr, std::string_view msg, std::source_location) -> void;
+    [[noreturn]] static auto fail(std::string_view expr, std::string_view msg, std::source_location location) -> void;
 
 private:
     static auto default_handler(std::string_view expr, std::string_view msg, std::source_location location) -> void;
@@ -51,7 +51,7 @@ private:
 
 ANT_COVERAGE_FUNCTION_DISABLED inline auto assertion::set_handler(handler_type handler) noexcept -> void
 {
-    _handler = handler ? handler : default_handler;
+    _handler = handler != nullptr ? handler : default_handler;
 }
 
 ANT_COVERAGE_FUNCTION_DISABLED inline auto assertion::reset_handler() noexcept -> void
@@ -59,6 +59,7 @@ ANT_COVERAGE_FUNCTION_DISABLED inline auto assertion::reset_handler() noexcept -
     _handler = default_handler;
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 ANT_COVERAGE_FUNCTION_DISABLED inline auto assertion::default_handler(std::string_view expr [[maybe_unused]], std::string_view msg [[maybe_unused]], std::source_location location [[maybe_unused]]) -> void
 {
     std::abort();
