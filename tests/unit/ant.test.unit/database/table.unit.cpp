@@ -62,7 +62,7 @@ TEST_CASE("basic_table::add_row: returns index 0 for first row")
 
     const auto idx = tbl.add_row(make_entity(1));
 
-    CHECK(idx == row_index{0});
+    CHECK_EQ(idx, row_index{});
 }
 
 TEST_CASE("basic_table::add_row: adds a single row")
@@ -97,7 +97,7 @@ TEST_CASE("basic_table::remove_row(index): removes and compacts")
     tbl.add_row(e0);
     tbl.add_row(e1);
 
-    tbl.remove_row(row_index{0});
+    tbl.remove_row(row_index{});
 
     CHECK_EQ(tbl.rows().size(), 1);
 }
@@ -114,7 +114,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::add_row: grows all column
 
     const row_index idx = tbl.add_row(make_entity(100));
 
-    CHECK(idx == row_index{0});
+    CHECK_EQ(idx, row_index{});
     CHECK_EQ(tbl.columns().size(), 2);
 
     for (const auto& col : tbl.columns())
@@ -139,8 +139,8 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(entity): updat
 
     const auto e0 = make_entity(200);
     const auto e1 = make_entity(201);
-    const row_index i0 = tbl.add_row(e0);
-    const row_index i1 = tbl.add_row(e1);
+    const auto i0 = tbl.add_row(e0);
+    const auto i1 = tbl.add_row(e1);
 
     const auto* cptr0 = static_cast<const test::tracked*>(tbl.columns()[0].row(i0));
     const auto* cptr1 = static_cast<const test::tracked*>(tbl.columns()[0].row(i1));
@@ -150,7 +150,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(entity): updat
     tbl.remove_row(e0);
 
     CHECK_EQ(tbl.rows().size(), 1);
-    const auto* moved = static_cast<const test::tracked*>(tbl.columns()[0].row(row_index{0}));
+    const auto* moved = static_cast<const test::tracked*>(tbl.columns()[0].row(row_index{}));
     CHECK_EQ(moved->value, 9);
 }
 

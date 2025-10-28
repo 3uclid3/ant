@@ -10,14 +10,14 @@ namespace ant { namespace {
 using entity_index = basic_entity_index<test::shim_naked_database>;
 using traits = entity_traits<test::shim_naked_database::entity_type>;
 
-TEST_CASE("entity_index: initially empty")
+TEST_CASE("entity_index::ctor: initially empty")
 {
     entity_index index;
     CHECK(index.empty());
     CHECK_EQ(index.size(), 0u);
 }
 
-TEST_CASE("entity_index: create -> contains and size")
+TEST_CASE("entity_index::create: registers handle and updates size")
 {
     entity_index index;
     const auto e = index.create();
@@ -28,22 +28,22 @@ TEST_CASE("entity_index: create -> contains and size")
     CHECK_EQ(traits::to_version(e), 0);
 
     const auto loc = index.locate(e); // default location
-    CHECK(loc.table == table_index::npos());
-    CHECK(loc.row == row_index::npos());
+    CHECK_EQ(loc.table, table_index::npos());
+    CHECK_EQ(loc.row, row_index::npos());
 }
 
-TEST_CASE("entity_index: relocate and locate roundtrip")
+TEST_CASE("entity_index::relocate: locate reflects new position")
 {
     entity_index index;
     const auto e = index.create();
 
     index.relocate(e, static_cast<table_index>(1), static_cast<row_index>(7));
     const auto loc = index.locate(e);
-    CHECK(loc.table == static_cast<table_index>(1));
-    CHECK(loc.row == static_cast<row_index>(7));
+    CHECK_EQ(loc.table, static_cast<table_index>(1));
+    CHECK_EQ(loc.row, static_cast<row_index>(7));
 }
 
-TEST_CASE("entity_index: destroy invalidates; recreate bumps version and reuses id")
+TEST_CASE("entity_index::destroy: invalidates and bumps recycled id version")
 {
     entity_index index;
     const auto e1 = index.create();
@@ -65,7 +65,7 @@ TEST_CASE("entity_index: destroy invalidates; recreate bumps version and reuses 
     CHECK_FALSE(index.contains(e1)); // stale handle remains invalid
 }
 
-TEST_CASE("entity_index: free list is LIFO")
+TEST_CASE("entity_index::destroy: free list is LIFO")
 {
     entity_index index;
     const auto a = index.create();
