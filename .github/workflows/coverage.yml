@@ -112,7 +112,7 @@ jobs:
           fail_ci_if_error: true
           disable_search: true
           plugins: noop
-          file: build/coverage.xml
+          files: build/coverage.xml
 
       - name: Upload coverage to Codacy
         uses: codacy/codacy-coverage-reporter-action@v1.3.0
