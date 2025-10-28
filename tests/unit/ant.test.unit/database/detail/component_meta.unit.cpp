@@ -125,7 +125,7 @@ TEST_CASE("component_vtable::of: non trivial type")
     CHECK_NE(vtable.destroy, nullptr);
 }
 
-TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_relocate")
+TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_relocate: moves into destination buffer")
 {
     source.value = 42;
 
@@ -138,7 +138,7 @@ TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_reloc
     CHECK_EQ(destination_ptr->value, 42);
 }
 
-TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_clone")
+TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_clone: copies value into destination buffer")
 {
     source.value = 42;
 
@@ -151,7 +151,7 @@ TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_clone
     CHECK_EQ(destination_ptr->value, source.value);
 }
 
-TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_destroy")
+TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_destroy: releases destination instance")
 {
     component_vtable::invoke_clone<component_mock>(destination_ptr, &source);
     component_vtable::invoke_destroy<component_mock>(destination_ptr);

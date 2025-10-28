@@ -33,7 +33,7 @@ auto get(column& c, row_index idx) -> test::trivial&
     return *static_cast<test::trivial*>(row_ptr);
 }
 
-TEST_CASE("column: default empty")
+TEST_CASE("column::ctor: default empty")
 {
     column c{meta};
     CHECK(c.empty());
@@ -102,7 +102,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "column::swap_and_pop: uses relocate fo
     c.swap_and_pop(i0);
 
     CHECK_EQ(c.size(), 1);
-    CHECK_EQ(static_cast<test::tracked*>(c.row(row_index{0}))->value, 2);
+    CHECK_EQ(static_cast<test::tracked*>(c.row(row_index{}))->value, 2);
     CHECK(test::tracked::move_count >= 1);
 }
 

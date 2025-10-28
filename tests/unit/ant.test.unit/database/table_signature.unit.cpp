@@ -9,7 +9,7 @@ namespace ant { namespace {
 
 using table_signature = basic_table_signature<test::shim_naked_database>;
 
-TEST_CASE("table_signature")
+TEST_CASE("table_signature::add: updates membership")
 {
     table_signature signature;
 
