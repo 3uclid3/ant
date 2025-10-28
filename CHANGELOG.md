@@ -6,12 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-10-28
+
 ### Added
 
 - New PlantUML class diagrams under `docs/uml/class/` for `core` and `database`.
 - Draft/aspirational database diagram under `docs/uml/class/draft/`.
 - Contribution guide overhaul in `AGENTS.md` (concise, human/AI-friendly); formatting aligned to repository `.clang-format`.
 - Dependabot configuration for GitHub Actions and Docker; PRs labeled `build` and `deps`, with minor/patch updates grouped.
+- Bitset iteration helpers to visit set/unset bits with optional early exit. (#33)
+- Bulk operations to set or clear all logical bits in bitset. (#33)
 
 ### Changed
 
@@ -19,7 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Documented verbose test/benchmark output via `xmake test -v …` in README and `AGENTS.md`.
 - CI workflows now also trigger on documentation changes (`docs/**`).
 - CI: ignore `.github/dependabot.yml` on push; PR checks still run.
-- No public API or library behavior changes.
+- **BREAKING**: Bitset `size()` now returns the exact logical size instead of rounding to block boundaries. (#33)
+- **BREAKING**: Bitset constructors and `resize()` no longer round to block boundaries. (#33)
+- **BREAKING**: Setting a bitset bit beyond the current end now grows the logical size automatically. (#33)
+- Bitset operations (`all`, `none`, `count`) now correctly ignore unused tail bits. (#33)
 
 ### Removed
 
