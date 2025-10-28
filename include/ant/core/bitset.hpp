@@ -122,9 +122,8 @@ constexpr auto basic_bitset<T, Allocator>::all() const noexcept -> bool
             if (block != ~block_type{0})
             {
                 ok = false;
-                return false;
             }
-            return true;
+            return ok;
         },
         [&](const block_type& block, std::size_t rem_bits) {
             const block_type mask = (block_type{1} << rem_bits) - 1;
@@ -323,7 +322,7 @@ constexpr auto basic_bitset<T, Allocator>::for_each_blocks(auto&& self, OnFull&&
 
     for (std::size_t i = 0; i < full_blocks; ++i)
     {
-        if constexpr (std::is_invocable_r_v<bool, OnFull, const block_type&>)
+        if constexpr (std::is_invocable_r_v<bool, OnFull, decltype(self._bits[i])>)
         {
             if (!on_full(self._bits[i]))
             {

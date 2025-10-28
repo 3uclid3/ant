@@ -130,6 +130,28 @@ TEST_CASE_TEMPLATE("basic_bitset::all: ignores unused bits in last block", T, st
     CHECK_EQ(bitset.count(), total);
 }
 
+TEST_CASE_TEMPLATE("basic_bitset::all: detects unset bits in tail block", T, std::uint32_t, std::uint64_t)
+{
+    const std::size_t block = sizeof(T) * 8;
+    basic_bitset<T> bitset{block + 3};
+
+    bitset.set_all();
+    bitset.unset(block + 1);
+
+    CHECK_FALSE(bitset.all());
+}
+
+TEST_CASE_TEMPLATE("basic_bitset::all: detects unset bits in full block", T, std::uint32_t, std::uint64_t)
+{
+    const std::size_t block = sizeof(T) * 8;
+    basic_bitset<T> bitset{block * 2};
+
+    bitset.set_all();
+    bitset.unset(block / 2);
+
+    CHECK_FALSE(bitset.all());
+}
+
 TEST_CASE_TEMPLATE("basic_bitset::resize: keeps logical size (no rounding)", T, std::uint32_t, std::uint64_t)
 {
     basic_bitset<T> bitset;
