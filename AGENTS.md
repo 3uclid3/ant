@@ -36,6 +36,10 @@ This page keeps the essentials short and easy to scan. If you follow these bulle
 ## Tests
 
 - Unit tests use doctest; add suites under `tests/unit`.
+- Naming for unit tests: `Class::Method: Description` (keep it short and imperative).
+  - Examples: `basic_bitset::for_each_set: visits set bits`, `basic_bitset::resize: shrinks`.
+  - Group tests by Method within a file (keep related cases together, e.g., all `resize` cases adjacent).
+- Keep unit test cases narrowly scoped—exercise one observable behavior per test so failures stay precise.
 - Compile tests live in `tests/compile/`, isolated per feature.
 - Benchmarks in `tests/benchmark/` (enable with `--benchmarks=y`).
 - Run tests before pushing; note any gaps automation can’t cover.
