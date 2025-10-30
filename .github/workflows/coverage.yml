@@ -10,7 +10,7 @@ on:
       - ".github/workflows/build-test.yml"
       - ".github/workflows/codacy.yml"
       - ".github/workflows/nightly.yml"
-      - ".github/workflows/sanitizer.yml"
+      - ".github/workflows/sanitizers.yml"
       - ".github/copilot-instructions.yml"
       - ".github/dependabot.yml"
       - ".gitignore"
