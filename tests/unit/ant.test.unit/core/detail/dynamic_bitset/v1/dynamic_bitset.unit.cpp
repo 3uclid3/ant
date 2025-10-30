@@ -188,6 +188,18 @@ TEST_CASE("basic_dynamic_bitset::assign: copy grows to heap when needed")
     CHECK_EQ(target.count(), 2);
 }
 
+TEST_CASE("basic_dynamic_bitset::assign: copy self assignment keeps data")
+{
+    dynamic_bitset bitset{dynamic_bitset::bits_per_block};
+    bitset.set(5);
+
+    const dynamic_bitset* self = &bitset;
+    bitset = *self;
+
+    CHECK(bitset.test(5));
+    CHECK_EQ(bitset.count(), 1);
+}
+
 TEST_CASE("basic_dynamic_bitset::assign: move releases previous heap storage")
 {
     dynamic_bitset source{dynamic_bitset::inplace_capacity - 6};
@@ -326,6 +338,68 @@ TEST_CASE("basic_dynamic_bitset::shift: shifting by size clears bits")
     CHECK(bitset.none());
 }
 
+TEST_CASE("basic_dynamic_bitset::shift: zero left shift leaves bitset unchanged")
+{
+    dynamic_bitset bitset{32};
+    bitset.set(1);
+    bitset.set(10);
+
+    dynamic_bitset original = bitset;
+
+    bitset <<= 0;
+    CHECK_EQ(bitset, original);
+}
+
+TEST_CASE("basic_dynamic_bitset::shift: zero right shift leaves bitset unchanged")
+{
+    dynamic_bitset bitset{32};
+    bitset.set(1);
+    bitset.set(10);
+
+    dynamic_bitset original = bitset;
+
+    bitset >>= 0;
+    CHECK_EQ(bitset, original);
+}
+
+TEST_CASE("basic_dynamic_bitset::shift: empty bitset left shift remains untouched")
+{
+    dynamic_bitset bitset;
+
+    bitset <<= 5;
+    CHECK(bitset.empty());
+}
+
+TEST_CASE("basic_dynamic_bitset::shift: empty bitset right shift remains untouched")
+{
+    dynamic_bitset bitset;
+
+    bitset >>= 3;
+    CHECK(bitset.empty());
+}
+
+TEST_CASE("basic_dynamic_bitset::shift: left shift handles whole blocks")
+{
+    dynamic_bitset bitset{dynamic_bitset::bits_per_block * 2};
+    bitset.set(2);
+
+    bitset <<= dynamic_bitset::bits_per_block;
+
+    CHECK(bitset.test(dynamic_bitset::bits_per_block + 2));
+    CHECK_FALSE(bitset.test(2));
+}
+
+TEST_CASE("basic_dynamic_bitset::shift: right shift handles whole blocks")
+{
+    dynamic_bitset bitset{dynamic_bitset::bits_per_block * 2};
+    bitset.set(dynamic_bitset::bits_per_block + 5);
+
+    bitset >>= dynamic_bitset::bits_per_block;
+
+    CHECK(bitset.test(5));
+    CHECK_FALSE(bitset.test(dynamic_bitset::bits_per_block + 5));
+}
+
 TEST_CASE("basic_dynamic_bitset::all: empty bitset")
 {
     dynamic_bitset bitset{32};
@@ -348,6 +422,13 @@ TEST_CASE("basic_dynamic_bitset::all: fully populated")
 
     CHECK(bitset.all());
     CHECK_EQ(bitset.count(), bitset.size());
+}
+
+TEST_CASE("basic_dynamic_bitset::all: zero sized bitset")
+{
+    dynamic_bitset bitset;
+
+    CHECK(bitset.all());
 }
 
 TEST_CASE("basic_dynamic_bitset::any: empty bitset")
@@ -373,6 +454,13 @@ TEST_CASE("basic_dynamic_bitset::any: fully populated")
     CHECK(bitset.any());
 }
 
+TEST_CASE("basic_dynamic_bitset::any: zero sized bitset")
+{
+    dynamic_bitset bitset;
+
+    CHECK_FALSE(bitset.any());
+}
+
 TEST_CASE("basic_dynamic_bitset::none: empty bitset")
 {
     dynamic_bitset bitset{32};
@@ -396,9 +484,23 @@ TEST_CASE("basic_dynamic_bitset::none: fully populated")
     CHECK_FALSE(bitset.none());
 }
 
+TEST_CASE("basic_dynamic_bitset::none: zero sized bitset")
+{
+    dynamic_bitset bitset;
+
+    CHECK(bitset.none());
+}
+
 TEST_CASE("basic_dynamic_bitset::count: empty bitset returns zero")
 {
     dynamic_bitset bitset{48};
+
+    CHECK_EQ(bitset.count(), 0);
+}
+
+TEST_CASE("basic_dynamic_bitset::count: zero sized bitset")
+{
+    dynamic_bitset bitset;
 
     CHECK_EQ(bitset.count(), 0);
 }
@@ -421,6 +523,16 @@ TEST_CASE("basic_dynamic_bitset::count: updates after resetting bits")
     bitset.reset(47);
 
     CHECK_EQ(bitset.count(), bitset.size() - 2);
+}
+
+TEST_CASE("basic_dynamic_bitset::set: fill on empty bitset is no-op")
+{
+    dynamic_bitset bitset;
+
+    bitset.set();
+
+    CHECK(bitset.empty());
+    CHECK_EQ(bitset.count(), 0);
 }
 
 TEST_CASE("basic_dynamic_bitset::set: sets bits within bounds")
@@ -458,6 +570,14 @@ TEST_CASE("basic_dynamic_bitset::set: sets ranges across blocks")
     }
 }
 
+TEST_CASE("basic_dynamic_bitset::set: zero length range leaves bitset unchanged")
+{
+    dynamic_bitset bitset{dynamic_bitset::bits_per_block};
+    bitset.set(2, 0);
+
+    CHECK_EQ(bitset.count(), 0);
+}
+
 TEST_CASE("basic_dynamic_bitset::reset: clears a single bit")
 {
     dynamic_bitset bitset{dynamic_bitset::bits_per_block + 8};
@@ -483,6 +603,25 @@ TEST_CASE("basic_dynamic_bitset::reset: clears a range")
     CHECK_EQ(bitset.count(), bitset.size() - 5);
 }
 
+TEST_CASE("basic_dynamic_bitset::reset: zero length range leaves bitset unchanged")
+{
+    dynamic_bitset bitset{dynamic_bitset::bits_per_block};
+    bitset.set();
+
+    bitset.reset(10, 0);
+
+    CHECK(bitset.all());
+}
+
+TEST_CASE("basic_dynamic_bitset::reset: on empty bitset is no-op")
+{
+    dynamic_bitset bitset;
+
+    bitset.reset();
+
+    CHECK(bitset.empty());
+}
+
 TEST_CASE("basic_dynamic_bitset::flip: toggles a single bit")
 {
     dynamic_bitset bitset{dynamic_bitset::bits_per_block + 1};
@@ -506,6 +645,26 @@ TEST_CASE("basic_dynamic_bitset::flip: toggles a range")
     CHECK_EQ(bitset.count(), dynamic_bitset::bits_per_block);
 }
 
+TEST_CASE("basic_dynamic_bitset::flip: zero length range leaves bitset unchanged")
+{
+    dynamic_bitset bitset{dynamic_bitset::bits_per_block};
+    bitset.set();
+
+    bitset.flip(4, 0);
+
+    CHECK(bitset.all());
+}
+
+TEST_CASE("basic_dynamic_bitset::flip: on empty bitset is no-op")
+{
+    dynamic_bitset bitset;
+
+    bitset.flip();
+    bitset.flip(0, 0);
+
+    CHECK(bitset.empty());
+}
+
 TEST_CASE("basic_dynamic_bitset::for_each_set: visits every set bit")
 {
     dynamic_bitset bitset{32};
@@ -520,6 +679,21 @@ TEST_CASE("basic_dynamic_bitset::for_each_set: visits every set bit")
     });
 
     CHECK_EQ(visited, std::vector<std::size_t>{2, 10, 25});
+}
+
+TEST_CASE("basic_dynamic_bitset::for_each_set: void callback visits all")
+{
+    dynamic_bitset bitset{16};
+    bitset.set(1);
+    bitset.set(3);
+    bitset.set(7);
+
+    size_type sum = 0;
+    bitset.for_each_set([&](size_type idx) {
+        sum += idx;
+    });
+
+    CHECK_EQ(sum, size_type{11});
 }
 
 TEST_CASE("basic_dynamic_bitset::for_each_set: stops when callback returns false")
@@ -538,6 +712,19 @@ TEST_CASE("basic_dynamic_bitset::for_each_set: stops when callback returns false
     CHECK_EQ(visited, std::vector<std::size_t>{2, 10});
 }
 
+TEST_CASE("basic_dynamic_bitset::for_each_set: empty bitset invokes nothing")
+{
+    dynamic_bitset bitset;
+
+    bool invoked = false;
+    bitset.for_each_set([&](size_type) {
+        invoked = true;
+        return true;
+    });
+
+    CHECK_FALSE(invoked);
+}
+
 TEST_CASE("basic_dynamic_bitset::for_each_unset: iterates over unset bits")
 {
     dynamic_bitset bitset{8};
@@ -550,6 +737,20 @@ TEST_CASE("basic_dynamic_bitset::for_each_unset: iterates over unset bits")
     });
 
     CHECK_EQ(visited, std::vector<std::size_t>{1, 2, 3, 4, 5, 6});
+}
+
+TEST_CASE("basic_dynamic_bitset::for_each_unset: stops when callback returns false")
+{
+    dynamic_bitset bitset{8};
+    bitset.set(0);
+
+    std::vector<std::size_t> visited;
+    bitset.for_each_unset([&](size_type idx) {
+        visited.push_back(idx);
+        return visited.size() < 2;
+    });
+
+    CHECK_EQ(visited, std::vector<std::size_t>{1, 2});
 }
 
 TEST_CASE("basic_dynamic_bitset::swap: exchanges inplace and heap storage")
@@ -566,6 +767,49 @@ TEST_CASE("basic_dynamic_bitset::swap: exchanges inplace and heap storage")
     CHECK_FALSE(heap_bitset.is_heap());
     CHECK(inplace_bitset.test(70));
     CHECK(inplace_bitset.is_heap());
+}
+
+TEST_CASE("basic_dynamic_bitset::swap: both inplace bitsets swap contents")
+{
+    dynamic_bitset lhs{16};
+    dynamic_bitset rhs{16};
+    lhs.set(1);
+    rhs.set(2);
+
+    lhs.swap(rhs);
+
+    CHECK(lhs.test(2));
+    CHECK_FALSE(lhs.test(1));
+    CHECK(rhs.test(1));
+    CHECK_FALSE(rhs.test(2));
+}
+
+TEST_CASE("basic_dynamic_bitset::swap: both heap bitsets swap pointers")
+{
+    dynamic_bitset lhs{dynamic_bitset::inplace_capacity + 5};
+    dynamic_bitset rhs{dynamic_bitset::inplace_capacity + 5};
+    lhs.set(3);
+    rhs.set(4);
+
+    lhs.swap(rhs);
+
+    CHECK(lhs.test(4));
+    CHECK_FALSE(lhs.test(3));
+    CHECK(rhs.test(3));
+    CHECK_FALSE(rhs.test(4));
+    CHECK(lhs.is_heap());
+    CHECK(rhs.is_heap());
+}
+
+TEST_CASE("basic_dynamic_bitset::swap: self swap no-op")
+{
+    dynamic_bitset bitset{32};
+    bitset.set(6);
+
+    bitset.swap(bitset);
+
+    CHECK(bitset.test(6));
+    CHECK_FALSE(bitset.is_heap());
 }
 
 TEST_CASE("basic_dynamic_bitset::reserve: stays inplace when reserving smaller")
@@ -647,6 +891,21 @@ TEST_CASE("basic_dynamic_bitset::resize: shrink drops bits above new size")
     CHECK_EQ(bitset.count(), 1);
 }
 
+TEST_CASE("basic_dynamic_bitset::resize: grow with default value leaves new bits cleared")
+{
+    dynamic_bitset bitset{8};
+    bitset.set(1);
+
+    bitset.resize(20);
+
+    CHECK(bitset.test(1));
+    CHECK_FALSE(bitset.test(0));
+    for (size_type idx = 2; idx < bitset.size(); ++idx)
+    {
+        CHECK_FALSE(bitset.test(idx));
+    }
+}
+
 TEST_CASE("basic_dynamic_bitset::resize: shrink clears tail bits down to mid size")
 {
     dynamic_bitset bitset{40};
@@ -670,6 +929,17 @@ TEST_CASE("basic_dynamic_bitset::resize: shrink clears tail bits down to small s
     CHECK_EQ(bitset.count(), bitset.size());
 }
 
+TEST_CASE("basic_dynamic_bitset::resize: shrink to zero clears storage")
+{
+    dynamic_bitset bitset{16};
+    bitset.set();
+
+    bitset.resize(0);
+
+    CHECK(bitset.empty());
+    CHECK(bitset.none());
+}
+
 TEST_CASE("basic_dynamic_bitset::clear: resets size and bits")
 {
     dynamic_bitset bitset{64};
@@ -679,6 +949,15 @@ TEST_CASE("basic_dynamic_bitset::clear: resets size and bits")
     CHECK_EQ(bitset.size(), 0);
     CHECK(bitset.none());
     CHECK_EQ(bitset.count(), 0);
+}
+
+TEST_CASE("basic_dynamic_bitset::clear: no-op when already empty")
+{
+    dynamic_bitset bitset;
+
+    bitset.clear();
+
+    CHECK(bitset.empty());
 }
 
 TEST_CASE("basic_dynamic_bitset::comparison: compares lexicographically")
@@ -699,6 +978,51 @@ TEST_CASE("basic_dynamic_bitset::comparison: compares lexicographically")
     dynamic_bitset bigger{32};
     bigger.set(20);
     CHECK(lhs < bigger);
+}
+
+TEST_CASE("basic_dynamic_bitset::comparison: handles differing sizes")
+{
+    dynamic_bitset lhs{8};
+    dynamic_bitset rhs{16};
+    lhs.set(1);
+    rhs.set(10);
+
+    CHECK(lhs != rhs);
+    CHECK(lhs < rhs);
+    CHECK(lhs <= rhs);
+    CHECK(rhs > lhs);
+    CHECK(rhs >= lhs);
+}
+
+TEST_CASE("basic_dynamic_bitset::bitwise operators: return new bitsets")
+{
+    dynamic_bitset lhs{16};
+    dynamic_bitset rhs{16};
+    lhs.set(1);
+    lhs.set(3);
+    rhs.set(3);
+    rhs.set(4);
+
+    auto and_result = lhs & rhs;
+    auto or_result = lhs | rhs;
+    auto xor_result = lhs ^ rhs;
+    auto not_result = ~lhs;
+
+    CHECK(and_result.test(3));
+    CHECK_EQ(and_result.count(), 1);
+
+    CHECK(or_result.test(1));
+    CHECK(or_result.test(3));
+    CHECK(or_result.test(4));
+
+    CHECK(xor_result.test(1));
+    CHECK_FALSE(xor_result.test(3));
+    CHECK(xor_result.test(4));
+
+    for (size_type idx = 0; idx < lhs.size(); ++idx)
+    {
+        CHECK_EQ(not_result.test(idx), !lhs.test(idx));
+    }
 }
 
 }} // namespace ant::detail::dynamic_bitset
