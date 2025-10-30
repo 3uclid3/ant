@@ -9,7 +9,7 @@
 namespace ant {
 
 template<typename Database>
-class basic_entity_index
+class basic_entity_registry
 {
 public:
     using traits = entity_traits<typename Database::entity_type>;
@@ -18,13 +18,13 @@ public:
     using entity_type = typename Database::entity_type;
     using version_type = typename traits::version_type;
 
-    explicit basic_entity_index(const allocator_type& allocator = {}) noexcept;
+    explicit basic_entity_registry(const allocator_type& allocator = {}) noexcept;
 
-    basic_entity_index(basic_entity_index&&) noexcept = default;
-    auto operator=(basic_entity_index&&) noexcept -> basic_entity_index& = default;
+    basic_entity_registry(basic_entity_registry&&) noexcept = default;
+    auto operator=(basic_entity_registry&&) noexcept -> basic_entity_registry& = default;
 
-    basic_entity_index(const basic_entity_index&) = delete;
-    auto operator=(const basic_entity_index&) noexcept -> basic_entity_index& = delete;
+    basic_entity_registry(const basic_entity_registry&) = delete;
+    auto operator=(const basic_entity_registry&) noexcept -> basic_entity_registry& = delete;
 
     [[nodiscard]] auto contains(entity_type entity) const noexcept -> bool;
 
@@ -50,7 +50,7 @@ private:
 };
 
 template<typename Database>
-basic_entity_index<Database>::basic_entity_index(const allocator_type& allocator) noexcept
+basic_entity_registry<Database>::basic_entity_registry(const allocator_type& allocator) noexcept
     : _allocator{allocator}
     , _location{rebind_allocator<table_location>(_allocator)}
     , _versions{rebind_allocator<version_type>(_allocator)}
@@ -59,7 +59,7 @@ basic_entity_index<Database>::basic_entity_index(const allocator_type& allocator
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::contains(entity_type entity) const noexcept -> bool
+auto basic_entity_registry<Database>::contains(entity_type entity) const noexcept -> bool
 {
     const auto idx = traits::to_identifier(entity);
     const auto ver = traits::to_version(entity);
@@ -68,7 +68,7 @@ auto basic_entity_index<Database>::contains(entity_type entity) const noexcept -
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::create() -> entity_type
+auto basic_entity_registry<Database>::create() -> entity_type
 {
     if (!_free.empty())
     {
@@ -91,7 +91,7 @@ auto basic_entity_index<Database>::create() -> entity_type
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::destroy(entity_type entity) noexcept -> void
+auto basic_entity_registry<Database>::destroy(entity_type entity) noexcept -> void
 {
     ANT_ASSERT(contains(entity), "entity does not exist");
 
@@ -104,7 +104,7 @@ auto basic_entity_index<Database>::destroy(entity_type entity) noexcept -> void
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::relocate(entity_type entity, table_index table, row_index row) noexcept -> void
+auto basic_entity_registry<Database>::relocate(entity_type entity, table_index table, row_index row) noexcept -> void
 {
     ANT_ASSERT(contains(entity), "entity does not exist");
 
@@ -113,7 +113,7 @@ auto basic_entity_index<Database>::relocate(entity_type entity, table_index tabl
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::locate(entity_type entity) const noexcept -> table_location
+auto basic_entity_registry<Database>::locate(entity_type entity) const noexcept -> table_location
 {
     ANT_ASSERT(contains(entity), "entity does not exist");
 
@@ -122,7 +122,7 @@ auto basic_entity_index<Database>::locate(entity_type entity) const noexcept -> 
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::version(entity_type entity) const noexcept -> version_type
+auto basic_entity_registry<Database>::version(entity_type entity) const noexcept -> version_type
 {
     ANT_ASSERT(contains(entity), "entity does not exist");
 
@@ -131,13 +131,13 @@ auto basic_entity_index<Database>::version(entity_type entity) const noexcept ->
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::empty() const noexcept -> bool
+auto basic_entity_registry<Database>::empty() const noexcept -> bool
 {
     return size() == 0;
 }
 
 template<typename Database>
-auto basic_entity_index<Database>::size() const noexcept -> std::size_t
+auto basic_entity_registry<Database>::size() const noexcept -> std::size_t
 {
     return _versions.size() - _free.size();
 }

@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2025-10-30
+
+### Changed
+
+- **BREAKING**: Renamed `basic_entity_index` to `basic_entity_registry`; downstream code must include the new header and update type aliases accordingly.
+
 ## [0.7.0] - 2025-10-29
 
 ### Changed
