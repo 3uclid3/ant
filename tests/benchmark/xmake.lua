@@ -1,3 +1,10 @@
+local function get_runargs(name)
+    return {
+        "--benchmark_format=json",
+        "--benchmark_out=" .. path.join(os.projectdir(), "build", string.format("%s.bench.json", name))
+    }
+end
+
 if has_config("benchmarks") then
     add_requires("benchmark")
 
@@ -7,7 +14,7 @@ if has_config("benchmarks") then
             set_kind("binary")
             set_default(false)
             set_group("tests/bench")
-            add_tests("bench")
+            add_tests("bench", {runargs = get_runargs(name)})
 
             add_deps("ant", "ant.test.shared")
             add_packages("benchmark")
