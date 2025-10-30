@@ -6,7 +6,7 @@ set_languages("cxx23")
 set_warnings("allextra", "error")
 
 add_rules("mode.debug", "mode.release", "mode.coverage")
-add_rules("plugin.compile_commands.autoupdate", { outputdir = "build" })
+add_rules("plugin.compile_commands.autoupdate", { outputdir = get_config("builddir") })
 
 option("junit_report")
     set_default(false)
