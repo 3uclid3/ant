@@ -22,6 +22,8 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      files: ${{ steps.set.outputs.files }}
 
     if: ${{ !contains(github.event.head_commit.message, 'benchmarks skip') }}
     steps:
