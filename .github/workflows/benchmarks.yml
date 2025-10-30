@@ -84,13 +84,19 @@ jobs:
           for f in build/*.bench.json; do
             base="$(basename "$f")"      # e.g., dynamic_bitset.bench.json
             page="${base%.bench.json}"   # -> dynamic_bitset
-            items+=("{\"file\":\"$f\",\"page\":\"$page\"}")
+            items+=("{\"file\":\"$base\",\"page\":\"$page\"}")
           done
           if [ ${#items[@]} -eq 0 ]; then
             echo "No *.bench.json files found under build/." >&2
             exit 1
           fi
           printf 'matrix={"include":[%s]}\n' "$(IFS=,; echo "${items[*]}")" >>"$GITHUB_OUTPUT"
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: build/*.bench.json
 
   publish:
     needs: benchmarks
@@ -105,12 +111,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Download benchmark artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-results
+
       - name: Publish (${{ matrix.page }})
         uses: rhysd/github-action-benchmark@v1
         with:
           name: ant benchmarks • ${{ matrix.page }}
           tool: googlecpp
-          output-file-path: ${{ matrix.file }}
+          output-file-path: benchmark-results/${{ matrix.file }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
           alert-threshold: "10%"
