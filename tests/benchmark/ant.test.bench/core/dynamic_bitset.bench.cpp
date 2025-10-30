@@ -16,7 +16,7 @@ constexpr std::size_t bits_per_block = sizeof(std::uint64_t) * 8;
 static void bm_set_sequential(benchmark::State& state)
 {
     const std::size_t bit_count = static_cast<std::size_t>(state.range(0));
-    dynamic_dynamic_bitset bitset{bit_count};
+    dynamic_bitset bitset{bit_count};
 
     for (auto _ : state)
     {
@@ -104,8 +104,8 @@ static void bm_resize_force_grow_realloc(benchmark::State& state)
     for (auto _ : state)
     {
         state.PauseTiming();
-        bitset = Bitset{};       // fresh object to reset capacity
-        bitset.resize(pre_bits); // ensure capacity == pre_blocks
+        bitset = dynamic_bitset{}; // fresh object to reset capacity
+        bitset.resize(pre_bits);   // ensure capacity == pre_blocks
         state.ResumeTiming();
 
         bitset.resize(target_bits); // must allocate every iteration
@@ -140,8 +140,7 @@ static void bm_resize_force_shrink_free(benchmark::State& state)
 
 static void bm_migrate_sbo_to_heap(benchmark::State& state)
 {
-    using Bitset = dynamic_bitset_v1;
-    constexpr std::size_t sbo = Bitset::inplace_capacity;
+    constexpr std::size_t sbo = dynamic_bitset::inplace_capacity;
     const std::size_t below = sbo > 0 ? (sbo - 1) : 0;
     const std::size_t above = sbo + 1;
 
@@ -159,14 +158,14 @@ static void bm_migrate_sbo_to_heap(benchmark::State& state)
     state.SetComplexityN(above);
 }
 
-}} // namespace ant
+BENCHMARK(bm_set_sequential)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
+BENCHMARK(bm_count_all_set)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
+BENCHMARK(bm_for_each_set_sparse)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
+BENCHMARK(bm_resize_within_capacity)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
+BENCHMARK(bm_resize_force_grow_realloc)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
+BENCHMARK(bm_resize_force_shrink_free)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
+BENCHMARK(bm_migrate_sbo_to_heap)->Complexity();
 
-BENCHMARK(ant::bm_set_sequential)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
-BENCHMARK(ant::bm_count_all_set)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
-BENCHMARK(ant::bm_for_each_set_sparse)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
-BENCHMARK(ant::bm_resize_within_capacity)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
-BENCHMARK(ant::bm_resize_force_grow_realloc)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
-BENCHMARK(ant::bm_resize_force_shrink_free)->RangeMultiplier(2)->Range(min_bits, max_bits)->Complexity();
-BENCHMARK(ant::bm_migrate_sbo_to_heap)->Complexity();
+}} // namespace ant
 
 BENCHMARK_MAIN();
