@@ -1,0 +1,130 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmarks:
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository }}-ubuntu-ci:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      matrix: ${{ steps.prepare.outputs.matrix }}
+
+    if: ${{ !contains(github.event.head_commit.message, 'benchmarks skip') }}
+    steps:
+      - name: Get current date as package key
+        id: cache_key
+        shell: bash
+        run: echo "key=$(date +'%V')" >> $GITHUB_OUTPUT
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Force xmake to a specific folder (for cache)
+      - name: Set xmake env
+        run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+        shell: bash
+
+      # Update xmake repository (in order to have the file that will be cached)
+      - name: Update xmake repository
+        run: xmake repo --update
+
+      # Fetch xmake dependency_hash
+      - name: Retrieve dependencies hash
+        id: dependency_hash
+        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      # Cache xmake dependencies
+      - name: Restore cached xmake dependencies
+        id: restore-depcache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: linux-benchmarks-${{ steps.dependency_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
+          restore-keys: |
+            linux-benchmarks-${{ steps.dependency_hash.outputs.hash }}-
+
+      # Configure build
+      - name: Configure
+        run: xmake f -m benchmarks --toolchain=llvm --benchmarks=y -y
+
+      # Save dependencies
+      - name: Save cached xmake dependencies
+        if: ${{ !steps.restore-depcache.outputs.cache-hit }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
+
+      - name: Run benchmarks
+        run: xmake test -g tests/bench
+
+      - name: Prepare results for publishing
+        id: prepare
+        shell: bash
+        run: |
+          shopt -s nullglob
+          items=()
+          for f in build/*.bench.json; do
+            base="$(basename "$f")"      # e.g., dynamic_bitset.bench.json
+            page="${base%.bench.json}"   # -> dynamic_bitset
+            items+=("{\"file\":\"$base\",\"page\":\"$page\"}")
+          done
+          if [ ${#items[@]} -eq 0 ]; then
+            echo "No *.bench.json files found under build/." >&2
+            exit 1
+          fi
+          printf 'matrix={"include":[%s]}\n' "$(IFS=,; echo "${items[*]}")" >>"$GITHUB_OUTPUT"
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: build/*.bench.json
+
+  publish:
+    needs: benchmarks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      deployments: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.benchmarks.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Download benchmark artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-results
+
+      - name: Publish (${{ matrix.page }})
+        uses: rhysd/github-action-benchmark@v1
+        with:
+          name: ant benchmarks • ${{ matrix.page }}
+          tool: googlecpp
+          output-file-path: benchmark-results/${{ matrix.file }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: "10%"
+          fail-on-alert: true
+          comment-always: true
