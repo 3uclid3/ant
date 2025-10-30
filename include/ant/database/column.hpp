@@ -1,13 +1,10 @@
 #pragma once
 
-#include <cstdint>
 #include <cstring>
-#include <limits>
 #include <memory>
-#include <vector>
 
-#include <ant/core/allocator.hpp>
 #include <ant/core/assert.hpp>
+#include <ant/core/container.hpp>
 #include <ant/database/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/table_index.hpp>
@@ -18,7 +15,7 @@ template<typename Database>
 class basic_column
 {
 public:
-    using allocator_type = rebind_allocator_t<std::byte, typename Database::allocator_type>;
+    using allocator_type = typename std::allocator_traits<typename Database::allocator_type>::template rebind_alloc<std::byte>;
     using component_meta_type = detail::component_meta;
 
     explicit basic_column(const component_meta_type& meta, const allocator_type& allocator = allocator_type{}) noexcept;
@@ -52,7 +49,7 @@ private:
 
     allocator_type _allocator;
 
-    std::vector<block, rebind_allocator_t<block, allocator_type>> _blocks;
+    vector<block, allocator_type> _blocks;
     std::size_t _size{0};
 
     const component_meta_type* _meta{nullptr};

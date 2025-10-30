@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vector>
-
-#include <ant/core/allocator.hpp>
+#include <ant/core/container.hpp>
 #include <ant/database/entity_traits.hpp>
 #include <ant/database/table_index.hpp>
 
@@ -43,18 +41,18 @@ private:
 
     allocator_type _allocator;
 
-    std::vector<table_location, rebind_allocator_t<table_location, allocator_type>> _location;
-    std::vector<version_type, rebind_allocator_t<version_type, allocator_type>> _versions;
+    vector<table_location, allocator_type> _location;
+    vector<version_type, allocator_type> _versions;
 
-    std::vector<index_type, rebind_allocator_t<index_type, allocator_type>> _free;
+    vector<index_type, allocator_type> _free;
 };
 
 template<typename Database>
 basic_entity_registry<Database>::basic_entity_registry(const allocator_type& allocator) noexcept
     : _allocator{allocator}
-    , _location{rebind_allocator<table_location>(_allocator)}
-    , _versions{rebind_allocator<version_type>(_allocator)}
-    , _free{rebind_allocator<index_type>(_allocator)}
+    , _location{rebind_allocator(_allocator)}
+    , _versions{rebind_allocator(_allocator)}
+    , _free{rebind_allocator(_allocator)}
 {
 }
 

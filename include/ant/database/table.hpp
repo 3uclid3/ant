@@ -3,10 +3,9 @@
 #include <algorithm>
 #include <span>
 #include <utility>
-#include <vector>
 
-#include <ant/core/allocator.hpp>
 #include <ant/core/assert.hpp>
+#include <ant/core/container.hpp>
 #include <ant/database/column.hpp>
 #include <ant/database/table_index.hpp>
 #include <ant/database/table_signature.hpp>
@@ -21,8 +20,9 @@ public:
     using entity_type = typename Database::entity_type;
     using signature_type = basic_table_signature<Database>;
     using column_type = basic_column<Database>;
-    using columns_type = std::vector<column_type, rebind_allocator_t<column_type, allocator_type>>;
-    using rows_type = std::vector<entity_type, rebind_allocator_t<entity_type, allocator_type>>;
+
+    using columns_type = vector<column_type, allocator_type>;
+    using rows_type = vector<entity_type, allocator_type>;
 
 public:
     basic_table(signature_type&& signature, columns_type&& columns, const allocator_type& allocator = allocator_type{}) noexcept;
@@ -36,7 +36,6 @@ public:
     auto rows() const noexcept -> std::span<const entity_type>;
 
 private:
-    allocator_type _allocator;
     signature_type _signature;
     columns_type _columns;
     rows_type _rows;
@@ -44,10 +43,9 @@ private:
 
 template<typename Database>
 basic_table<Database>::basic_table(signature_type&& signature, columns_type&& columns, const allocator_type& allocator) noexcept
-    : _allocator{allocator}
-    , _signature{std::move(signature)}
-    , _columns{std::move(columns)}
-    , _rows{rebind_allocator_t<entity_type, allocator_type>{allocator}}
+    : _signature(std::move(signature))
+    , _columns(std::move(columns))
+    , _rows(rebind_allocator(allocator))
 {
 }
 

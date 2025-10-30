@@ -4,6 +4,7 @@
 #include <string_view>
 
 #include <ant/core/assert.hpp>
+#include <ant/core/container.hpp>
 #include <ant/core/type_info.hpp>
 #include <ant/database/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
@@ -14,14 +15,13 @@ template<typename Database>
 class basic_schema
 {
 public:
-    using database_type = Database;
-    using allocator_type = typename database_type::allocator_type;
+    using allocator_type = typename Database::allocator_type;
 
-    using component_metas_type = detail::basic_component_metas<Database>;
-    using component_ids_type = detail::basic_component_ids<Database>;
+    using component_meta_type = detail::component_meta;
+    using component_id_type = detail::component_id;
 
-    using component_meta_type = component_metas_type::value_type;
-    using component_id_type = component_ids_type::value_type;
+    using component_metas_type = vector<component_meta_type, allocator_type>;
+    using component_ids_type = vector<component_id_type, allocator_type>;
 
     using size_type = component_index::value_type;
 
@@ -65,14 +65,13 @@ template<typename Database>
 class basic_schema_builder
 {
 public:
-    using database_type = Database;
-    using allocator_type = typename database_type::allocator_type;
+    using allocator_type = Database::allocator_type;
 
-    using component_metas_type = detail::basic_component_metas<Database>;
-    using component_ids_type = detail::basic_component_ids<Database>;
+    using component_meta_type = detail::component_meta;
+    using component_id_type = detail::component_id;
 
-    using component_meta_type = component_metas_type::value_type;
-    using component_id_type = component_ids_type::value_type;
+    using component_metas_type = vector<component_meta_type, allocator_type>;
+    using component_ids_type = vector<component_id_type, allocator_type>;
 
     using component_version_type = detail::component_version;
 
@@ -181,7 +180,7 @@ constexpr auto basic_schema<Database>::rend() const noexcept -> const_reverse_it
 template<typename Database>
 constexpr basic_schema_builder<Database>::basic_schema_builder(const allocator_type& alloc) noexcept
     : _allocator(alloc)
-    , _metas(typename component_metas_type::allocator_type{_allocator})
+    , _metas(rebind_allocator(_allocator))
 {
 }
 
@@ -201,7 +200,7 @@ constexpr auto basic_schema_builder<Database>::build() noexcept -> basic_schema<
 {
     std::ranges::sort(_metas, [](const auto& lhs, const auto& rhs) { return lhs.id < rhs.id; });
 
-    component_ids_type ids(typename component_ids_type::allocator_type{_allocator});
+    component_ids_type ids{rebind_allocator(_allocator)};
     ids.reserve(_metas.size());
 
     for (const auto& meta : _metas)
