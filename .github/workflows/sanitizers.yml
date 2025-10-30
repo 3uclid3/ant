@@ -1,28 +1,15 @@
-name: CI Linux
+name: Sanitizers
 
 on:
   pull_request:
-  push:
-    paths-ignore:
-      - ".github/dependabot.yml"
-      - ".github/workflows/benchmarks.yml"
-      - ".github/workflows/build-images.yml"
-      - ".github/workflows/coverage.yml"
-      - ".github/workflows/ci-windows.yml"
-      - ".gitignore"
-      - "docs/**"
-      - "AGENTS.md"
-      - "CHANGELOG.md"
-      - "Dockerfile"
-      - "LICENSE"
-      - "README.md"
+    branches: [ "main" ]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  linux-sanitizers:
     runs-on: ubuntu-24.04
     permissions:
       actions: write
@@ -33,12 +20,7 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    strategy:
-      fail-fast: false
-      matrix:
-        build_type: [debug, release]
 
-    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
     steps:
       - name: Get current date as package key
         id: cache_key
@@ -69,13 +51,13 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: linux-${{ matrix.build_type }}-${{ steps.dependency_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
+          key: linux-sanitizers-${{ steps.dependency_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
           restore-keys: |
-            linux-${{ matrix.build_type }}-${{ steps.dependency_hash.outputs.hash }}-
+            linux-sanitizers-${{ steps.dependency_hash.outputs.hash }}-
 
       # Configure build
       - name: Configure
-        run: xmake f -m ${{ matrix.build_type }} --toolchain=llvm --junit_report=y -y
+        run: xmake f -m debug --toolchain=llvm --policies=build.sanitizer.address,build.sanitizer.undefined,build.sanitizer.leak -y
 
       # Save dependencies
       - name: Save cached xmake dependencies
@@ -88,14 +70,3 @@ jobs:
       - name: Run unit tests
         run: xmake test -g tests/unit
 
-      - name: Run compile tests
-        run: xmake test -g tests/compile
-
-      - name: Upload test results to Codecov
-        if: always()
-        uses: codecov/test-results-action@v1
-        with:
-          files: build/**.junit.xml
-          flags: unit-tests-linux-${{ matrix.build_type }}
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}

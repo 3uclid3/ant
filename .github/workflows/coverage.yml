@@ -2,13 +2,17 @@ name: Coverage
 
 on:
   pull_request:
+    branches: [ "main" ]
   push:
     paths-ignore:
-      - ".github/dependabot.yml"
-      - ".github/workflows/benchmarks.yml"
+      - ".github/instructions/**"
       - ".github/workflows/build-images.yml"
-      - ".github/workflows/ci-linux.yml"
-      - ".github/workflows/ci-windows.yml"
+      - ".github/workflows/build-test.yml"
+      - ".github/workflows/codacy.yml"
+      - ".github/workflows/nightly.yml"
+      - ".github/workflows/sanitizer.yml"
+      - ".github/copilot-instructions.yml"
+      - ".github/dependabot.yml"
       - ".gitignore"
       - "docs/**"
       - "AGENTS.md"
@@ -22,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  coverage:
+  linux-coverage:
     runs-on: ubuntu-24.04
     permissions:
       actions: write
