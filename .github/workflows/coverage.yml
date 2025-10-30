@@ -5,6 +5,7 @@ on:
   push:
     paths-ignore:
       - ".github/dependabot.yml"
+      - ".github/workflows/benchmarks.yml"
       - ".github/workflows/build-images.yml"
       - ".github/workflows/ci-linux.yml"
       - ".github/workflows/ci-windows.yml"
