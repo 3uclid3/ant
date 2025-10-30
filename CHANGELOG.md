@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.0] - 2025-10-29
+
+### Changed
+
+- `dynamic_bitset` now stores up to 256 bits in place, eliminating heap traffic for small signatures and improving iteration locality.
+
+### Fixed
+
+- Clearing a table signature no longer trims higher-index components when removing lower ones.
+
 ## [0.6.0] - 2025-10-28
 
 ### Added
