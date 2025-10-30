@@ -1,14 +1,18 @@
-name: CI Windows
+name: Build and Test
 
 on:
   pull_request:
+    branches: [ "main" ]
   push:
     paths-ignore:
-      - ".github/dependabot.yml"
-      - ".github/workflows/benchmarks.yml"
+      - ".github/instructions/**"
       - ".github/workflows/build-images.yml"
+      - ".github/workflows/codacy.yml"
       - ".github/workflows/coverage.yml"
-      - ".github/workflows/ci-linux.yml"
+      - ".github/workflows/nightly.yml"
+      - ".github/workflows/sanitizer.yml"
+      - ".github/copilot-instructions.yml"
+      - ".github/dependabot.yml"
       - ".gitignore"
       - "docs/**"
       - "AGENTS.md"
@@ -22,11 +26,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: windows-latest
+  linux-build-test:
+    runs-on: ubuntu-24.04
     permissions:
       actions: write
       contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository }}-ubuntu-ci:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -34,26 +44,18 @@ jobs:
 
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
     steps:
-      - name: Get current week as package key (pwsh)
+      - name: Get current date as package key
         id: cache_key
-        shell: pwsh
-        run: |
-          $calendar = [System.Globalization.CultureInfo]::InvariantCulture.Calendar
-          $week = $calendar.GetWeekOfYear((Get-Date), [System.Globalization.CalendarWeekRule]::FirstFourDayWeek, [System.DayOfWeek]::Monday)
-          "key=$week" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        shell: bash
+        run: echo "key=$(date +'%V')" >> $GITHUB_OUTPUT
 
       - name: Checkout
         uses: actions/checkout@v5
 
       # Force xmake to a specific folder (for cache)
       - name: Set xmake env
-        shell: pwsh
-        run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Setup xmake
-        uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
+        run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+        shell: bash
 
       # Update xmake repository (in order to have the file that will be cached)
       - name: Update xmake repository
@@ -62,8 +64,8 @@ jobs:
       # Fetch xmake dependency_hash
       - name: Retrieve dependencies hash
         id: dependency_hash
-        shell: pwsh
-        run: echo "hash=$(xmake l utils.ci.packageskey)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+        shell: bash
 
       # Cache xmake dependencies
       - name: Restore cached xmake dependencies
@@ -71,13 +73,13 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: MSVC-${{ matrix.build_type }}-${{ steps.dependency_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
+          key: linux-test-${{ matrix.build_type }}-${{ steps.dependency_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
           restore-keys: |
-            MSVC-${{ matrix.build_type }}-${{ steps.dependency_hash.outputs.hash }}-
+            linux-test-${{ matrix.build_type }}-${{ steps.dependency_hash.outputs.hash }}-
 
       # Configure build
       - name: Configure
-        run: xmake f -m ${{ matrix.build_type }} --toolchain=clang-cl -y
+        run: xmake f -m ${{ matrix.build_type }} --toolchain=llvm --junit_report=y -y
 
       # Save dependencies
       - name: Save cached xmake dependencies
@@ -92,3 +94,12 @@ jobs:
 
       - name: Run compile tests
         run: xmake test -g tests/compile
+
+      - name: Upload test results to Codecov
+        if: always()
+        uses: codecov/test-results-action@v1
+        with:
+          files: build/**.junit.xml
+          flags: unit-tests-linux-${{ matrix.build_type }}
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
