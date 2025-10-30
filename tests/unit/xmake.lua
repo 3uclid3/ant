@@ -7,6 +7,10 @@ target("ant.test.unit")
 
     add_deps("ant", "ant.test.shared")
     add_packages("doctest")
+
+    if is_plat("windows") then
+        set_runtimes("MD")
+    end
     
     add_defines("DOCTEST_CONFIG_USE_STD_HEADERS")
 

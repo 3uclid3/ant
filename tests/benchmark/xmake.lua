@@ -12,6 +12,10 @@ if has_config("benchmarks") then
             add_deps("ant", "ant.test.shared")
             add_packages("benchmark")
 
+            if is_plat("windows") then
+                set_runtimes("MD")
+            end
+
             add_files(testfile)
     end
 end
