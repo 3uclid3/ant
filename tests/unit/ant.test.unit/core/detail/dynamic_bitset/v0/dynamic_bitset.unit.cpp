@@ -1,18 +1,18 @@
 #include <doctest/doctest.h>
 
-#include <ant/core/bitset.hpp>
+#include <ant/core/detail/dynamic_bitset/v0/dynamic_bitset.hpp>
 
 #include <cstdint>
 #include <memory>
 
-namespace ant { namespace {
+namespace ant::detail::dynamic_bitset { namespace {
 
 template<typename T>
-using basic_bitset = ant::basic_bitset<T, std::allocator<T>>;
+using basic_dynamic_bitset = v0::basic_dynamic_bitset<T, std::allocator<T>>;
 
-TEST_CASE_TEMPLATE("basic_bitset::ctor: default", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::ctor: default", T, std::uint32_t, std::uint64_t)
 {
-    const basic_bitset<T> bitset;
+    const basic_dynamic_bitset<T> bitset;
 
     CHECK_EQ(bitset.size(), 0);
     CHECK_EQ(bitset.count(), 0);
@@ -20,9 +20,9 @@ TEST_CASE_TEMPLATE("basic_bitset::ctor: default", T, std::uint32_t, std::uint64_
     CHECK(bitset.all());
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::ctor: with size", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::ctor: with size", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{128};
+    basic_dynamic_bitset<T> bitset{128};
 
     CHECK_EQ(bitset.size(), 128);
     CHECK_EQ(bitset.count(), 0);
@@ -30,16 +30,16 @@ TEST_CASE_TEMPLATE("basic_bitset::ctor: with size", T, std::uint32_t, std::uint6
     CHECK_FALSE(bitset.all());
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::ctor: keeps logical size (no rounding)", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::ctor: keeps logical size (no rounding)", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{127};
+    basic_dynamic_bitset<T> bitset{127};
 
     CHECK_EQ(bitset.size(), 127);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::set: sets bits", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::set: sets bits", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{64};
+    basic_dynamic_bitset<T> bitset{64};
 
     bitset.set(0);
     bitset.set(5);
@@ -50,9 +50,9 @@ TEST_CASE_TEMPLATE("basic_bitset::set: sets bits", T, std::uint32_t, std::uint64
     CHECK(bitset.test(63));
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::set: grows storage", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::set: grows storage", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{64};
+    basic_dynamic_bitset<T> bitset{64};
 
     bitset.set(65);
 
@@ -60,9 +60,9 @@ TEST_CASE_TEMPLATE("basic_bitset::set: grows storage", T, std::uint32_t, std::ui
     CHECK(bitset.test(65));
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::test: unset returns false", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::test: unset returns false", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{64};
+    basic_dynamic_bitset<T> bitset{64};
 
     bitset.set(0);
     bitset.set(5);
@@ -70,9 +70,9 @@ TEST_CASE_TEMPLATE("basic_bitset::test: unset returns false", T, std::uint32_t, 
     CHECK_FALSE(bitset.test(7));
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::unset: clears bits", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::unset: clears bits", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{64};
+    basic_dynamic_bitset<T> bitset{64};
 
     bitset.set(10);
     bitset.unset(10);
@@ -80,9 +80,9 @@ TEST_CASE_TEMPLATE("basic_bitset::unset: clears bits", T, std::uint32_t, std::ui
     CHECK_FALSE(bitset.test(10));
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::count: counts set bits", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::count: counts set bits", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{64};
+    basic_dynamic_bitset<T> bitset{64};
 
     bitset.set(0);
     bitset.set(5);
@@ -95,18 +95,18 @@ TEST_CASE_TEMPLATE("basic_bitset::count: counts set bits", T, std::uint32_t, std
 
 // (moved to group with resize())
 
-TEST_CASE_TEMPLATE("basic_bitset::none: detects no bits set", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::none: detects no bits set", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{128};
+    basic_dynamic_bitset<T> bitset{128};
     CHECK(bitset.none());
 
     bitset.set(64);
     CHECK_FALSE(bitset.none());
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::all: detects all bits set", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::all: detects all bits set", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{64};
+    basic_dynamic_bitset<T> bitset{64};
     CHECK_FALSE(bitset.all());
 
     for (std::size_t i = 0; i < bitset.size(); ++i)
@@ -117,10 +117,10 @@ TEST_CASE_TEMPLATE("basic_bitset::all: detects all bits set", T, std::uint32_t, 
     CHECK(bitset.all());
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::all: ignores unused bits in last block", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::all: ignores unused bits in last block", T, std::uint32_t, std::uint64_t)
 {
     constexpr std::size_t total = sizeof(T) * 8 + 6; // one full block + 6 bits
-    basic_bitset<T> bitset{total};
+    basic_dynamic_bitset<T> bitset{total};
 
     for (std::size_t i = 0; i < total; ++i)
     {
@@ -130,10 +130,10 @@ TEST_CASE_TEMPLATE("basic_bitset::all: ignores unused bits in last block", T, st
     CHECK_EQ(bitset.count(), total);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::all: detects unset bits in tail block", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::all: detects unset bits in tail block", T, std::uint32_t, std::uint64_t)
 {
     const std::size_t block = sizeof(T) * 8;
-    basic_bitset<T> bitset{block + 3};
+    basic_dynamic_bitset<T> bitset{block + 3};
 
     bitset.set_all();
     bitset.unset(block + 1);
@@ -141,10 +141,10 @@ TEST_CASE_TEMPLATE("basic_bitset::all: detects unset bits in tail block", T, std
     CHECK_FALSE(bitset.all());
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::all: detects unset bits in full block", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::all: detects unset bits in full block", T, std::uint32_t, std::uint64_t)
 {
     const std::size_t block = sizeof(T) * 8;
-    basic_bitset<T> bitset{block * 2};
+    basic_dynamic_bitset<T> bitset{block * 2};
 
     bitset.set_all();
     bitset.unset(block / 2);
@@ -152,18 +152,18 @@ TEST_CASE_TEMPLATE("basic_bitset::all: detects unset bits in full block", T, std
     CHECK_FALSE(bitset.all());
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::resize: keeps logical size (no rounding)", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::resize: keeps logical size (no rounding)", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset;
+    basic_dynamic_bitset<T> bitset;
     bitset.resize(127);
 
     CHECK_EQ(bitset.size(), 127);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::resize: shrinking within a block keeps lower bits only", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::resize: shrinking within a block keeps lower bits only", T, std::uint32_t, std::uint64_t)
 {
     constexpr std::size_t block = sizeof(T) * 8;
-    basic_bitset<T> bitset{block};
+    basic_dynamic_bitset<T> bitset{block};
 
     // set all bits
     for (std::size_t i = 0; i < bitset.size(); ++i)
@@ -178,18 +178,18 @@ TEST_CASE_TEMPLATE("basic_bitset::resize: shrinking within a block keeps lower b
     CHECK(bitset.all());
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::size: grows when setting beyond current size", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::size: grows when setting beyond current size", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{64};
+    basic_dynamic_bitset<T> bitset{64};
 
     CHECK_EQ(bitset.size(), 64);
     bitset.set(70);
     CHECK_EQ(bitset.size(), 71);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::resize: shrinks", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::resize: shrinks", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{128};
+    basic_dynamic_bitset<T> bitset{128};
 
     bitset.set(3);
     bitset.set(70);
@@ -201,9 +201,9 @@ TEST_CASE_TEMPLATE("basic_bitset::resize: shrinks", T, std::uint32_t, std::uint6
     CHECK_FALSE(bitset.test(70));
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::for_each_set: visits set bits", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::for_each_set: visits set bits", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{16};
+    basic_dynamic_bitset<T> bitset{16};
 
     // Set a few bits
     bitset.set(0);
@@ -219,9 +219,9 @@ TEST_CASE_TEMPLATE("basic_bitset::for_each_set: visits set bits", T, std::uint32
     CHECK_EQ(visited, expected);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::for_each_unset: visits unset bits", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::for_each_unset: visits unset bits", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{8};
+    basic_dynamic_bitset<T> bitset{8};
 
     // Set some bits, leaving others unset
     bitset.set(1);
@@ -236,9 +236,9 @@ TEST_CASE_TEMPLATE("basic_bitset::for_each_unset: visits unset bits", T, std::ui
     CHECK_EQ(visited, expected);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::for_each_set: interruptible", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::for_each_set: interruptible", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{32};
+    basic_dynamic_bitset<T> bitset{32};
     bitset.set(2);
     bitset.set(3);
     bitset.set(30);
@@ -253,9 +253,9 @@ TEST_CASE_TEMPLATE("basic_bitset::for_each_set: interruptible", T, std::uint32_t
     CHECK_EQ(visited, expected);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::for_each_unset: interruptible", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::for_each_unset: interruptible", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{8};
+    basic_dynamic_bitset<T> bitset{8};
     bitset.set(0);
     bitset.set(1);
 
@@ -269,11 +269,11 @@ TEST_CASE_TEMPLATE("basic_bitset::for_each_unset: interruptible", T, std::uint32
     CHECK_EQ(visited, expected);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::set_all: sets every logical bit", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::set_all: sets every logical bit", T, std::uint32_t, std::uint64_t)
 {
     const std::size_t block = sizeof(T) * 8;
     const std::size_t total = block + 5; // crosses a block boundary
-    basic_bitset<T> bitset{total};
+    basic_dynamic_bitset<T> bitset{total};
 
     // Start with some random pattern
     bitset.set(0);
@@ -290,9 +290,9 @@ TEST_CASE_TEMPLATE("basic_bitset::set_all: sets every logical bit", T, std::uint
     CHECK(bitset.test(total - 1));
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::unset_all: clears all logical bits", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::unset_all: clears all logical bits", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{73};
+    basic_dynamic_bitset<T> bitset{73};
     bitset.set(0);
     bitset.set(3);
     bitset.set(72);
@@ -306,9 +306,9 @@ TEST_CASE_TEMPLATE("basic_bitset::unset_all: clears all logical bits", T, std::u
     CHECK_FALSE(bitset.test(72));
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::set_all: empty bitset is a no-op", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::set_all: empty bitset is a no-op", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{};
+    basic_dynamic_bitset<T> bitset{};
     bitset.set_all();
     CHECK_EQ(bitset.size(), 0);
     CHECK(bitset.none());
@@ -316,9 +316,9 @@ TEST_CASE_TEMPLATE("basic_bitset::set_all: empty bitset is a no-op", T, std::uin
     CHECK_EQ(bitset.count(), 0);
 }
 
-TEST_CASE_TEMPLATE("basic_bitset::set_all: respects grown logical size", T, std::uint32_t, std::uint64_t)
+TEST_CASE_TEMPLATE("basic_dynamic_bitset::set_all: respects grown logical size", T, std::uint32_t, std::uint64_t)
 {
-    basic_bitset<T> bitset{8};
+    basic_dynamic_bitset<T> bitset{8};
     bitset.set(12); // grows logical size to 13
     CHECK_EQ(bitset.size(), 13);
 
@@ -327,4 +327,4 @@ TEST_CASE_TEMPLATE("basic_bitset::set_all: respects grown logical size", T, std:
     CHECK_EQ(bitset.count(), 13);
 }
 
-}} // namespace ant
+}} // namespace ant::detail::dynamic_bitset

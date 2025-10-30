@@ -8,23 +8,23 @@
 
 #include <ant/core/allocator.hpp>
 
-namespace ant {
+namespace ant::detail::dynamic_bitset { inline namespace v0 {
 
 template<std::integral T, typename Allocator>
-class basic_bitset
+class basic_dynamic_bitset
 {
 public:
     using block_type = T;
     using allocator_type = rebind_allocator_t<block_type, Allocator>;
 
-    constexpr explicit basic_bitset(const allocator_type& allocator = {});
-    constexpr explicit basic_bitset(std::size_t bits_size, const allocator_type& allocator = {});
+    constexpr explicit basic_dynamic_bitset(const allocator_type& allocator = {});
+    constexpr explicit basic_dynamic_bitset(std::size_t bits_size, const allocator_type& allocator = {});
 
-    constexpr basic_bitset(const basic_bitset&) = default;
-    constexpr basic_bitset(basic_bitset&&) noexcept = default;
+    constexpr basic_dynamic_bitset(const basic_dynamic_bitset&) = default;
+    constexpr basic_dynamic_bitset(basic_dynamic_bitset&&) noexcept = default;
 
-    constexpr basic_bitset& operator=(const basic_bitset&) = default;
-    constexpr basic_bitset& operator=(basic_bitset&&) noexcept = default;
+    constexpr basic_dynamic_bitset& operator=(const basic_dynamic_bitset&) = default;
+    constexpr basic_dynamic_bitset& operator=(basic_dynamic_bitset&&) noexcept = default;
 
     constexpr auto size() const noexcept -> std::size_t;
     constexpr auto count() const noexcept -> std::size_t;
@@ -38,6 +38,9 @@ public:
 
     constexpr auto set_all() noexcept -> void;
     constexpr auto unset_all() noexcept -> void;
+
+    constexpr auto set() noexcept -> void { set_all(); }
+    constexpr auto reset() noexcept -> void { unset_all(); }
 
     constexpr auto resize(std::size_t bits_size) -> void;
 
@@ -69,27 +72,27 @@ private:
 };
 
 template<std::integral T, typename Allocator>
-constexpr basic_bitset<T, Allocator>::basic_bitset(const allocator_type& allocator)
+constexpr basic_dynamic_bitset<T, Allocator>::basic_dynamic_bitset(const allocator_type& allocator)
     : _bits(0, block_type{0}, allocator)
     , _bits_size(0)
 {
 }
 
 template<std::integral T, typename Allocator>
-constexpr basic_bitset<T, Allocator>::basic_bitset(std::size_t bits_size, const allocator_type& allocator)
+constexpr basic_dynamic_bitset<T, Allocator>::basic_dynamic_bitset(std::size_t bits_size, const allocator_type& allocator)
     : _bits(compute_block_count(bits_size), block_type{0}, allocator)
     , _bits_size(bits_size)
 {
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::size() const noexcept -> std::size_t
+constexpr auto basic_dynamic_bitset<T, Allocator>::size() const noexcept -> std::size_t
 {
     return _bits_size;
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::none() const noexcept -> bool
+constexpr auto basic_dynamic_bitset<T, Allocator>::none() const noexcept -> bool
 {
     bool ok = true;
     for_each_blocks(
@@ -113,7 +116,7 @@ constexpr auto basic_bitset<T, Allocator>::none() const noexcept -> bool
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::all() const noexcept -> bool
+constexpr auto basic_dynamic_bitset<T, Allocator>::all() const noexcept -> bool
 {
     bool ok = true;
     for_each_blocks(
@@ -136,7 +139,7 @@ constexpr auto basic_bitset<T, Allocator>::all() const noexcept -> bool
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::count() const noexcept -> std::size_t
+constexpr auto basic_dynamic_bitset<T, Allocator>::count() const noexcept -> std::size_t
 {
     std::size_t count = 0;
     for_each_blocks(
@@ -150,7 +153,7 @@ constexpr auto basic_bitset<T, Allocator>::count() const noexcept -> std::size_t
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::test(std::size_t bit_index) const noexcept -> bool
+constexpr auto basic_dynamic_bitset<T, Allocator>::test(std::size_t bit_index) const noexcept -> bool
 {
     const auto block_index = compute_block_index(bit_index);
     const auto block_bit_index = compute_block_bit_index(bit_index);
@@ -164,7 +167,7 @@ constexpr auto basic_bitset<T, Allocator>::test(std::size_t bit_index) const noe
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::set(std::size_t bit_index) noexcept -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::set(std::size_t bit_index) noexcept -> void
 {
     const auto block_index = compute_block_index(bit_index);
     const auto block_bit_index = compute_block_bit_index(bit_index);
@@ -184,7 +187,7 @@ constexpr auto basic_bitset<T, Allocator>::set(std::size_t bit_index) noexcept -
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::unset(std::size_t bit_index) noexcept -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::unset(std::size_t bit_index) noexcept -> void
 {
     const auto block_index = compute_block_index(bit_index);
     const auto block_bit_index = compute_block_bit_index(bit_index);
@@ -196,7 +199,7 @@ constexpr auto basic_bitset<T, Allocator>::unset(std::size_t bit_index) noexcept
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::set_all() noexcept -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::set_all() noexcept -> void
 {
     if (_bits_size == 0)
     {
@@ -212,7 +215,7 @@ constexpr auto basic_bitset<T, Allocator>::set_all() noexcept -> void
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::unset_all() noexcept -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::unset_all() noexcept -> void
 {
     for (auto& block : _bits)
     {
@@ -221,7 +224,7 @@ constexpr auto basic_bitset<T, Allocator>::unset_all() noexcept -> void
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::resize(std::size_t bits_size) -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::resize(std::size_t bits_size) -> void
 {
     _bits.resize(compute_block_count(bits_size), block_type{0});
     _bits_size = bits_size;
@@ -240,39 +243,39 @@ constexpr auto basic_bitset<T, Allocator>::resize(std::size_t bits_size) -> void
 
 template<std::integral T, typename Allocator>
 template<typename F>
-constexpr auto basic_bitset<T, Allocator>::for_each_set(F&& func) const -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::for_each_set(F&& func) const -> void
 {
     return for_each_impl<F, true>(std::forward<F>(func));
 }
 
 template<std::integral T, typename Allocator>
 template<typename F>
-constexpr auto basic_bitset<T, Allocator>::for_each_unset(F&& func) const -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::for_each_unset(F&& func) const -> void
 {
     return for_each_impl<F, false>(std::forward<F>(func));
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::compute_block_count(std::size_t bits_size) noexcept -> std::size_t
+constexpr auto basic_dynamic_bitset<T, Allocator>::compute_block_count(std::size_t bits_size) noexcept -> std::size_t
 {
     return (bits_size + bits_per_block - 1) / bits_per_block;
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::compute_block_index(std::size_t bit_index) noexcept -> std::size_t
+constexpr auto basic_dynamic_bitset<T, Allocator>::compute_block_index(std::size_t bit_index) noexcept -> std::size_t
 {
     return bit_index / bits_per_block;
 }
 
 template<std::integral T, typename Allocator>
-constexpr auto basic_bitset<T, Allocator>::compute_block_bit_index(std::size_t bit_index) noexcept -> std::size_t
+constexpr auto basic_dynamic_bitset<T, Allocator>::compute_block_bit_index(std::size_t bit_index) noexcept -> std::size_t
 {
     return bit_index % bits_per_block;
 }
 
 template<std::integral T, typename Allocator>
 template<typename F, bool IsSet>
-constexpr auto basic_bitset<T, Allocator>::for_each_impl(F&& func) const -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::for_each_impl(F&& func) const -> void
 {
     // Support two callable forms:
     // - void(std::size_t idx)
@@ -315,7 +318,7 @@ constexpr auto basic_bitset<T, Allocator>::for_each_impl(F&& func) const -> void
 
 template<std::integral T, typename Allocator>
 template<typename OnFull, typename OnTail>
-constexpr auto basic_bitset<T, Allocator>::for_each_blocks(auto&& self, OnFull&& on_full, OnTail&& on_tail) -> void
+constexpr auto basic_dynamic_bitset<T, Allocator>::for_each_blocks(auto&& self, OnFull&& on_full, OnTail&& on_tail) -> void
 {
     const std::size_t full_blocks = self._bits_size / bits_per_block;
     const std::size_t rem_bits = self._bits_size % bits_per_block;
@@ -342,4 +345,4 @@ constexpr auto basic_bitset<T, Allocator>::for_each_blocks(auto&& self, OnFull&&
     }
 }
 
-} // namespace ant
+}} // namespace ant::detail::dynamic_bitset::v0
