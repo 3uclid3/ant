@@ -32,19 +32,20 @@ constexpr basic_table_signature<Database>::basic_table_signature(const allocator
 template<typename Database>
 constexpr auto basic_table_signature<Database>::has(component_index index) const noexcept -> bool
 {
-    return _mask.test(index);
+    return index < _mask.size() && _mask.test(index);
 }
 
 template<typename Database>
 constexpr auto basic_table_signature<Database>::add(component_index index) noexcept -> void
 {
+    _mask.resize(index + 1);
     _mask.set(index);
 }
 
 template<typename Database>
 constexpr auto basic_table_signature<Database>::remove(component_index index) noexcept -> void
 {
-    _mask.unset(index);
+    _mask.reset(index);
 }
 
 template<typename Database>

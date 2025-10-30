@@ -1,15 +1,12 @@
 #include <doctest/doctest.h>
 
-#include <ant/core/detail/dynamic_bitset/v1/dynamic_bitset.hpp>
+#include <ant/core/dynamic_bitset.hpp>
 
-#include <cstdint>
-#include <memory>
 #include <utility>
 #include <vector>
 
-namespace ant::detail::dynamic_bitset { namespace {
+namespace ant { namespace {
 
-using dynamic_bitset = v1::basic_dynamic_bitset<std::uint64_t, std::allocator<std::uint64_t>>;
 using size_type = dynamic_bitset::size_type;
 
 TEST_CASE("basic_dynamic_bitset::ctor: default")
@@ -1218,4 +1215,4 @@ TEST_CASE("basic_dynamic_bitset::operator~: zero sized bitset produces empty res
     CHECK(result.empty());
 }
 
-}} // namespace ant::detail::dynamic_bitset
+}} // namespace ant
