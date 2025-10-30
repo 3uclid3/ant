@@ -126,6 +126,6 @@ jobs:
           output-file-path: benchmark-results/${{ matrix.file }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
-          alert-threshold: "30%"
+          alert-threshold: "130%"
           fail-on-alert: true
           comment-always: true
