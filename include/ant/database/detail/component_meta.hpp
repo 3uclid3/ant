@@ -5,9 +5,7 @@
 #include <memory>
 #include <new>
 #include <string_view>
-#include <vector>
 
-#include <ant/core/allocator.hpp>
 #include <ant/core/type_info.hpp>
 #include <ant/database/component_index.hpp>
 
@@ -63,12 +61,6 @@ struct component_meta
     std::size_t block_size{32}; // T components per block
     std::string_view name{};
 };
-
-template<typename Database>
-using basic_component_metas = std::vector<component_meta, rebind_allocator_t<component_meta, typename Database::allocator_type>>;
-
-template<typename Database>
-using basic_component_ids = std::vector<component_id, rebind_allocator_t<component_id, typename Database::allocator_type>>;
 
 template<typename T>
 consteval auto component_vtable::of() noexcept -> component_vtable

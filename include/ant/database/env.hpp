@@ -4,10 +4,9 @@
 #include <new>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
-#include <ant/core/allocator.hpp>
 #include <ant/core/assert.hpp>
+#include <ant/core/container.hpp>
 #include <ant/core/index.hpp>
 #include <ant/database/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
@@ -62,8 +61,8 @@ private:
 
     using slot_index = basic_index<struct slot_index_tag, component_index::value_type>;
 
-    using slots_type = std::vector<slot, rebind_allocator_t<slot, allocator_type>>;
-    using slot_indexes_type = std::vector<slot_index, rebind_allocator_t<slot_index, allocator_type>>;
+    using slots_type = vector<slot, allocator_type>;
+    using slot_indexes_type = vector<slot_index, allocator_type>;
 
     // clang-format off
     static constexpr bool is_nothrow_move_constructible = std::is_nothrow_move_constructible_v<slots_type> && 
@@ -85,18 +84,18 @@ private:
     allocator_type _allocator;
 
     // dense storage of component slots
-    slots_type _slots{typename slots_type::allocator_type{_allocator}};
+    slots_type _slots{rebind_allocator(_allocator)};
 
     // sparse mapping from component index to slot index
-    slot_indexes_type _slot_indexes{typename slot_indexes_type::allocator_type{_allocator}};
+    slot_indexes_type _slot_indexes{rebind_allocator(_allocator)};
 
-    // schema reference
     const schema_type* _schema{nullptr};
 };
 
 template<typename Database>
 basic_env<Database>::basic_env(const schema_type& schema, const allocator_type& allocator) noexcept
-    : _allocator{allocator}, _schema{&schema}
+    : _allocator{allocator}
+    , _schema{&schema}
 {
     // Pre-size sparse mapping to the full schema size to eliminate per-set resize branches
     _slot_indexes.resize(_schema->size(), slot_index{slot_index::npos()});
@@ -140,6 +139,8 @@ template<typename Database>
 template<typename T, typename... Args>
 auto basic_env<Database>::set(Args&&... args) -> T&
 {
+    using type_allocator = typename std::allocator_traits<allocator_type>::template rebind_alloc<T>;
+
     const auto idx = index_of<T>();
     ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
 
@@ -148,7 +149,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         // Prevent vector reallocation after constructing T to avoid leaks on throw
         _slots.reserve(_slots.size() + 1);
 
-        auto allocator = rebind_allocator<T>(_allocator);
+        type_allocator allocator = rebind_allocator(_allocator);
         T* ptr = allocator.allocate(1);
 
         std::construct_at(ptr, std::forward<Args>(args)...);
@@ -159,7 +160,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         new_slot.deleter = [](allocator_type& raw_allocator, void* ptr) noexcept {
             std::destroy_at(static_cast<T*>(ptr));
 
-            auto allocator = rebind_allocator<T>(raw_allocator);
+            type_allocator allocator = rebind_allocator(raw_allocator);
             allocator.deallocate(static_cast<T*>(ptr), 1);
         };
 
