@@ -104,6 +104,7 @@ jobs:
     permissions:
       contents: write
       deployments: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.benchmarks.outputs.matrix) }}
@@ -125,6 +126,6 @@ jobs:
           output-file-path: benchmark-results/${{ matrix.file }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
-          alert-threshold: "10%"
+          alert-threshold: "130%"
           fail-on-alert: true
           comment-always: true
