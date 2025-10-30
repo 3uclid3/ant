@@ -23,7 +23,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     outputs:
-      files: ${{ steps.set.outputs.files }}
+      matrix: ${{ steps.prepare.outputs.matrix }}
 
     if: ${{ !contains(github.event.head_commit.message, 'benchmarks skip') }}
     steps:
@@ -76,7 +76,7 @@ jobs:
         run: xmake test -g tests/bench
 
       - name: Prepare results for publishing
-        id: set
+        id: prepare
         shell: bash
         run: |
           shopt -s nullglob
@@ -100,8 +100,7 @@ jobs:
       deployments: write
     strategy:
       fail-fast: false
-      matrix:
-        file: ${{ fromJson(needs.benchmarks.outputs.files) }}
+      matrix: ${{ fromJson(needs.benchmarks.outputs.matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
