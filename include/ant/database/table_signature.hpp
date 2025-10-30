@@ -45,7 +45,10 @@ constexpr auto basic_table_signature<Database>::add(component_index index) noexc
 template<typename Database>
 constexpr auto basic_table_signature<Database>::remove(component_index index) noexcept -> void
 {
-    _mask.reset(index);
+    if (index < _mask.size())
+    {
+        _mask.reset(index);
+    }
 }
 
 template<typename Database>
