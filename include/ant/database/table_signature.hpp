@@ -8,7 +8,7 @@ template<typename Database>
 class basic_table_signature
 {
 public:
-    using bitset_type = basic_bitset<std::uint64_t, rebind_allocator_t<std::uint64_t, typename Database::allocator_type>>;
+    using bitset_type = dynamic_bitset;
     using allocator_type = typename bitset_type::allocator_type;
 
     constexpr explicit basic_table_signature(const allocator_type& allocator = allocator_type{}) noexcept;
