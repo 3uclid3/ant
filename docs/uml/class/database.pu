@@ -43,8 +43,8 @@ namespace ant {
 	}
 
 	' Entity index
-	class "basic_entity_index<Database>" as basic_entity_index <<template>> {
-		+basic_entity_index(allocator: allocator_type)
+	class "basic_entity_registry<Database>" as basic_entity_registry <<template>> {
+		+basic_entity_registry(allocator: allocator_type)
 		+contains(entity: entity_type): bool
 		+create(): entity_type
 		+destroy(entity: entity_type): void
@@ -90,9 +90,9 @@ namespace ant {
 	' Relationships
 	basic_schema_builder ..> basic_schema : build()
 	basic_env ..> basic_schema : uses
-	basic_entity_index ..> table_location
-	basic_entity_index ..> table_index
-	basic_entity_index ..> row_index
+	basic_entity_registry ..> table_location
+	basic_entity_registry ..> table_index
+	basic_entity_registry ..> row_index
 	basic_table ..> basic_table_signature
 	basic_table *-- basic_column : columns
 	basic_table ..> row_index
