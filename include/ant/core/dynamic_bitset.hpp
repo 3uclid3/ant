@@ -370,6 +370,8 @@ constexpr auto basic_dynamic_bitset<Allocator>::set(size_type bit_idx) -> basic_
 template<typename Allocator>
 constexpr auto basic_dynamic_bitset<Allocator>::set(size_type bit_idx, size_type size) -> basic_dynamic_bitset&
 {
+    ANT_ASSERT(bit_idx + size <= _size);
+
     return for_each_blocks_in_range(
         bit_idx,
         size,
@@ -435,6 +437,8 @@ constexpr auto basic_dynamic_bitset<Allocator>::flip(size_type bit_idx) -> basic
 template<typename Allocator>
 constexpr auto basic_dynamic_bitset<Allocator>::flip(size_type bit_idx, size_type size) -> basic_dynamic_bitset&
 {
+    ANT_ASSERT(bit_idx + size <= _size);
+
     return for_each_blocks_in_range(
         bit_idx,
         size,
