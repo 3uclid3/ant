@@ -14,12 +14,12 @@
 
 namespace ant {
 
-template<typename Database>
+template<typename Allocator>
 class basic_env
 {
 public:
-    using allocator_type = Database::allocator_type;
-    using schema_type = basic_schema<Database>;
+    using allocator_type = Allocator;
+    using schema_type = basic_schema<rebind_alloc_t<std::byte, allocator_type>>;
 
 public:
     explicit basic_env(const schema_type& schema, const allocator_type& allocator = {}) noexcept;
@@ -92,8 +92,8 @@ private:
     const schema_type* _schema{nullptr};
 };
 
-template<typename Database>
-basic_env<Database>::basic_env(const schema_type& schema, const allocator_type& allocator) noexcept
+template<typename Allocator>
+basic_env<Allocator>::basic_env(const schema_type& schema, const allocator_type& allocator) noexcept
     : _allocator{allocator}
     , _schema{&schema}
 {
@@ -101,43 +101,46 @@ basic_env<Database>::basic_env(const schema_type& schema, const allocator_type& 
     _slot_indexes.resize(_schema->size(), slot_index{slot_index::npos()});
 }
 
-template<typename Database>
-basic_env<Database>::~basic_env()
+template<typename Allocator>
+basic_env<Allocator>::~basic_env()
 {
     for (auto& slot : _slots)
     {
-        slot.deleter(_allocator, slot.ptr);
+        if (slot.deleter)
+        {
+            slot.deleter(_allocator, slot.ptr);
+        }
     }
 }
 
-template<typename Database>
+template<typename Allocator>
 template<typename T>
-auto basic_env<Database>::has() const noexcept -> bool
+auto basic_env<Allocator>::has() const noexcept -> bool
 {
     return get<T>() != nullptr;
 }
 
-template<typename Database>
+template<typename Allocator>
 template<typename T>
-auto basic_env<Database>::get() const noexcept -> const T*
+auto basic_env<Allocator>::get() const noexcept -> const T*
 {
     ANT_ASSERT(index_of<T>() != component_index::npos(), "component type is not registered in schema");
     const auto index = slot_index_of<T>();
     return index < _slots.size() ? static_cast<const T*>(_slots[index].ptr) : nullptr;
 }
 
-template<typename Database>
+template<typename Allocator>
 template<typename T>
-auto basic_env<Database>::get() noexcept -> T*
+auto basic_env<Allocator>::get() noexcept -> T*
 {
     ANT_ASSERT(index_of<T>() != component_index::npos(), "component type is not registered in schema");
     const auto index = slot_index_of<T>();
     return index < _slots.size() ? (static_cast<T*>(_slots[index].ptr)) : nullptr;
 }
 
-template<typename Database>
+template<typename Allocator>
 template<typename T, typename... Args>
-auto basic_env<Database>::set(Args&&... args) -> T&
+auto basic_env<Allocator>::set(Args&&... args) -> T&
 {
     const auto idx = index_of<T>();
     ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
@@ -175,9 +178,9 @@ auto basic_env<Database>::set(Args&&... args) -> T&
     return *std::launder(static_cast<T*>(_slots[_slot_indexes[idx]].ptr));
 }
 
-template<typename Database>
+template<typename Allocator>
 template<typename T>
-auto basic_env<Database>::unset() -> void
+auto basic_env<Allocator>::unset() -> void
 {
     const auto idx = index_of<T>();
     ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
@@ -205,22 +208,22 @@ auto basic_env<Database>::unset() -> void
     _slot_indexes[idx] = slot_index::npos();
 }
 
-template<typename Database>
-auto basic_env<Database>::empty() const noexcept -> bool
+template<typename Allocator>
+auto basic_env<Allocator>::empty() const noexcept -> bool
 {
     return _slots.empty();
 }
 
-template<typename Database>
+template<typename Allocator>
 template<typename T>
-auto basic_env<Database>::index_of() const noexcept -> component_index
+auto basic_env<Allocator>::index_of() const noexcept -> component_index
 {
     return _schema->template index_of<T>();
 }
 
-template<typename Database>
+template<typename Allocator>
 template<typename T>
-auto basic_env<Database>::slot_index_of() const noexcept -> slot_index
+auto basic_env<Allocator>::slot_index_of() const noexcept -> slot_index
 {
     const auto index = index_of<T>();
     ANT_ASSERT(index < _slot_indexes.size(), "component index out of bounds for slot indexes");

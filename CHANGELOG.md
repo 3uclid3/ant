@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING**: Removed the database template parameter and simplified the public database API. Schemas and related types no longer parameterize on the database type; downstream code will need to update includes and type aliases accordingly. (PR: remove-database-template-parameter)
+
 ## [0.9.0] - 2025-11-01
 
 ### Changed

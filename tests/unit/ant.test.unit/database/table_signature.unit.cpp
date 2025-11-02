@@ -2,12 +2,11 @@
 
 #include <ant/database/table_signature.hpp>
 
-#include <ant.test.shared/database/shim_database.hpp>
 #include <ant/database/component_index.hpp>
 
 namespace ant { namespace {
 
-using table_signature = basic_table_signature<test::shim_naked_database>;
+using table_signature = basic_table_signature<std::allocator<std::byte>>;
 
 TEST_CASE("table_signature::add: updates membership")
 {

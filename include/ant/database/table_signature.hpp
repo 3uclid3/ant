@@ -1,15 +1,17 @@
 #pragma once
 
+#include <ant/core/memory.hpp>
 #include <ant/database/component_bitset.hpp>
 
 namespace ant {
 
-template<typename Database>
+template<typename Allocator>
 class basic_table_signature
 {
 public:
-    using bitset_type = dynamic_bitset;
-    using allocator_type = typename bitset_type::allocator_type;
+    using allocator_type = Allocator;
+    using bitset_type = component_bitset<rebind_alloc_t<std::uint64_t, allocator_type>>;
+    using bitset_allocator_type = typename bitset_type::allocator_type;
 
     constexpr explicit basic_table_signature(const allocator_type& allocator = allocator_type{}) noexcept;
 
@@ -23,27 +25,27 @@ private:
     bitset_type _mask;
 };
 
-template<typename Database>
-constexpr basic_table_signature<Database>::basic_table_signature(const allocator_type& allocator) noexcept
-    : _mask(allocator_type(allocator))
+template<typename Allocator>
+constexpr basic_table_signature<Allocator>::basic_table_signature(const allocator_type& allocator) noexcept
+    : _mask(bitset_allocator_type(allocator))
 {
 }
 
-template<typename Database>
-constexpr auto basic_table_signature<Database>::has(component_index index) const noexcept -> bool
+template<typename Allocator>
+constexpr auto basic_table_signature<Allocator>::has(component_index index) const noexcept -> bool
 {
     return index < _mask.size() && _mask.test(index);
 }
 
-template<typename Database>
-constexpr auto basic_table_signature<Database>::add(component_index index) noexcept -> void
+template<typename Allocator>
+constexpr auto basic_table_signature<Allocator>::add(component_index index) noexcept -> void
 {
     _mask.resize(index + 1);
     _mask.set(index);
 }
 
-template<typename Database>
-constexpr auto basic_table_signature<Database>::remove(component_index index) noexcept -> void
+template<typename Allocator>
+constexpr auto basic_table_signature<Allocator>::remove(component_index index) noexcept -> void
 {
     if (index < _mask.size())
     {
@@ -51,8 +53,8 @@ constexpr auto basic_table_signature<Database>::remove(component_index index) no
     }
 }
 
-template<typename Database>
-constexpr auto basic_table_signature<Database>::empty() const noexcept -> bool
+template<typename Allocator>
+constexpr auto basic_table_signature<Allocator>::empty() const noexcept -> bool
 {
     return _mask.none();
 }

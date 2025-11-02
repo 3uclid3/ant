@@ -1,18 +1,19 @@
 #include <doctest/doctest.h>
 
-#include <ant/database/column.hpp>
-#include <ant/database/component_index.hpp>
-#include <ant/database/detail/component_meta.hpp>
 #include <ant/database/table.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
-#include <ant.test.shared/database/shim_database.hpp>
+#include <ant/database/column.hpp>
+#include <ant/database/component_index.hpp>
+#include <ant/database/detail/component_meta.hpp>
+#include <ant/database/entity_traits.hpp>
+#include <ant/entity.hpp>
 
 namespace ant { namespace {
 
-using table_signature = basic_table_signature<test::shim_naked_database>;
-using table = basic_table<test::shim_naked_database>;
-using entity = typename table::entity_type;
+using allocator = std::allocator<std::byte>;
+using table_signature = basic_table_signature<allocator>;
+using table = basic_table<entity, allocator>;
 
 static constexpr auto make_entity(std::uint32_t id, std::uint32_t ver = 0) -> entity
 {

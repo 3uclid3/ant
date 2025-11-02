@@ -12,14 +12,15 @@
 
 namespace ant {
 
-template<typename Database>
+template<typename Allocator>
 class basic_column
 {
 public:
-    using allocator_type = rebind_alloc_t<std::byte, typename Database::allocator_type>;
+    using allocator_type = rebind_alloc_t<std::byte, Allocator>;
     using component_meta_type = detail::component_meta;
 
-    explicit basic_column(const component_meta_type& meta, const allocator_type& allocator = allocator_type{}) noexcept;
+    explicit basic_column(const component_meta_type& meta) noexcept;
+    basic_column(const component_meta_type& meta, const allocator_type& allocator) noexcept;
     ~basic_column();
 
     basic_column(const basic_column& other) = delete;
@@ -56,15 +57,21 @@ private:
     const component_meta_type* _meta{nullptr};
 };
 
-template<typename Database>
-basic_column<Database>::basic_column(const component_meta_type& meta, const allocator_type& allocator) noexcept
-    : _allocator(allocator)
+template<typename Allocator>
+basic_column<Allocator>::basic_column(const component_meta_type& meta) noexcept
+    : _meta(&meta)
+{
+}
+
+template<typename Allocator>
+basic_column<Allocator>::basic_column(const component_meta_type& meta, const allocator_type& allocator) noexcept
+    : _allocator(rebind_alloc(allocator))
     , _meta(&meta)
 {
 }
 
-template<typename Database>
-basic_column<Database>::~basic_column()
+template<typename Allocator>
+basic_column<Allocator>::~basic_column()
 {
     if (_meta->vtable.destroy)
     {
@@ -82,8 +89,8 @@ basic_column<Database>::~basic_column()
     }
 }
 
-template<typename Database>
-auto basic_column<Database>::emplace_back() -> row_index
+template<typename Allocator>
+auto basic_column<Allocator>::emplace_back() -> row_index
 {
     if (_size >= _blocks.size() * _meta->block_size)
     {
@@ -100,8 +107,8 @@ auto basic_column<Database>::emplace_back() -> row_index
     return row_index::cast(_size - 1);
 }
 
-template<typename Database>
-auto basic_column<Database>::swap_and_pop(row_index idx) noexcept -> void
+template<typename Allocator>
+auto basic_column<Allocator>::swap_and_pop(row_index idx) noexcept -> void
 {
     ANT_ASSERT(static_cast<std::size_t>(idx) < _size, "Row index out of bounds");
 
@@ -134,34 +141,34 @@ auto basic_column<Database>::swap_and_pop(row_index idx) noexcept -> void
     --_size;
 }
 
-template<typename Database>
-auto basic_column<Database>::row(row_index idx) const noexcept -> const void*
+template<typename Allocator>
+auto basic_column<Allocator>::row(row_index idx) const noexcept -> const void*
 {
     const block_loc loc = to_loc(idx);
     return _blocks[loc.idx] + loc.off;
 }
 
-template<typename Database>
-auto basic_column<Database>::row(row_index idx) noexcept -> void*
+template<typename Allocator>
+auto basic_column<Allocator>::row(row_index idx) noexcept -> void*
 {
     const block_loc loc = to_loc(idx);
     return _blocks[loc.idx] + loc.off;
 }
 
-template<typename Database>
-auto basic_column<Database>::empty() const noexcept -> bool
+template<typename Allocator>
+auto basic_column<Allocator>::empty() const noexcept -> bool
 {
     return size() == 0;
 }
 
-template<typename Database>
-auto basic_column<Database>::size() const noexcept -> std::size_t
+template<typename Allocator>
+auto basic_column<Allocator>::size() const noexcept -> std::size_t
 {
     return _size;
 }
 
-template<typename Database>
-auto basic_column<Database>::to_loc(row_index idx) const noexcept -> block_loc
+template<typename Allocator>
+auto basic_column<Allocator>::to_loc(row_index idx) const noexcept -> block_loc
 {
     ANT_ASSERT(static_cast<std::size_t>(idx) < _size, "Row index out of bounds");
     const std::size_t uidx = static_cast<std::size_t>(idx);
