@@ -84,10 +84,10 @@ private:
     allocator_type _allocator;
 
     // dense storage of component slots
-    slots_type _slots{rebind_allocator(_allocator)};
+    slots_type _slots{rebind_alloc(_allocator)};
 
     // sparse mapping from component index to slot index
-    slot_indexes_type _slot_indexes{rebind_allocator(_allocator)};
+    slot_indexes_type _slot_indexes{rebind_alloc(_allocator)};
 
     const schema_type* _schema{nullptr};
 };
@@ -149,7 +149,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         // Prevent vector reallocation after constructing T to avoid leaks on throw
         _slots.reserve(_slots.size() + 1);
 
-        type_allocator allocator = rebind_allocator(_allocator);
+        type_allocator allocator = rebind_alloc(_allocator);
         T* ptr = allocator.allocate(1);
 
         std::construct_at(ptr, std::forward<Args>(args)...);
@@ -160,7 +160,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         new_slot.deleter = [](allocator_type& raw_allocator, void* ptr) noexcept {
             std::destroy_at(static_cast<T*>(ptr));
 
-            type_allocator allocator = rebind_allocator(raw_allocator);
+            type_allocator allocator = rebind_alloc(raw_allocator);
             allocator.deallocate(static_cast<T*>(ptr), 1);
         };
 
