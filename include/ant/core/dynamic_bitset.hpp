@@ -477,7 +477,7 @@ constexpr auto basic_dynamic_bitset<Allocator>::for_each_set(F&& func) const -> 
                 func(idx);
             }
 
-            block &= ~mask_for(idx);
+            block &= ~(1ULL << offset);
         }
     }
 }
@@ -542,7 +542,7 @@ constexpr auto basic_dynamic_bitset<Allocator>::for_each_unset(F&& func) const -
                 func(idx);
             }
 
-            tail &= ~mask_for(idx);
+            tail &= ~(1ULL << offset);
         }
     }
 }
