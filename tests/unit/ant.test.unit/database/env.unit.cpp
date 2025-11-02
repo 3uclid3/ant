@@ -4,11 +4,10 @@
 #include <ant/database/env.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
-#include <ant.test.shared/database/shim_database.hpp>
 
 namespace ant { namespace {
 
-using env = basic_env<test::shim_naked_database>;
+using env = basic_env<std::allocator<std::byte>>;
 
 struct fixture
 {

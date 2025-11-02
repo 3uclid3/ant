@@ -14,11 +14,11 @@
 
 namespace ant {
 
-template<typename Database>
+template<typename Allocator>
 class basic_env
 {
 public:
-    using allocator_type = Database::allocator_type;
+    using allocator_type = Allocator;
     using schema_type = basic_schema<rebind_alloc_t<std::byte, allocator_type>>;
 
 public:
