@@ -6,7 +6,7 @@
 #include <ant/core/assert.hpp>
 #include <ant/core/container.hpp>
 #include <ant/core/type_info.hpp>
-#include <ant/database/component_index.hpp>
+#include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 
 namespace ant {
@@ -18,12 +18,13 @@ public:
     using allocator_type = Allocator;
 
     using component_meta_type = detail::component_meta;
+    using component_index_type = detail::component_index;
     using component_id_type = detail::component_id;
 
     using component_metas_type = vector<component_meta_type, allocator_type>;
     using component_ids_type = vector<component_id_type, allocator_type>;
 
-    using size_type = component_index::value_type;
+    using size_type = detail::component_index::value_type;
 
     using const_iterator = typename component_metas_type::const_iterator;
     using const_reverse_iterator = typename component_metas_type::const_reverse_iterator;
@@ -41,11 +42,11 @@ public:
     constexpr auto contains() const noexcept -> bool;
 
     template<typename T>
-    constexpr auto index_of() const noexcept -> component_index;
+    constexpr auto index_of() const noexcept -> component_index_type;
 
     template<typename T>
     constexpr auto meta_of() const noexcept -> const component_meta_type&;
-    constexpr auto meta_of(component_index index) const noexcept -> const component_meta_type&;
+    constexpr auto meta_of(component_index_type index) const noexcept -> const component_meta_type&;
 
     constexpr auto empty() const noexcept -> bool;
     constexpr auto size() const noexcept -> size_type;
@@ -112,18 +113,18 @@ template<typename Allocator>
 template<typename T>
 constexpr auto basic_schema<Allocator>::contains() const noexcept -> bool
 {
-    return index_of<T>() != component_index::npos();
+    return index_of<T>() != component_index_type::npos();
 }
 
 template<typename Allocator>
 template<typename T>
-constexpr auto basic_schema<Allocator>::index_of() const noexcept -> component_index
+constexpr auto basic_schema<Allocator>::index_of() const noexcept -> component_index_type
 {
     const component_id_type id = id_of<T>();
 
     auto it = std::ranges::lower_bound(_ids, id);
 
-    return it != _ids.end() && *it == id ? component_index::cast(std::distance(_ids.begin(), it)) : component_index::npos();
+    return it != _ids.end() && *it == id ? component_index_type::cast(std::distance(_ids.begin(), it)) : component_index_type::npos();
 }
 
 template<typename Allocator>
@@ -134,7 +135,7 @@ constexpr auto basic_schema<Allocator>::meta_of() const noexcept -> const compon
 }
 
 template<typename Allocator>
-constexpr auto basic_schema<Allocator>::meta_of(component_index index) const noexcept -> const component_meta_type&
+constexpr auto basic_schema<Allocator>::meta_of(detail::component_index index) const noexcept -> const component_meta_type&
 {
     const auto raw_index = static_cast<component_metas_type::size_type>(index);
     ANT_ASSERT(raw_index < _metas.size(), "Component index out of bounds");
@@ -206,7 +207,7 @@ constexpr auto basic_schema_builder<Allocator>::build() noexcept -> basic_schema
     for (std::size_t i = 0; i < _metas.size(); ++i)
     {
         auto& meta = _metas[i];
-        meta.index = component_index::cast(i);
+        meta.index = detail::component_index::cast(i);
 
         ids.emplace_back(meta.id);
     }

@@ -1,11 +1,11 @@
 #include <doctest/doctest.h>
 
-#include <ant/database/column.hpp>
+#include <ant/database/detail/column.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
 #include <ant/database/schema.hpp>
 
-namespace ant { namespace {
+namespace ant::detail { namespace {
 
 using column = basic_column<std::allocator<std::byte>>;
 
@@ -117,4 +117,4 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "column::swap_and_pop: last element cal
     CHECK_EQ(test::tracked::dtor_count, 1);
 }
 
-}} // namespace ant
+}} // namespace ant::detail

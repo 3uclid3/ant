@@ -4,8 +4,8 @@
 
 #include <ant/core/index.hpp>
 
-namespace ant {
+namespace ant::detail {
 
 using component_index = basic_index<struct component_index_tag, std::uint32_t>;
 
-} // namespace ant
+} // namespace ant::detail

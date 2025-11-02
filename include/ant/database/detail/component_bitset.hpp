@@ -3,11 +3,11 @@
 #include <cstdint>
 
 #include <ant/core/dynamic_bitset.hpp>
-#include <ant/database/component_index.hpp>
+#include <ant/database/detail/component_index.hpp>
 
-namespace ant {
+namespace ant::detail {
 
 template<typename Allocator>
 using component_bitset = basic_dynamic_bitset<Allocator>;
 
-} // namespace ant
+} // namespace ant::detail

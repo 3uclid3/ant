@@ -6,21 +6,20 @@
 #include <ant/core/assert.hpp>
 #include <ant/core/container.hpp>
 #include <ant/core/memory.hpp>
-#include <ant/database/component_index.hpp>
+#include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
-#include <ant/database/table_index.hpp>
+#include <ant/database/detail/table_index.hpp>
 
-namespace ant {
+namespace ant::detail {
 
 template<typename Allocator>
 class basic_column
 {
 public:
     using allocator_type = rebind_alloc_t<std::byte, Allocator>;
-    using component_meta_type = detail::component_meta;
 
-    explicit basic_column(const component_meta_type& meta) noexcept;
-    basic_column(const component_meta_type& meta, const allocator_type& allocator) noexcept;
+    explicit basic_column(const component_meta& meta) noexcept;
+    basic_column(const component_meta& meta, const allocator_type& allocator) noexcept;
     ~basic_column();
 
     basic_column(const basic_column& other) = delete;
@@ -54,17 +53,17 @@ private:
     vector<block, allocator_type> _blocks;
     std::size_t _size{0};
 
-    const component_meta_type* _meta{nullptr};
+    const component_meta* _meta{nullptr};
 };
 
 template<typename Allocator>
-basic_column<Allocator>::basic_column(const component_meta_type& meta) noexcept
+basic_column<Allocator>::basic_column(const component_meta& meta) noexcept
     : _meta(&meta)
 {
 }
 
 template<typename Allocator>
-basic_column<Allocator>::basic_column(const component_meta_type& meta, const allocator_type& allocator) noexcept
+basic_column<Allocator>::basic_column(const component_meta& meta, const allocator_type& allocator) noexcept
     : _allocator(rebind_alloc(allocator))
     , _meta(&meta)
 {
@@ -184,4 +183,4 @@ auto basic_column<Allocator>::to_loc(row_index idx) const noexcept -> block_loc
     return {block_idx, off_bytes};
 }
 
-} // namespace ant
+} // namespace ant::detail

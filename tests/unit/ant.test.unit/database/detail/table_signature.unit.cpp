@@ -1,10 +1,10 @@
 #include <doctest/doctest.h>
 
-#include <ant/database/table_signature.hpp>
+#include <ant/database/detail/table_signature.hpp>
 
-#include <ant/database/component_index.hpp>
+#include <ant/database/detail/component_index.hpp>
 
-namespace ant { namespace {
+namespace ant::detail { namespace {
 
 using table_signature = basic_table_signature<std::allocator<std::byte>>;
 
@@ -38,4 +38,4 @@ TEST_CASE("table_signature::add: updates membership")
     CHECK(signature.has(ten));
 }
 
-}} // namespace ant
+}} // namespace ant::detail

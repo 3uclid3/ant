@@ -8,7 +8,7 @@
 #include <ant/core/assert.hpp>
 #include <ant/core/container.hpp>
 #include <ant/core/index.hpp>
-#include <ant/database/component_index.hpp>
+#include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/schema.hpp>
 
@@ -54,12 +54,12 @@ private:
     {
         using deleter_fn = void (*)(allocator_type&, void*) noexcept;
 
-        component_index index{component_index::npos()};
+        detail::component_index index{detail::component_index::npos()};
         void* ptr{nullptr};
         deleter_fn deleter{nullptr};
     };
 
-    using slot_index = basic_index<struct slot_index_tag, component_index::value_type>;
+    using slot_index = basic_index<struct slot_index_tag, detail::component_index::value_type>;
 
     using slots_type = vector<slot, allocator_type>;
     using slot_indexes_type = vector<slot_index, allocator_type>;
@@ -75,7 +75,7 @@ private:
     // clang-format on  
 
     template<typename T>
-    auto index_of() const noexcept -> component_index;
+    auto index_of() const noexcept -> detail::component_index;
 
     template<typename T>
     auto slot_index_of() const noexcept -> slot_index;
@@ -124,7 +124,7 @@ template<typename Allocator>
 template<typename T>
 auto basic_env<Allocator>::get() const noexcept -> const T*
 {
-    ANT_ASSERT(index_of<T>() != component_index::npos(), "component type is not registered in schema");
+    ANT_ASSERT(index_of<T>() != detail::component_index::npos(), "component type is not registered in schema");
     const auto index = slot_index_of<T>();
     return index < _slots.size() ? static_cast<const T*>(_slots[index].ptr) : nullptr;
 }
@@ -133,7 +133,7 @@ template<typename Allocator>
 template<typename T>
 auto basic_env<Allocator>::get() noexcept -> T*
 {
-    ANT_ASSERT(index_of<T>() != component_index::npos(), "component type is not registered in schema");
+    ANT_ASSERT(index_of<T>() != detail::component_index::npos(), "component type is not registered in schema");
     const auto index = slot_index_of<T>();
     return index < _slots.size() ? (static_cast<T*>(_slots[index].ptr)) : nullptr;
 }
@@ -143,7 +143,7 @@ template<typename T, typename... Args>
 auto basic_env<Allocator>::set(Args&&... args) -> T&
 {
     const auto idx = index_of<T>();
-    ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
+    ANT_ASSERT(idx != detail::component_index::npos(), "component type is not registered in schema");
 
     if (_slot_indexes[idx] == slot_index::npos())
     {
@@ -183,7 +183,7 @@ template<typename T>
 auto basic_env<Allocator>::unset() -> void
 {
     const auto idx = index_of<T>();
-    ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
+    ANT_ASSERT(idx != detail::component_index::npos(), "component type is not registered in schema");
 
     const auto slot_idx = _slot_indexes[idx];
     if (slot_idx == slot_index::npos())
@@ -216,7 +216,7 @@ auto basic_env<Allocator>::empty() const noexcept -> bool
 
 template<typename Allocator>
 template<typename T>
-auto basic_env<Allocator>::index_of() const noexcept -> component_index
+auto basic_env<Allocator>::index_of() const noexcept -> detail::component_index
 {
     return _schema->template index_of<T>();
 }

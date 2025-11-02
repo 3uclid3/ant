@@ -7,7 +7,7 @@
 #include <string_view>
 
 #include <ant/core/type_info.hpp>
-#include <ant/database/component_index.hpp>
+#include <ant/database/detail/component_index.hpp>
 
 namespace ant::detail {
 

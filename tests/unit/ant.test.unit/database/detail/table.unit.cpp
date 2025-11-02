@@ -1,15 +1,15 @@
 #include <doctest/doctest.h>
 
-#include <ant/database/table.hpp>
+#include <ant/database/detail/table.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
-#include <ant/database/column.hpp>
-#include <ant/database/component_index.hpp>
+#include <ant/database/detail/column.hpp>
+#include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/entity_traits.hpp>
 #include <ant/entity.hpp>
 
-namespace ant { namespace {
+namespace ant::detail { namespace {
 
 using allocator = std::allocator<std::byte>;
 using table_signature = basic_table_signature<allocator>;
@@ -171,4 +171,4 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(index): last e
     CHECK_EQ(test::tracked::dtor_count, 1);
 }
 
-}} // namespace ant
+}} // namespace ant::detail
