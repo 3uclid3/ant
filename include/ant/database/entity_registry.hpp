@@ -50,9 +50,9 @@ private:
 template<typename Database>
 basic_entity_registry<Database>::basic_entity_registry(const allocator_type& allocator) noexcept
     : _allocator{allocator}
-    , _location{rebind_allocator(_allocator)}
-    , _versions{rebind_allocator(_allocator)}
-    , _free{rebind_allocator(_allocator)}
+    , _location{rebind_alloc(_allocator)}
+    , _versions{rebind_alloc(_allocator)}
+    , _free{rebind_alloc(_allocator)}
 {
 }
 

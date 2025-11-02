@@ -45,7 +45,7 @@ template<typename Database>
 basic_table<Database>::basic_table(signature_type&& signature, columns_type&& columns, const allocator_type& allocator) noexcept
     : _signature(std::move(signature))
     , _columns(std::move(columns))
-    , _rows(rebind_allocator(allocator))
+    , _rows(rebind_alloc(allocator))
 {
 }
 

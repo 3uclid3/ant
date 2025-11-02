@@ -180,7 +180,7 @@ constexpr auto basic_schema<Database>::rend() const noexcept -> const_reverse_it
 template<typename Database>
 constexpr basic_schema_builder<Database>::basic_schema_builder(const allocator_type& alloc) noexcept
     : _allocator(alloc)
-    , _metas(rebind_allocator(_allocator))
+    , _metas(rebind_alloc(_allocator))
 {
 }
 
@@ -200,7 +200,7 @@ constexpr auto basic_schema_builder<Database>::build() noexcept -> basic_schema<
 {
     std::ranges::sort(_metas, [](const auto& lhs, const auto& rhs) { return lhs.id < rhs.id; });
 
-    component_ids_type ids{rebind_allocator(_allocator)};
+    component_ids_type ids{rebind_alloc(_allocator)};
     ids.reserve(_metas.size());
 
     for (const auto& meta : _metas)
