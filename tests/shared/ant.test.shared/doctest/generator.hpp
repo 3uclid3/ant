@@ -64,7 +64,7 @@ constexpr auto make_range(Ts&&... xs)
         std::size_t gen_idx = 0; \
         for (const auto& gen_in : gen_range) \
         { \
-            std::string gen_subcase_name = std::format("Index = {}", gen_idx++); \
+            std::string gen_subcase_name = std::format("{{{}}}[{}]", #__VA_ARGS__, gen_idx++); \
             DOCTEST_SUBCASE(gen_subcase_name.c_str()) \
             { \
                 gen_value = gen_in; \
