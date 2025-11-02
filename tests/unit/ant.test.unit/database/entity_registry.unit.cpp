@@ -3,13 +3,11 @@
 #include <ant/database/entity_registry.hpp>
 
 #include <ant.test.shared/database/entity_types.hpp>
-#include <ant.test.shared/database/shim_database.hpp>
 
 namespace ant { namespace {
 
-using allocator = test::shim_naked_database::allocator_type;
-using entity_registry = basic_entity_registry<allocator>;
-using traits = entity_traits<test::shim_naked_database::entity_type>;
+using entity_registry = basic_entity_registry<test::entity32, std::allocator<test::entity32>>;
+using traits = entity_registry::traits;
 
 TEST_CASE("entity_registry::ctor: initially empty")
 {

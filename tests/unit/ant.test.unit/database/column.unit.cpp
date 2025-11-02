@@ -3,7 +3,6 @@
 #include <ant/database/column.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
-#include <ant.test.shared/database/shim_database.hpp>
 #include <ant/database/schema.hpp>
 
 namespace ant { namespace {
