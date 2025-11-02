@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2025-11-01
+
+### Changed
+
+- core: Simplified `dynamic_bitset` implementation for smaller, clearer code while preserving public API. (#53)
+
+### Performance
+
+- Reduced allocations and improved common-path bit operations for `dynamic_bitset`. (#53)
+
 ## [0.8.0] - 2025-10-30
 
 ### Changed

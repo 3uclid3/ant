@@ -8,6 +8,6 @@
 namespace ant {
 
 template<typename Allocator>
-using component_bitset = basic_dynamic_bitset<std::uint64_t, Allocator>;
+using component_bitset = basic_dynamic_bitset<Allocator>;
 
 } // namespace ant
