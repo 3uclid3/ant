@@ -57,7 +57,7 @@ auto odd_bitset(std::size_t size) -> dynamic_bitset
 }
 
 const auto tail_only_blocks_size = dynamic_bitset::bits_per_block / 2;
-const auto full_only_blocks_size = dynamic_bitset::bits_per_block * 2;
+const auto full_only_blocks_size = dynamic_bitset::bits_per_block * 4;
 const auto full_and_tail_blocks_size = full_only_blocks_size + tail_only_blocks_size;
 
 TEST_CASE("basic_dynamic_bitset::ctor: default")
@@ -505,6 +505,24 @@ TEST_CASE("basic_dynamic_bitset::set(range): sets a range")
     }
 }
 
+TEST_CASE("basic_dynamic_bitset::set(range): size 0 is no-op")
+{
+    dynamic_bitset bitset{odd_bitset(24)};
+
+    bitset.set(10, 0);
+
+    CHECK_EQ(bitset, odd_bitset(24));
+}
+
+TEST_CASE("basic_dynamic_bitset::reset(all): empty is no-op")
+{
+    dynamic_bitset bitset;
+
+    bitset.reset();
+
+    CHECK(bitset.empty());
+}
+
 TEST_CASE("basic_dynamic_bitset::reset(all): resets all bits")
 {
     dynamic_bitset bitset{64};
@@ -529,9 +547,11 @@ TEST_CASE("basic_dynamic_bitset::reset(bit_idx): resets a bit")
 TEST_CASE("basic_dynamic_bitset::reset(range): resets a range")
 {
     static constexpr std::size_t range_start = 2;
-    static constexpr std::size_t range_size = 6;
 
-    dynamic_bitset bitset{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
+    const std::size_t size = GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size);
+    const std::size_t range_size = size / 2;
+
+    dynamic_bitset bitset{size};
     bitset.set();
     bitset.reset(range_start, range_size);
 
@@ -541,6 +561,15 @@ TEST_CASE("basic_dynamic_bitset::reset(range): resets a range")
     {
         CHECK_FALSE(bitset.test(i));
     }
+}
+
+TEST_CASE("basic_dynamic_bitset::reset(range): size 0 is no-op")
+{
+    dynamic_bitset bitset{odd_bitset(24)};
+
+    bitset.reset(10, 0);
+
+    CHECK_EQ(bitset, odd_bitset(24));
 }
 
 TEST_CASE("basic_dynamic_bitset::flip(all): empty ")
@@ -592,9 +621,11 @@ TEST_CASE("basic_dynamic_bitset::flip(bit_idx): sets a bit")
 TEST_CASE("basic_dynamic_bitset::flip(range): sets a range")
 {
     static constexpr std::size_t range_start = 2;
-    static constexpr std::size_t range_size = 6;
 
-    dynamic_bitset bitset{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
+    const std::size_t size = GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size);
+    const std::size_t range_size = size / 2;
+
+    dynamic_bitset bitset{size};
     bitset.set(range_start, range_size);
 
     CHECK_EQ(bitset.count(), range_size);
@@ -603,6 +634,15 @@ TEST_CASE("basic_dynamic_bitset::flip(range): sets a range")
     {
         CHECK(bitset.test(i));
     }
+}
+
+TEST_CASE("basic_dynamic_bitset::flip(range): size 0 is no-op")
+{
+    dynamic_bitset bitset{odd_bitset(24)};
+
+    bitset.flip(10, 0);
+
+    CHECK_EQ(bitset, odd_bitset(24));
 }
 
 TEST_CASE("basic_dynamic_bitset::for_each_set: visits every set bit")
@@ -873,24 +913,59 @@ TEST_CASE("basic_dynamic_bitset::clear: no-op when empty")
     CHECK(bitset.empty());
 }
 
-TEST_CASE("basic_dynamic_bitset::comparison: compares lexicographically")
+TEST_CASE("basic_dynamic_bitset::compare: are equal")
 {
-    dynamic_bitset lhs{16};
-    dynamic_bitset rhs{16};
+    dynamic_bitset a{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
+    dynamic_bitset b{a};
 
-    lhs.set(5);
-    rhs.set(7);
+    CHECK_EQ(a, b);
+    CHECK_EQ(b, a);
+}
 
-    CHECK(lhs < rhs);
-    CHECK(rhs > lhs);
-    CHECK(lhs != rhs);
+TEST_CASE("basic_dynamic_bitset::operator==: not equal when size differ")
+{
+    dynamic_bitset a{odd_bitset(64)};
+    dynamic_bitset b{odd_bitset(65)};
 
-    dynamic_bitset copy = lhs;
-    CHECK(copy == lhs);
+    CHECK_NE(a, b);
+    CHECK_NE(b, a);
+}
 
-    dynamic_bitset bigger{32};
-    bigger.set(20);
-    CHECK(lhs < bigger);
+TEST_CASE("basic_dynamic_bitset::operator==: not equal when bits differ")
+{
+    dynamic_bitset a{odd_bitset(64)};
+    dynamic_bitset b{even_bitset(64)};
+
+    CHECK_NE(a, b);
+    CHECK_NE(b, a);
+}
+
+TEST_CASE("basic_dynamic_bitset::operator&: AND bits")
+{
+    dynamic_bitset expected{even_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
+    dynamic_bitset with{expected.size()};
+    with.set();
+
+    CHECK_EQ(with & even_bitset(expected.size()), expected);
+    CHECK_EQ(even_bitset(expected.size()) & with, expected);
+}
+TEST_CASE("basic_dynamic_bitset::operator|: OR bits")
+{
+    dynamic_bitset expected{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
+    expected.set();
+
+    CHECK_EQ(odd_bitset(expected.size()) | even_bitset(expected.size()), expected);
+    CHECK_EQ(even_bitset(expected.size()) | odd_bitset(expected.size()), expected);
+}
+
+TEST_CASE("basic_dynamic_bitset::operator^=: XOR bits")
+{
+    dynamic_bitset expected{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
+    dynamic_bitset with{expected.size()};
+    with.set();
+
+    CHECK_EQ(even_bitset(expected.size()) ^ with, expected);
+    CHECK_EQ(with ^ even_bitset(expected.size()), expected);
 }
 
 } // namespace
