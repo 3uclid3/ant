@@ -106,7 +106,7 @@ constexpr auto type_id(T&&) noexcept -> type_info
     return type_id<std::remove_cvref_t<T>>();
 }
 
-constexpr auto operator<=>(type_info lhs, type_info rhs) noexcept -> std::strong_ordering
+constexpr auto operator<=>(const type_info& lhs, const type_info& rhs) noexcept -> std::strong_ordering
 {
     return lhs.hash() <=> rhs.hash();
 }
