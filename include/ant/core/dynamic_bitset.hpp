@@ -102,6 +102,9 @@ public:
 
     [[nodiscard]] constexpr auto hash() const noexcept -> std::uint64_t;
 
+    [[nodiscard]] constexpr auto data() noexcept -> block_type*;
+    [[nodiscard]] constexpr auto data() const noexcept -> const block_type*;
+
     [[nodiscard]] constexpr auto is_heap() const noexcept -> bool;
     [[nodiscard]] constexpr auto get_allocator() const noexcept -> const allocator_type&;
 
@@ -129,9 +132,6 @@ private:
 
     [[nodiscard]] constexpr auto block_for(size_type idx) const noexcept -> const block_type&;
     [[nodiscard]] constexpr auto block_for(size_type idx) noexcept -> block_type&;
-
-    [[nodiscard]] constexpr auto data() noexcept -> block_type*;
-    [[nodiscard]] constexpr auto data() const noexcept -> const block_type*;
 
     constexpr auto move_blocks_from(basic_dynamic_bitset&& other) -> void;
 
@@ -311,8 +311,7 @@ constexpr auto basic_dynamic_bitset<Allocator>::all() const noexcept -> bool
     const block_type* ptr = data();
     const size_type full_blocks_size = compute_full_blocks_size(_size);
 
-    auto begin = std::make_const_iterator(data());
-    if (!std::all_of(begin, std::next(ptr, full_blocks_size), [](block_type block) { return block == ~block_type{0}; }))
+    if (!std::all_of(ptr, std::next(ptr, full_blocks_size), [](block_type block) { return block == ~block_type{0}; }))
     {
         return false;
     }
@@ -331,8 +330,8 @@ constexpr auto basic_dynamic_bitset<Allocator>::all() const noexcept -> bool
 template<typename Allocator>
 constexpr auto basic_dynamic_bitset<Allocator>::any() const noexcept -> bool
 {
-    auto begin = std::make_const_iterator(data());
-    return std::any_of(begin, std::next(begin, compute_blocks_size(_size)), [](block_type block) { return block != block_type{0}; });
+    const block_type* ptr = data();
+    return std::any_of(ptr, std::next(ptr, compute_blocks_size(_size)), [](block_type block) { return block != block_type{0}; });
 }
 
 template<typename Allocator>
@@ -344,8 +343,8 @@ constexpr auto basic_dynamic_bitset<Allocator>::none() const noexcept -> bool
 template<typename Allocator>
 constexpr auto basic_dynamic_bitset<Allocator>::count() const noexcept -> size_type
 {
-    auto begin = std::make_const_iterator(data());
-    return std::accumulate(begin, std::next(begin, compute_blocks_size(_size)), 0ULL, [](size_type total, block_type block) { return total + static_cast<size_type>(std::popcount(block)); });
+    const block_type* ptr = data();
+    return std::accumulate(ptr, std::next(ptr, compute_blocks_size(_size)), 0ULL, [](size_type total, block_type block) { return total + static_cast<size_type>(std::popcount(block)); });
 }
 
 template<typename Allocator>
@@ -748,6 +747,18 @@ constexpr auto basic_dynamic_bitset<Allocator>::hash() const noexcept -> std::ui
 }
 
 template<typename Allocator>
+constexpr auto basic_dynamic_bitset<Allocator>::data() noexcept -> block_type*
+{
+    return _is_heap ? _heap : _inplace;
+}
+
+template<typename Allocator>
+constexpr auto basic_dynamic_bitset<Allocator>::data() const noexcept -> const block_type*
+{
+    return _is_heap ? _heap : _inplace;
+}
+
+template<typename Allocator>
 constexpr auto basic_dynamic_bitset<Allocator>::is_heap() const noexcept -> bool
 {
     return _is_heap;
@@ -950,18 +961,6 @@ constexpr auto basic_dynamic_bitset<Allocator>::mask_for(size_type bit_idx) noex
 }
 
 template<typename Allocator>
-constexpr auto basic_dynamic_bitset<Allocator>::data() noexcept -> block_type*
-{
-    return _is_heap ? _heap : _inplace;
-}
-
-template<typename Allocator>
-constexpr auto basic_dynamic_bitset<Allocator>::data() const noexcept -> const block_type*
-{
-    return _is_heap ? _heap : _inplace;
-}
-
-template<typename Allocator>
 constexpr auto basic_dynamic_bitset<Allocator>::move_blocks_from(basic_dynamic_bitset&& other) -> void
 {
     if (_is_heap)
@@ -983,9 +982,9 @@ constexpr auto swap(basic_dynamic_bitset<Allocator>& lhs, basic_dynamic_bitset<A
 template<typename Allocator>
 constexpr auto operator==(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool
 {
-    auto lhs_blocks = lhs.blocks_view();
-    auto rhs_blocks = rhs.blocks_view();
-    return lhs_blocks.size() == rhs_blocks.size() && std::equal(lhs_blocks.begin(), lhs_blocks.end(), rhs_blocks.begin());
+    const std::size_t bits_per_block = basic_dynamic_bitset<Allocator>::bits_per_block;
+    const std::size_t blocks_size = (lhs.size() + bits_per_block - 1) / bits_per_block;
+    return lhs.size() == rhs.size() && std::equal(lhs.data(), lhs.data() + blocks_size, rhs.data());
 }
 
 template<typename Allocator>
