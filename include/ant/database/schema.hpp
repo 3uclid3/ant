@@ -203,7 +203,6 @@ constexpr auto basic_schema_builder<Database>::build() noexcept -> basic_schema<
     component_ids_type ids{rebind_alloc(_allocator)};
     ids.reserve(_metas.size());
 
-    // for (const auto& meta : _metas)
     for (std::size_t i = 0; i < _metas.size(); ++i)
     {
         auto& meta = _metas[i];
