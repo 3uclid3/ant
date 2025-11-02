@@ -16,10 +16,6 @@ TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly",
 {
     static std::uint16_t version = 0;
 
-    struct dummy_type
-    {
-    };
-
     schema_builder builder;
     builder.define<T>(type_name<T>(), version);
 

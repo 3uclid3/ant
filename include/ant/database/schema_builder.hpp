@@ -32,7 +32,7 @@ public:
     constexpr auto operator=(const basic_schema_builder&) -> basic_schema_builder& = delete;
 
     template<typename T>
-    constexpr auto define(std::string_view name, std::uint16_t version = 0) -> basic_schema_builder&;
+    constexpr auto define(std::string_view name, detail::component_version version = 0) -> basic_schema_builder&;
 
     constexpr auto build() noexcept -> basic_schema<Allocator>;
 
@@ -52,7 +52,7 @@ template<typename Allocator>
 template<typename T>
 constexpr auto basic_schema_builder<Allocator>::define(std::string_view name, detail::component_version version) -> basic_schema_builder&
 {
-    ANT_ASSERT(std::ranges::none_of(_metas, [&](const auto& m) { return m.hash == type_hash<T>::value(); }), "Component type has already been defined in schema");
+    ANT_ASSERT(std::ranges::none_of(_metas, [hash = type_hash<T>::value()](const auto& m) { return m.hash == hash; }), "Component type has already been defined in schema");
 
     _metas.emplace_back(detail::make_meta<T>(name, version));
 
