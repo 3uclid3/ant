@@ -1,14 +1,13 @@
 #include <doctest/doctest.h>
 
+#include <ant/database/detail/component_vtable.hpp>
+
 #include <memory>
-
-#include <ant/database/detail/component_meta.hpp>
-
-#include <ant.test.shared/database/component_types.hpp>
 #include <new>
 
-namespace ant::detail { namespace {
+#include <ant.test.shared/database/component_types.hpp>
 
+namespace ant::detail { namespace {
 struct component_mock
 {
     struct invoke_table
@@ -20,8 +19,8 @@ struct component_mock
 
     constexpr component_mock() noexcept = default;
 
-    constexpr component_mock(invoke_table& t, int value = 0) noexcept
-        : table{&t}
+    constexpr component_mock(invoke_table& tbl, int value = 0) noexcept
+        : table{&tbl}
         , value{value}
     {}
 
@@ -29,10 +28,7 @@ struct component_mock
         : table{other.table}
         , value{other.value}
     {
-        if (table)
-        {
-            table->relocated = true;
-        }
+        if (table) table->relocated = true;
 
         other.table = nullptr;
         other.value = 0;
@@ -42,18 +38,12 @@ struct component_mock
         : table{other.table}
         , value{other.value}
     {
-        if (table)
-        {
-            table->cloned = true;
-        }
+        if (table) table->cloned = true;
     }
 
     constexpr ~component_mock() noexcept
     {
-        if (table)
-        {
-            table->destroyed = true;
-        }
+        if (table) table->destroyed = true;
     }
 
     invoke_table* table{nullptr};
@@ -62,8 +52,6 @@ struct component_mock
 
 struct component_mock_buffer_fixture
 {
-    component_mock_buffer_fixture() = default;
-
     ~component_mock_buffer_fixture()
     {
         if (!invoke_table.destroyed && (invoke_table.cloned || invoke_table.relocated))
@@ -129,7 +117,7 @@ TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_reloc
 {
     source.value = 42;
 
-    component_vtable::invoke_relocate<component_mock>(destination_ptr, &source);
+    component_vtable::of<component_mock>().relocate(destination_ptr, &source);
 
     CHECK(invoke_table.relocated);
     CHECK_FALSE(invoke_table.cloned);
@@ -142,7 +130,7 @@ TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_clone
 {
     source.value = 42;
 
-    component_vtable::invoke_clone<component_mock>(destination_ptr, &source);
+    component_vtable::of<component_mock>().clone(destination_ptr, &source);
 
     CHECK(invoke_table.cloned);
     CHECK_FALSE(invoke_table.relocated);
@@ -153,8 +141,8 @@ TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_clone
 
 TEST_CASE_FIXTURE(component_mock_buffer_fixture, "component_vtable::invoke_destroy: releases destination instance")
 {
-    component_vtable::invoke_clone<component_mock>(destination_ptr, &source);
-    component_vtable::invoke_destroy<component_mock>(destination_ptr);
+    component_vtable::of<component_mock>().clone(destination_ptr, &source);
+    component_vtable::of<component_mock>().destroy(destination_ptr);
 
     CHECK(invoke_table.destroyed);
 }

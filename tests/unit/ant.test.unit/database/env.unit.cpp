@@ -3,7 +3,10 @@
 
 #include <ant/database/env.hpp>
 
+#include <memory>
+
 #include <ant.test.shared/database/component_types.hpp>
+#include <ant/database/schema_builder.hpp>
 
 namespace ant { namespace {
 
