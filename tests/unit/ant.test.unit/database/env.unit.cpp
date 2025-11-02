@@ -13,7 +13,7 @@ using env = basic_env<test::shim_naked_database>;
 struct fixture
 {
     fixture()
-        : schema(basic_schema_builder<test::shim_naked_database>()
+        : schema(basic_schema_builder<std::allocator<std::byte>>()
                      .define<bool>("bool")
                      .define<int>("int")
                      .define<test::empty>("empty")
@@ -24,7 +24,7 @@ struct fixture
     {
     }
 
-    basic_schema<test::shim_naked_database> schema;
+    basic_schema<std::allocator<std::byte>> schema;
     env env;
 };
 
