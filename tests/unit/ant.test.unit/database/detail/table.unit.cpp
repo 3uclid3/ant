@@ -1,15 +1,15 @@
 #include <doctest/doctest.h>
 
-#include <ant/database/table.hpp>
+#include <ant/database/detail/table.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
-#include <ant/database/column.hpp>
-#include <ant/database/component_index.hpp>
+#include <ant/database/detail/column.hpp>
+#include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/entity_traits.hpp>
 #include <ant/entity.hpp>
 
-namespace ant { namespace {
+namespace ant::detail { namespace {
 
 using allocator = std::allocator<std::byte>;
 using table_signature = basic_table_signature<allocator>;
@@ -43,7 +43,7 @@ TEST_CASE("basic_table::signature: propagated from ctor")
 
 TEST_CASE("basic_table::columns: stores provided columns")
 {
-    const auto meta = detail::component_meta::make<test::trivial>("trivial");
+    const auto meta = component_meta::make<test::trivial>("trivial");
 
     table::columns_type columns{};
     columns.emplace_back(meta);
@@ -105,7 +105,7 @@ TEST_CASE("basic_table::remove_row(index): removes and compacts")
 
 TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::add_row: grows all columns and default constructs")
 {
-    constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
+    constexpr auto meta_tr = component_meta::make<test::tracked>("tracked");
 
     table::columns_type columns{};
     columns.emplace_back(meta_tr);
@@ -131,7 +131,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::add_row: grows all column
 
 TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(entity): updates columns with relocate")
 {
-    constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
+    constexpr auto meta_tr = component_meta::make<test::tracked>("tracked");
 
     table::columns_type columns{};
     columns.emplace_back(meta_tr);
@@ -157,7 +157,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(entity): updat
 
 TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(index): last element triggers destroy in columns")
 {
-    constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
+    constexpr auto meta_tr = component_meta::make<test::tracked>("tracked");
 
     table::columns_type columns{};
     columns.emplace_back(meta_tr);
@@ -171,4 +171,4 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(index): last e
     CHECK_EQ(test::tracked::dtor_count, 1);
 }
 
-}} // namespace ant
+}} // namespace ant::detail

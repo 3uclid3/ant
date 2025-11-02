@@ -27,8 +27,8 @@ TEST_CASE("entity_registry::create: registers handle and updates size")
     CHECK_EQ(traits::to_version(e), 0);
 
     const auto loc = registry.locate(e); // default location
-    CHECK_EQ(loc.table, table_index::npos());
-    CHECK_EQ(loc.row, row_index::npos());
+    CHECK_EQ(loc.table, detail::table_index::npos());
+    CHECK_EQ(loc.row, detail::row_index::npos());
 }
 
 TEST_CASE("entity_registry::relocate: locate reflects new position")
@@ -36,10 +36,10 @@ TEST_CASE("entity_registry::relocate: locate reflects new position")
     entity_registry registry;
     const auto e = registry.create();
 
-    registry.relocate(e, static_cast<table_index>(1), static_cast<row_index>(7));
+    registry.relocate(e, static_cast<detail::table_index>(1), static_cast<detail::row_index>(7));
     const auto loc = registry.locate(e);
-    CHECK_EQ(loc.table, static_cast<table_index>(1));
-    CHECK_EQ(loc.row, static_cast<row_index>(7));
+    CHECK_EQ(loc.table, static_cast<detail::table_index>(1));
+    CHECK_EQ(loc.row, static_cast<detail::row_index>(7));
 }
 
 TEST_CASE("entity_registry::destroy: invalidates and bumps recycled id version")

@@ -1,5 +1,5 @@
 set_project("ant")
-set_version("0.10.0")
+set_version("0.10.1")
 set_license("MIT")
 
 set_languages("cxx23")

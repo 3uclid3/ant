@@ -6,11 +6,11 @@
 
 #include <ant/core/assert.hpp>
 #include <ant/core/container.hpp>
-#include <ant/database/column.hpp>
-#include <ant/database/table_index.hpp>
-#include <ant/database/table_signature.hpp>
+#include <ant/database/detail/column.hpp>
+#include <ant/database/detail/table_index.hpp>
+#include <ant/database/detail/table_signature.hpp>
 
-namespace ant {
+namespace ant::detail {
 
 template<typename Entity, typename Allocator>
 class basic_table
@@ -114,4 +114,4 @@ auto basic_table<Entity, Allocator>::rows() const noexcept -> std::span<const en
     return std::span<const entity_type>{_rows.data(), _rows.size()};
 }
 
-} // namespace ant
+} // namespace ant::detail

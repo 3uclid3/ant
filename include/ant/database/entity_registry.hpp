@@ -2,8 +2,8 @@
 
 #include <ant/core/container.hpp>
 #include <ant/core/memory.hpp>
+#include <ant/database/detail/table_index.hpp>
 #include <ant/database/entity_traits.hpp>
-#include <ant/database/table_index.hpp>
 
 namespace ant {
 
@@ -30,8 +30,8 @@ public:
     [[nodiscard]] auto create() -> entity_type;
     auto destroy(entity_type entity) noexcept -> void;
 
-    auto relocate(entity_type entity, table_index table, row_index row) noexcept -> void;
-    [[nodiscard]] auto locate(entity_type entity) const noexcept -> table_location;
+    auto relocate(entity_type entity, detail::table_index table, detail::row_index row) noexcept -> void;
+    [[nodiscard]] auto locate(entity_type entity) const noexcept -> detail::table_location;
     [[nodiscard]] auto version(entity_type entity) const noexcept -> version_type;
 
     auto empty() const noexcept -> bool;
@@ -42,7 +42,7 @@ private:
 
     allocator_type _allocator;
 
-    vector<table_location, allocator_type> _location;
+    vector<detail::table_location, allocator_type> _location;
     vector<version_type, allocator_type> _versions;
 
     vector<index_type, allocator_type> _free;
@@ -103,7 +103,7 @@ auto basic_entity_registry<Entity, Allocator>::destroy(entity_type entity) noexc
 }
 
 template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::relocate(entity_type entity, table_index table, row_index row) noexcept -> void
+auto basic_entity_registry<Entity, Allocator>::relocate(entity_type entity, detail::table_index table, detail::row_index row) noexcept -> void
 {
     ANT_ASSERT(contains(entity), "entity does not exist");
 
@@ -112,7 +112,7 @@ auto basic_entity_registry<Entity, Allocator>::relocate(entity_type entity, tabl
 }
 
 template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::locate(entity_type entity) const noexcept -> table_location
+auto basic_entity_registry<Entity, Allocator>::locate(entity_type entity) const noexcept -> detail::table_location
 {
     ANT_ASSERT(contains(entity), "entity does not exist");
 

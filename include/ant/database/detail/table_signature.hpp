@@ -1,9 +1,9 @@
 #pragma once
 
 #include <ant/core/memory.hpp>
-#include <ant/database/component_bitset.hpp>
+#include <ant/database/detail/component_bitset.hpp>
 
-namespace ant {
+namespace ant::detail {
 
 template<typename Allocator>
 class basic_table_signature
@@ -59,4 +59,4 @@ constexpr auto basic_table_signature<Allocator>::empty() const noexcept -> bool
     return _mask.none();
 }
 
-} // namespace ant
+} // namespace ant::detail
