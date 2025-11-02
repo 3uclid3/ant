@@ -921,7 +921,7 @@ TEST_CASE("basic_dynamic_bitset::operator|: OR bits")
     CHECK_EQ(even_bitset(expected.size()) | odd_bitset(expected.size()), expected);
 }
 
-TEST_CASE("basic_dynamic_bitset::operator^=: XOR bits")
+TEST_CASE("basic_dynamic_bitset::operator^: XOR bits")
 {
     dynamic_bitset expected{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
     dynamic_bitset with{expected.size()};
@@ -929,6 +929,45 @@ TEST_CASE("basic_dynamic_bitset::operator^=: XOR bits")
 
     CHECK_EQ(even_bitset(expected.size()) ^ with, expected);
     CHECK_EQ(with ^ even_bitset(expected.size()), expected);
+}
+
+TEST_CASE("basic_dynamic_bitset::operator<: same size orders by most-significant bit")
+{
+    dynamic_bitset a{64};
+    dynamic_bitset b{64};
+    a.set(3); // ...00001000
+    b.set(5); // ...00100000 (greater)
+
+    CHECK(a < b);
+    CHECK_FALSE(b < a);
+}
+
+TEST_CASE("basic_dynamic_bitset::operator<: different sizes treat missing high blocks as zero")
+{
+    dynamic_bitset small{64}; // all zeros
+    dynamic_bitset large{65}; // high bit beyond 64
+    large.set(64);
+
+    CHECK(small < large);
+    CHECK_FALSE(large < small);
+}
+
+TEST_CASE("basic_dynamic_bitset::operator<: cross-block higher block dominates lower block differences")
+{
+    // Ensure ordering considers the most-significant differing block first.
+    dynamic_bitset a{dynamic_bitset::bits_per_block * 2};
+    dynamic_bitset b{a.size()};
+
+    // a has some lower-block bits set
+    a.set(1);
+    a.set(10);
+    a.set(60);
+
+    // b has a single bit set in the next (more significant) block
+    b.set(dynamic_bitset::bits_per_block + 1);
+
+    CHECK(a < b);
+    CHECK_FALSE(b < a);
 }
 
 } // namespace
