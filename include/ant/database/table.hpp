@@ -25,7 +25,7 @@ public:
     using rows_type = vector<entity_type, allocator_type>;
 
 public:
-    basic_table(signature_type&& signature, columns_type&& columns, const allocator_type& allocator = allocator_type{}) noexcept;
+    basic_table(signature_type signature, columns_type columns, const allocator_type& allocator = allocator_type{}) noexcept;
 
     auto add_row(entity_type entity) -> row_index;
     auto remove_row(entity_type entity) -> void;
@@ -42,7 +42,7 @@ private:
 };
 
 template<typename Database>
-basic_table<Database>::basic_table(signature_type&& signature, columns_type&& columns, const allocator_type& allocator) noexcept
+basic_table<Database>::basic_table(signature_type signature, columns_type columns, const allocator_type& allocator) noexcept
     : _signature(std::move(signature))
     , _columns(std::move(columns))
     , _rows(rebind_alloc(allocator))
@@ -63,7 +63,7 @@ auto basic_table<Database>::add_row(entity_type entity) -> row_index
         ANT_ASSERT(_rows.size() == column.size(), "Column size mismatch after adding row");
     }
 
-    return row_index(static_cast<row_index::value_type>(_rows.size() - 1));
+    return row_index::cast(_rows.size() - 1);
 }
 
 template<typename Database>

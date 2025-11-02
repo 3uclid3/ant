@@ -139,8 +139,6 @@ template<typename Database>
 template<typename T, typename... Args>
 auto basic_env<Database>::set(Args&&... args) -> T&
 {
-    using type_allocator = typename std::allocator_traits<allocator_type>::template rebind_alloc<T>;
-
     const auto idx = index_of<T>();
     ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
 
@@ -149,7 +147,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         // Prevent vector reallocation after constructing T to avoid leaks on throw
         _slots.reserve(_slots.size() + 1);
 
-        type_allocator allocator = rebind_alloc(_allocator);
+        auto allocator = rebind_alloc_t<T, allocator_type>(_allocator);
         T* ptr = allocator.allocate(1);
 
         std::construct_at(ptr, std::forward<Args>(args)...);
@@ -160,11 +158,11 @@ auto basic_env<Database>::set(Args&&... args) -> T&
         new_slot.deleter = [](allocator_type& raw_allocator, void* ptr) noexcept {
             std::destroy_at(static_cast<T*>(ptr));
 
-            type_allocator allocator = rebind_alloc(raw_allocator);
+            auto allocator = rebind_alloc_t<T, allocator_type>(raw_allocator);
             allocator.deallocate(static_cast<T*>(ptr), 1);
         };
 
-        _slot_indexes[idx] = slot_index(static_cast<slot_index::value_type>(_slots.size() - 1));
+        _slot_indexes[idx] = slot_index::cast(_slots.size() - 1);
     }
     else
     {

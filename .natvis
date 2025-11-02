@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="ant::basic_index&lt;*, *, *&gt;">
+        <DisplayString>{_value}</DisplayString>
+        <Expand />
+    </Type>
+
+    <Type Name="ant::basic_dynamic_bitset&lt;*, *&gt;">
+        <DisplayString>{{ size={_size} }}</DisplayString>
+        <Expand>
+            <IndexListItems>
+                <Size>_size</Size>
+                <ValueNode>((_is_heap ? _heap : _inplace)[$i / bits_per_block] &gt;&gt; ($i % bits_per_block)) &amp; 1,d</ValueNode>
+            </IndexListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="ant::detail::component_meta">
+        <DisplayString>{{ id=0x{id,x}, idx={index}, name={name} }}</DisplayString>
+    </Type>
+</AutoVisualizer>
