@@ -995,19 +995,23 @@ constexpr auto operator<(const basic_dynamic_bitset<Allocator>& lhs, const basic
 {
     using size_type = typename basic_dynamic_bitset<Allocator>::size_type;
 
-    const size_type lhs_size = lhs.size();
-    const size_type rhs_size = rhs.size();
-    const size_type max_bits = lhs_size > rhs_size ? lhs_size : rhs_size;
+    // Compare from most-significant block to least, padding the shorter with zero blocks.
+    const size_type lhs_blocks = lhs.blocks_size();
+    const size_type rhs_blocks = rhs.blocks_size();
+    const size_type max_blocks = lhs_blocks > rhs_blocks ? lhs_blocks : rhs_blocks;
 
-    for (size_type idx = max_bits; idx > 0; --idx)
+    const auto* const lhs_ptr = lhs.data();
+    const auto* const rhs_ptr = rhs.data();
+
+    for (size_type idx = max_blocks; idx > 0; --idx)
     {
-        const size_type bit = idx - 1;
-        const bool lhs_bit = bit < lhs_size ? lhs.test(bit) : false;
-        const bool rhs_bit = bit < rhs_size ? rhs.test(bit) : false;
+        const size_type b = idx - 1;
+        const auto lhs_block = b < lhs_blocks ? lhs_ptr[b] : 0ULL;
+        const auto rhs_block = b < rhs_blocks ? rhs_ptr[b] : 0ULL;
 
-        if (lhs_bit != rhs_bit)
+        if (lhs_block != rhs_block)
         {
-            return lhs_bit < rhs_bit;
+            return lhs_block < rhs_block;
         }
     }
 
