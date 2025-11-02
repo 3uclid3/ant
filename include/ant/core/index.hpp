@@ -2,6 +2,7 @@
 
 #include <compare>
 #include <concepts>
+#include <format>
 #include <limits>
 
 namespace ant {
@@ -13,14 +14,15 @@ public:
     using tag_type = Tag;
     using value_type = T;
 
-    static constexpr auto npos() noexcept -> basic_index;
+    static consteval auto npos() noexcept -> basic_index;
+
+    static constexpr auto cast(std::integral auto value) noexcept -> basic_index;
 
     constexpr basic_index() noexcept = default;
     constexpr basic_index(const basic_index&) noexcept = default;
     constexpr basic_index(basic_index&&) noexcept = default;
 
     template<std::integral U = T>
-    requires(sizeof(U) <= sizeof(T))
     constexpr explicit basic_index(U value) noexcept;
 
     template<typename Tag1, std::integral T1, T1 Npos1>
@@ -57,14 +59,19 @@ private:
 };
 
 template<typename Tag, std::integral T, T Npos>
-constexpr auto basic_index<Tag, T, Npos>::npos() noexcept -> basic_index
+consteval auto basic_index<Tag, T, Npos>::npos() noexcept -> basic_index
 {
     return basic_index{Npos};
 }
 
 template<typename Tag, std::integral T, T Npos>
+constexpr auto basic_index<Tag, T, Npos>::cast(std::integral auto value) noexcept -> basic_index
+{
+    return basic_index{static_cast<T>(value)};
+}
+
+template<typename Tag, std::integral T, T Npos>
 template<std::integral U>
-requires(sizeof(U) <= sizeof(T))
 constexpr basic_index<Tag, T, Npos>::basic_index(U value) noexcept
     : _value{static_cast<T>(value)}
 {

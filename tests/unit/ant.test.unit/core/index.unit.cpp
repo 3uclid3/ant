@@ -121,4 +121,11 @@ TEST_CASE_TEMPLATE("basic_index::operator value_type: converts to underlying", T
     CHECK_EQ(static_cast<typename T::value_type>(idx), static_cast<typename T::value_type>(123));
 }
 
+TEST_CASE_TEMPLATE("basic_index::cast: converts integral to basic_index", T, uidx32, uidx64)
+{
+    auto val = T::cast(456);
+
+    CHECK_EQ(val.value(), 456);
+}
+
 }} // namespace ant
