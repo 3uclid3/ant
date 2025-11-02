@@ -8,7 +8,7 @@
 
 namespace ant { namespace {
 
-using column = basic_column<test::shim_naked_database>;
+using column = basic_column<std::allocator<std::byte>>;
 
 static constexpr auto meta = detail::component_meta::make<test::trivial>("trivial");
 
@@ -78,7 +78,7 @@ TEST_CASE("column::swap_and_pop: removes element and moves last to removed")
 TEST_CASE_FIXTURE(test::tracked_fixture, "column::emplace_back: default constructs when non-trivial default ctor present")
 {
     constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
-    basic_column<test::shim_naked_database> c{meta_tr};
+    column c{meta_tr};
 
     const row_index idx = c.emplace_back();
     auto* ptr = static_cast<test::tracked*>(c.row(idx));
@@ -91,7 +91,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "column::emplace_back: default construc
 TEST_CASE_FIXTURE(test::tracked_fixture, "column::swap_and_pop: uses relocate for non-trivial types")
 {
     constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
-    basic_column<test::shim_naked_database> c{meta_tr};
+    column c{meta_tr};
 
     const row_index i0 = c.emplace_back();
     const row_index i1 = c.emplace_back();
@@ -109,7 +109,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "column::swap_and_pop: uses relocate fo
 TEST_CASE_FIXTURE(test::tracked_fixture, "column::swap_and_pop: last element calls destroy")
 {
     constexpr auto meta_tr = detail::component_meta::make<test::tracked>("tracked");
-    basic_column<test::shim_naked_database> c{meta_tr};
+    column c{meta_tr};
 
     const row_index idx = c.emplace_back();
     c.swap_and_pop(idx);

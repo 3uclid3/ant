@@ -10,9 +10,10 @@
 
 namespace ant { namespace {
 
-using table_signature = basic_table_signature<test::shim_naked_database>;
-using table = basic_table<test::shim_naked_database>;
-using entity = typename table::entity_type;
+using allocator = test::shim_naked_database::allocator_type;
+using entity = test::shim_naked_database::entity_type;
+using table_signature = basic_table_signature<allocator>;
+using table = basic_table<entity, allocator>;
 
 static constexpr auto make_entity(std::uint32_t id, std::uint32_t ver = 0) -> entity
 {

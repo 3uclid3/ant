@@ -7,7 +7,8 @@
 
 namespace ant { namespace {
 
-using entity_registry = basic_entity_registry<test::shim_naked_database>;
+using allocator = test::shim_naked_database::allocator_type;
+using entity_registry = basic_entity_registry<allocator>;
 using traits = entity_traits<test::shim_naked_database::entity_type>;
 
 TEST_CASE("entity_registry::ctor: initially empty")
