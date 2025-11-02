@@ -633,20 +633,13 @@ constexpr auto basic_dynamic_bitset<Allocator>::reserve(size_type size_bits) -> 
 
     const size_type new_capacity = compute_blocks_size(size_bits);
     const size_type capacity = compute_blocks_size(_capacity);
+    ANT_ASSERT(capacity != 0);
 
     block_type* new_heap = _allocator.allocate(new_capacity);
+    std::memcpy(new_heap, data(), capacity * sizeof(block_type));
 
-    if (capacity != 0)
-    {
-        std::memcpy(new_heap, data(), capacity * sizeof(block_type));
-
-        const auto remaining_blocks = new_capacity - capacity;
-        std::memset(new_heap + capacity, 0, remaining_blocks * sizeof(block_type));
-    }
-    else
-    {
-        std::memset(new_heap, 0, new_capacity * sizeof(block_type));
-    }
+    const auto remaining_blocks = new_capacity - capacity;
+    std::memset(new_heap + capacity, 0, remaining_blocks * sizeof(block_type));
 
     if (_is_heap)
     {

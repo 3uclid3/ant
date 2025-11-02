@@ -188,7 +188,7 @@ TEST_CASE("basic_dynamic_bitset::operator=: copy from inplace to self heap")
 TEST_CASE("basic_dynamic_bitset::operator=: copy from heap to self heap")
 {
     constexpr std::size_t to_size = (dynamic_bitset::inplace_capacity + 1) * 3;
-    const std::size_t from_size = GENERATE(to_size - 1, to_size, to_size + 1);
+    const std::size_t from_size = GENERATE(to_size - 1, to_size, to_size + 1, to_size + dynamic_bitset::inplace_capacity);
 
     dynamic_bitset from{from_size};
     set_odd(from);
@@ -658,7 +658,8 @@ TEST_CASE("basic_dynamic_bitset::swap: from self is no-op")
     set_odd(expected);
 
     dynamic_bitset to{expected};
-    to.swap(expected);
+    dynamic_bitset* from_ptr = &to;
+    to.swap(*from_ptr);
 
     CHECK_EQ(to, expected);
 }
@@ -835,6 +836,20 @@ TEST_CASE("basic_dynamic_bitset::resize(value = true): grow heap")
     CAPTURE(bitset);
     bitset.resize(new_size, true);
     CAPTURE(bitset);
+
+    CHECK_EQ(bitset.size(), new_size);
+    CHECK(bitset.all());
+}
+
+TEST_CASE("basic_dynamic_bitset::resize(value = true): shrink")
+{
+    const std::size_t size = GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size);
+    const std::size_t new_size = size - dynamic_bitset::bits_per_block / 2;
+
+    dynamic_bitset bitset{size};
+    bitset.set();
+
+    bitset.resize(new_size, true);
 
     CHECK_EQ(bitset.size(), new_size);
     CHECK(bitset.all());
