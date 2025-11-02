@@ -1,38 +1,50 @@
-# ant — a simple, modern ECS that swarms efficiently
+# ant 🐜 — a tiny, fast ECS for Modern C++
 
-[![CI Linux](https://github.com/3uclid3/ant/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/ci-linux.yml)
-[![CI Windows](https://github.com/3uclid3/ant/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/ci-windows.yml)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/cdfbbcc5d562402297abaa11292d1cc5)](https://app.codacy.com/gh/3uclid3/ant/dashboard)
+[![Build and Test](https://github.com/3uclid3/ant/actions/workflows/build-test.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/build-test.yml)
+[![Nightly](https://github.com/3uclid3/ant/actions/workflows/nightly.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/nightly.yml)
 [![codecov](https://codecov.io/gh/3uclid3/ant/graph/badge.svg?token=sYuRqfodz0)](https://codecov.io/gh/3uclid3/ant)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/cdfbbcc5d562402297abaa11292d1cc5)](https://app.codacy.com/gh/3uclid3/ant/dashboard)
 
-`ant` is a header-only, C++23 entity component system focused on clarity, fast iteration, and predictable performance. Built and tested with LLVM + xmake.
+> ⚠️ **Unstable API.** Active development, pre-1.0.
+---
+`ant` is an elegant header-only entity-component system designed for clarity, speed, and big swarms.
 
-## Prerequisites
+## Setup & quick start
 
-- xmake 2.8+ with LLVM/Clang available
-- A C++23-capable compiler (Clang recommended)
-- Or use the provided dev container to get everything preinstalled
+**Requires:** xmake ≥ 2.8 and a C++23-capable compiler (Clang recommended).  
+You can also use the provided dev container which has everything preinstalled.
 
-## Quick start (build & test)
+```bash
+# Configure (pick one mode)
+xmake f -m debug        # or release | coverage
+# Optional toggles
+#   --junit_report=y|n  emit JUnit XML under build/
+#   --benchmarks=y|n    enable benchmark targets
 
-- Configure: `xmake f -m <debug|release|coverage> [--junit_report=y|n] [--benchmarks=y|n]`
-- Build: `xmake build`
-- Run unit tests: `xmake test */unit`
-- Run compile tests: `xmake test */compile`
-- Run benchmarks: `xmake test */bench` (requires `--benchmarks=y`)
-- Show test/benchmark output (stdout/stderr): `xmake test -v */unit` or `xmake test -v */bench`
+# Build all configured targets
+xmake build
+
+# Run tests
+xmake test */unit            # unit tests
+xmake test */compile         # compile-time tests
+xmake test */bench           # benchmarks (requires --benchmarks=y)
+xmake test                   # everything
+
+# See stdout/stderr from tests/benchmarks
+xmake test -v */unit
+xmake test -v */bench
+```
 
 ## Project layout
 
-- `include/` — header-only ECS (public API)
-- `tests/` — unit, compile, benchmark, shared helpers
-- `docs/uml/` — PlantUML class diagrams
+```txt
+include/   → public ECS API (header-only)
+tests/     → unit, compile, benchmark, and helpers
+docs/uml/  → class diagrams (PlantUML)
+```
 
-## Contributing
+For contribution style, commit rules, and diagram updates, see **[AGENTS.md](AGENTS.md)**.
 
-See the Contribution Guide in `AGENTS.md` (style, commits, PRs, diagrams, tooling).
+---
 
-## Changelog and License
-
-- `CHANGELOG.md` — version history
-- `LICENSE` — project license
+🐜 _Tiny engine. Big swarms._
