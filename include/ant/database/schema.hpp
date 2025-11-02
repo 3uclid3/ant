@@ -135,7 +135,7 @@ constexpr auto basic_schema<Allocator>::meta_of() const noexcept -> const compon
 }
 
 template<typename Allocator>
-constexpr auto basic_schema<Allocator>::meta_of(detail::component_index index) const noexcept -> const component_meta_type&
+constexpr auto basic_schema<Allocator>::meta_of(component_index_type index) const noexcept -> const component_meta_type&
 {
     const auto raw_index = static_cast<component_metas_type::size_type>(index);
     ANT_ASSERT(raw_index < _metas.size(), "Component index out of bounds");
