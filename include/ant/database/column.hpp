@@ -5,6 +5,7 @@
 
 #include <ant/core/assert.hpp>
 #include <ant/core/container.hpp>
+#include <ant/core/memory.hpp>
 #include <ant/database/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/table_index.hpp>
@@ -15,7 +16,7 @@ template<typename Database>
 class basic_column
 {
 public:
-    using allocator_type = typename std::allocator_traits<typename Database::allocator_type>::template rebind_alloc<std::byte>;
+    using allocator_type = rebind_alloc_t<std::byte, typename Database::allocator_type>;
     using component_meta_type = detail::component_meta;
 
     explicit basic_column(const component_meta_type& meta, const allocator_type& allocator = allocator_type{}) noexcept;
@@ -69,7 +70,7 @@ basic_column<Database>::~basic_column()
     {
         for (std::size_t i = 0; i < _size; ++i)
         {
-            const block_loc loc = to_loc(row_index(static_cast<row_index::value_type>(i)));
+            const block_loc loc = to_loc(row_index::cast(i));
 
             _meta->vtable.destroy(_blocks[loc.idx] + loc.off);
         }
@@ -90,14 +91,13 @@ auto basic_column<Database>::emplace_back() -> row_index
         _blocks.emplace_back(_allocator.allocate(_meta->block_size * _meta->size));
     }
 
-    const block_loc loc = to_loc(row_index(static_cast<row_index::value_type>(_size++)));
-
+    const block_loc loc = to_loc(row_index::cast(_size++));
     if (_meta->vtable.default_construct)
     {
         _meta->vtable.default_construct(_blocks[loc.idx] + loc.off);
     }
 
-    return row_index(static_cast<row_index::value_type>(_size - 1));
+    return row_index::cast(_size - 1);
 }
 
 template<typename Database>
@@ -105,7 +105,7 @@ auto basic_column<Database>::swap_and_pop(row_index idx) noexcept -> void
 {
     ANT_ASSERT(static_cast<std::size_t>(idx) < _size, "Row index out of bounds");
 
-    const auto last_idx = row_index(static_cast<row_index::value_type>(_size - 1));
+    const auto last_idx = row_index::cast(_size - 1);
 
     if (idx != last_idx)
     {

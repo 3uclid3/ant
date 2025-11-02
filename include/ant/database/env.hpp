@@ -139,8 +139,6 @@ template<typename Database>
 template<typename T, typename... Args>
 auto basic_env<Database>::set(Args&&... args) -> T&
 {
-    using type_allocator = typename std::allocator_traits<allocator_type>::template rebind_alloc<T>;
-
     const auto idx = index_of<T>();
     ANT_ASSERT(idx != component_index::npos(), "component type is not registered in schema");
 
@@ -164,7 +162,7 @@ auto basic_env<Database>::set(Args&&... args) -> T&
             allocator.deallocate(static_cast<T*>(ptr), 1);
         };
 
-        _slot_indexes[idx] = slot_index(static_cast<slot_index::value_type>(_slots.size() - 1));
+        _slot_indexes[idx] = slot_index::cast(_slots.size() - 1);
     }
     else
     {

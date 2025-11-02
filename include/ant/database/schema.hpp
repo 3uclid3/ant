@@ -123,7 +123,7 @@ constexpr auto basic_schema<Database>::index_of() const noexcept -> component_in
 
     auto it = std::ranges::lower_bound(_ids, id);
 
-    return it != _ids.end() && *it == id ? component_index(static_cast<component_index::value_type>(std::distance(_ids.begin(), it))) : component_index::npos();
+    return it != _ids.end() && *it == id ? component_index::cast(std::distance(_ids.begin(), it)) : component_index::npos();
 }
 
 template<typename Database>
@@ -203,8 +203,12 @@ constexpr auto basic_schema_builder<Database>::build() noexcept -> basic_schema<
     component_ids_type ids{rebind_alloc(_allocator)};
     ids.reserve(_metas.size());
 
-    for (const auto& meta : _metas)
+    // for (const auto& meta : _metas)
+    for (std::size_t i = 0; i < _metas.size(); ++i)
     {
+        auto& meta = _metas[i];
+        meta.index = component_index::cast(i);
+
         ids.emplace_back(meta.id);
     }
 
