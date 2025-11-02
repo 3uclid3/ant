@@ -43,7 +43,7 @@ TEST_CASE("basic_table::signature: propagated from ctor")
 
 TEST_CASE("basic_table::columns: stores provided columns")
 {
-    const auto meta = component_meta::make<test::trivial>("trivial");
+    const auto meta = make_meta<test::trivial>("trivial");
 
     table::columns_type columns{};
     columns.emplace_back(meta);
@@ -105,7 +105,7 @@ TEST_CASE("basic_table::remove_row(index): removes and compacts")
 
 TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::add_row: grows all columns and default constructs")
 {
-    constexpr auto meta_tr = component_meta::make<test::tracked>("tracked");
+    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
 
     table::columns_type columns{};
     columns.emplace_back(meta_tr);
@@ -131,7 +131,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::add_row: grows all column
 
 TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(entity): updates columns with relocate")
 {
-    constexpr auto meta_tr = component_meta::make<test::tracked>("tracked");
+    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
 
     table::columns_type columns{};
     columns.emplace_back(meta_tr);
@@ -157,7 +157,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(entity): updat
 
 TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(index): last element triggers destroy in columns")
 {
-    constexpr auto meta_tr = component_meta::make<test::tracked>("tracked");
+    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
 
     table::columns_type columns{};
     columns.emplace_back(meta_tr);

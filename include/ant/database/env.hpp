@@ -50,30 +50,19 @@ public:
     auto empty() const noexcept -> bool;
 
 private:
-    struct slot
+    struct component_slot
     {
         using deleter_fn = void (*)(allocator_type&, void*) noexcept;
 
         detail::component_index index{detail::component_index::npos()};
+
         void* ptr{nullptr};
         deleter_fn deleter{nullptr};
     };
 
-    using slot_index = basic_index<struct slot_index_tag, detail::component_index::value_type>;
+    using slot_index = basic_index<struct slot_index_tag, detail::component_index::value_type, detail::component_index::npos()>;
 
-    using slots_type = vector<slot, allocator_type>;
-    using slot_indexes_type = vector<slot_index, allocator_type>;
-
-    // clang-format off
-    static constexpr bool is_nothrow_move_constructible = std::is_nothrow_move_constructible_v<slots_type> && 
-                                                          std::is_nothrow_move_constructible_v<slot_indexes_type> && 
-                                                          std::is_nothrow_move_constructible_v<allocator_type>;
-
-    static constexpr bool is_nothrow_move_assignable = std::is_nothrow_move_assignable_v<slots_type> &&
-                                                       std::is_nothrow_move_assignable_v<slot_indexes_type> &&
-                                                       std::is_nothrow_move_assignable_v<allocator_type>;
-    // clang-format on  
-
+private:
     template<typename T>
     auto index_of() const noexcept -> detail::component_index;
 
@@ -84,12 +73,22 @@ private:
     allocator_type _allocator;
 
     // dense storage of component slots
-    slots_type _slots{rebind_alloc(_allocator)};
+    std::vector<component_slot, rebind_alloc_t<component_slot, allocator_type>> _slots{rebind_alloc(_allocator)};
 
     // sparse mapping from component index to slot index
-    slot_indexes_type _slot_indexes{rebind_alloc(_allocator)};
+    std::vector<slot_index, rebind_alloc_t<slot_index, allocator_type>> _component_to_slot{rebind_alloc(_allocator)};
 
     const schema_type* _schema{nullptr};
+
+    // clang-format off
+    static constexpr bool is_nothrow_move_constructible = std::is_nothrow_move_constructible_v<decltype(_slots)> && 
+                                                          std::is_nothrow_move_constructible_v<decltype(_component_to_slot)> && 
+                                                          std::is_nothrow_move_constructible_v<allocator_type>;
+
+    static constexpr bool is_nothrow_move_assignable = std::is_nothrow_move_assignable_v<decltype(_slots)> &&
+                                                       std::is_nothrow_move_assignable_v<decltype(_component_to_slot)> &&
+                                                       std::is_nothrow_move_assignable_v<allocator_type>;
+    // clang-format on  
 };
 
 template<typename Allocator>
@@ -98,7 +97,7 @@ basic_env<Allocator>::basic_env(const schema_type& schema, const allocator_type&
     , _schema{&schema}
 {
     // Pre-size sparse mapping to the full schema size to eliminate per-set resize branches
-    _slot_indexes.resize(_schema->size(), slot_index{slot_index::npos()});
+    _component_to_slot.resize(_schema->size(), slot_index{slot_index::npos()});
 }
 
 template<typename Allocator>
@@ -145,7 +144,7 @@ auto basic_env<Allocator>::set(Args&&... args) -> T&
     const auto idx = index_of<T>();
     ANT_ASSERT(idx != detail::component_index::npos(), "component type is not registered in schema");
 
-    if (_slot_indexes[idx] == slot_index::npos())
+    if (_component_to_slot[idx] == slot_index::npos())
     {
         // Prevent vector reallocation after constructing T to avoid leaks on throw
         _slots.reserve(_slots.size() + 1);
@@ -165,17 +164,17 @@ auto basic_env<Allocator>::set(Args&&... args) -> T&
             allocator.deallocate(static_cast<T*>(ptr), 1);
         };
 
-        _slot_indexes[idx] = slot_index::cast(_slots.size() - 1);
+        _component_to_slot[idx] = slot_index::cast(_slots.size() - 1);
     }
     else
     {
-        auto& slot = _slots[_slot_indexes[idx]];
+        auto& slot = _slots[_component_to_slot[idx]];
         auto* p = static_cast<T*>(slot.ptr);
         std::destroy_at(p);
         std::construct_at(p, std::forward<Args>(args)...);
     }
 
-    return *std::launder(static_cast<T*>(_slots[_slot_indexes[idx]].ptr));
+    return *std::launder(static_cast<T*>(_slots[_component_to_slot[idx]].ptr));
 }
 
 template<typename Allocator>
@@ -185,7 +184,7 @@ auto basic_env<Allocator>::unset() -> void
     const auto idx = index_of<T>();
     ANT_ASSERT(idx != detail::component_index::npos(), "component type is not registered in schema");
 
-    const auto slot_idx = _slot_indexes[idx];
+    const auto slot_idx = _component_to_slot[idx];
     if (slot_idx == slot_index::npos())
     {
         return;
@@ -201,11 +200,11 @@ auto basic_env<Allocator>::unset() -> void
         auto& last_slot = _slots.back();
 
         slot = std::move(last_slot);
-        _slot_indexes[slot.index] = slot_idx;
+        _component_to_slot[slot.index] = slot_idx;
     }
 
     _slots.pop_back();
-    _slot_indexes[idx] = slot_index::npos();
+    _component_to_slot[idx] = slot_index::npos();
 }
 
 template<typename Allocator>
@@ -218,7 +217,7 @@ template<typename Allocator>
 template<typename T>
 auto basic_env<Allocator>::index_of() const noexcept -> detail::component_index
 {
-    return _schema->template index_of<T>();
+    return detail::component_index::cast(_schema->template index_of<T>());
 }
 
 template<typename Allocator>
@@ -226,8 +225,8 @@ template<typename T>
 auto basic_env<Allocator>::slot_index_of() const noexcept -> slot_index
 {
     const auto index = index_of<T>();
-    ANT_ASSERT(index < _slot_indexes.size(), "component index out of bounds for slot indexes");
-    return _slot_indexes[index];
+    ANT_ASSERT(index < _component_to_slot.size(), "component index out of bounds for slot indexes");
+    return _component_to_slot[index];
 }
 
 } // namespace ant

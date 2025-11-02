@@ -6,6 +6,6 @@
 
 namespace ant::detail {
 
-using component_index = basic_index<struct component_index_tag, std::uint32_t>;
+using component_index = basic_index<struct component_index_tag, std::uint16_t>;
 
 } // namespace ant::detail

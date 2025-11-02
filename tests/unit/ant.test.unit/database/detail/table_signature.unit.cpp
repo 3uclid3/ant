@@ -12,9 +12,9 @@ TEST_CASE("table_signature::add: updates membership")
 {
     table_signature signature;
 
-    const component_index zero{0};
-    const component_index five{5};
-    const component_index ten{10};
+    const detail::component_index zero{0};
+    const detail::component_index five{5};
+    const detail::component_index ten{10};
 
     CHECK(signature.empty());
     CHECK_FALSE(signature.has(zero));
