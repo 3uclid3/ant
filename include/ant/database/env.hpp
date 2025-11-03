@@ -74,13 +74,17 @@ auto env::has() const noexcept -> bool
 template<typename T>
 auto env::get() const noexcept -> const T*
 {
-    return static_cast<const T*>(get_impl(_schema->template index_of<T>()));
+    const auto idx = _schema->template index_of<T>();
+    ANT_ASSERT(idx != detail::component_index::npos(), "Component type not in schema");
+    return static_cast<const T*>(get_impl(idx));
 }
 
 template<typename T>
 auto env::get() noexcept -> T*
 {
-    return static_cast<T*>(get_impl(_schema->template index_of<T>()));
+    const auto idx = _schema->template index_of<T>();
+    ANT_ASSERT(idx != detail::component_index::npos(), "Component type not in schema");
+    return static_cast<T*>(get_impl(idx));
 }
 
 template<typename T, typename... Args>
@@ -115,7 +119,9 @@ auto env::set(Args&&... args) -> T&
 template<typename T>
 auto env::unset() -> void
 {
-    unset_impl(_schema->template index_of<T>());
+    const auto idx = _schema->template index_of<T>();
+    ANT_ASSERT(idx != detail::component_index::npos(), "Component type not in schema");
+    unset_impl(idx);
 }
 
 } // namespace ant
