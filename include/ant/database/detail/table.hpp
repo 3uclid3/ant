@@ -6,8 +6,8 @@
 
 #include <ant/core/assert.hpp>
 #include <ant/core/container.hpp>
-#include <ant/database/detail/column.hpp>
 #include <ant/database/detail/entity_traits.hpp>
+#include <ant/database/detail/table_column.hpp>
 #include <ant/database/detail/table_index.hpp>
 #include <ant/database/detail/table_signature.hpp>
 #include <ant/database/entity.hpp>
@@ -20,7 +20,7 @@ class basic_table
 public:
     using allocator_type = Allocator;
     using signature_type = basic_table_signature<allocator_type>;
-    using column_type = basic_column<allocator_type>;
+    using column_type = table_column;
 
     using columns_type = vector<column_type, allocator_type>;
     using rows_type = vector<entity, allocator_type>;

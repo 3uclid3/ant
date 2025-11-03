@@ -3,7 +3,6 @@
 #include <ant/database/detail/table.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
-#include <ant/database/detail/column.hpp>
 #include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/detail/entity_traits.hpp>
