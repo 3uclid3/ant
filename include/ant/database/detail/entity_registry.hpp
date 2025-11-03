@@ -2,8 +2,8 @@
 
 #include <vector>
 
+#include <ant/database/detail/entity_location.hpp>
 #include <ant/database/detail/entity_traits.hpp>
-#include <ant/database/detail/table_index.hpp>
 #include <ant/database/entity.hpp>
 
 namespace ant::detail {
@@ -26,18 +26,18 @@ public:
     [[nodiscard]] auto create() -> entity;
     auto destroy(entity e) noexcept -> void;
 
-    auto relocate(entity e, table_index table, row_index row) noexcept -> void;
-    [[nodiscard]] auto locate(entity e) const noexcept -> table_location;
+    auto relocate(entity e, entity_location location) noexcept -> void;
+    [[nodiscard]] auto locate(entity e) const noexcept -> entity_location;
     [[nodiscard]] auto version(entity e) const noexcept -> version_type;
 
     auto empty() const noexcept -> bool;
     auto size() const noexcept -> std::size_t;
 
 private:
-    std::vector<table_location> _location;
+    std::vector<entity_location> _location;
     std::vector<version_type> _versions;
 
-    std::vector<entity_traits::identifier_type> _free;
+    std::vector<entity_traits::index_type> _free;
 };
 
 } // namespace ant::detail

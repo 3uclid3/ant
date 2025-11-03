@@ -6,7 +6,6 @@
 #include <string_view>
 
 #include <ant/core/type_info.hpp>
-#include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_vtable.hpp>
 
 namespace ant::detail {
@@ -21,9 +20,9 @@ struct component_meta
     std::size_t size{0};
     std::size_t alignment{0};
     std::size_t block_size{default_block_size};
+    std::size_t index{std::numeric_limits<std::size_t>::max()};
     std::string_view name{};
     std::uint16_t version{0};
-    component_index index{component_index::npos()};
 };
 
 template<typename T>

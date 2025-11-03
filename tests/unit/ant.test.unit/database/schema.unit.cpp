@@ -43,19 +43,19 @@ TEST_CASE("schema_builder::define: store components metadata correctly")
 
     schema built_schema = builder.build();
 
-    CHECK_NE(built_schema.index_of<bool>(), detail::component_index::npos());
-    CHECK_NE(built_schema.index_of<int>(), detail::component_index::npos());
-    CHECK_NE(built_schema.index_of<float>(), detail::component_index::npos());
-    CHECK_NE(built_schema.index_of<double>(), detail::component_index::npos());
+    CHECK_NE(built_schema.index_of<bool>(), schema::npos);
+    CHECK_NE(built_schema.index_of<int>(), schema::npos);
+    CHECK_NE(built_schema.index_of<float>(), schema::npos);
+    CHECK_NE(built_schema.index_of<double>(), schema::npos);
 
-    CHECK_NE(built_schema.index_of<test::empty>(), detail::component_index::npos());
-    CHECK_NE(built_schema.index_of<test::trivial>(), detail::component_index::npos());
-    CHECK_NE(built_schema.index_of<test::non_trivial_copy>(), detail::component_index::npos());
-    CHECK_NE(built_schema.index_of<test::non_trivial>(), detail::component_index::npos());
+    CHECK_NE(built_schema.index_of<test::empty>(), schema::npos);
+    CHECK_NE(built_schema.index_of<test::trivial>(), schema::npos);
+    CHECK_NE(built_schema.index_of<test::non_trivial_copy>(), schema::npos);
+    CHECK_NE(built_schema.index_of<test::non_trivial>(), schema::npos);
 
     // TODO review component_index
-    // CHECK_EQ(built_schema.index_of<struct unknown>(), detail::component_index::npos());
-    // CHECK_EQ(built_schema.index_of<struct unknown_other>(), detail::component_index::npos());
+    // CHECK_EQ(built_schema.index_of<struct unknown>(), schema::npos);
+    // CHECK_EQ(built_schema.index_of<struct unknown_other>(), schema::npos);
 }
 
 }} // namespace ant

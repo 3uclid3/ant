@@ -6,7 +6,7 @@ namespace ant::detail {
 
 auto entity_registry::contains(entity e) const noexcept -> bool
 {
-    const auto idx = entity_traits::to_identifier(e);
+    const auto idx = entity_traits::to_index(e);
     const auto ver = entity_traits::to_version(e);
 
     return static_cast<std::size_t>(idx) < _versions.size() && _versions[static_cast<std::size_t>(idx)] == ver;
@@ -25,10 +25,10 @@ auto entity_registry::create() -> entity
     }
     else
     {
-        const auto idx = static_cast<entity_traits::identifier_type>(_versions.size());
+        const auto idx = static_cast<entity_traits::index_type>(_versions.size());
 
         _versions.emplace_back(version_type{0});
-        _location.emplace_back();
+        _location.emplace_back(entity_location::invalid());
 
         return entity_traits::construct(idx, 0);
     }
@@ -38,27 +38,26 @@ auto entity_registry::destroy(entity e) noexcept -> void
 {
     ANT_ASSERT(contains(e), "e does not exist");
 
-    const auto idx = entity_traits::to_identifier(e);
+    const auto idx = entity_traits::to_index(e);
 
     _versions[idx] = entity_traits::to_version(entity_traits::bump(e));
-    _location[idx] = {};
 
     _free.push_back(idx);
 }
 
-auto entity_registry::relocate(entity e, table_index table, row_index row) noexcept -> void
+auto entity_registry::relocate(entity e, entity_location location) noexcept -> void
 {
     ANT_ASSERT(contains(e), "e does not exist");
 
-    const auto idx = entity_traits::to_identifier(e);
-    _location[idx] = {table, row};
+    const auto idx = entity_traits::to_index(e);
+    _location[idx] = location;
 }
 
-auto entity_registry::locate(entity e) const noexcept -> table_location
+auto entity_registry::locate(entity e) const noexcept -> entity_location
 {
     ANT_ASSERT(contains(e), "e does not exist");
 
-    const auto idx = entity_traits::to_identifier(e);
+    const auto idx = entity_traits::to_index(e);
     return _location[idx];
 }
 
@@ -66,7 +65,7 @@ auto entity_registry::version(entity e) const noexcept -> version_type
 {
     ANT_ASSERT(contains(e), "e does not exist");
 
-    const auto idx = entity_traits::to_identifier(e);
+    const auto idx = entity_traits::to_index(e);
     return _versions[idx];
 }
 

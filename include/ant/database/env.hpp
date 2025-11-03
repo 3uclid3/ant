@@ -2,13 +2,9 @@
 
 #include <memory>
 #include <new>
-#include <type_traits>
-#include <utility>
 #include <vector>
 
 #include <ant/core/assert.hpp>
-#include <ant/database/detail/component_index.hpp>
-#include <ant/database/detail/component_meta.hpp>
 #include <ant/database/schema.hpp>
 
 namespace ant {
@@ -42,25 +38,24 @@ public:
 private:
     struct component_slot
     {
-        detail::component_index index{detail::component_index::npos()};
-
         std::unique_ptr<void, void (*)(void*)> ptr;
+        std::size_t index{schema::npos};
     };
 
-    using slot_index = basic_index<struct slot_index_tag, detail::component_index::value_type, detail::component_index::npos()>;
+private:
+    auto get_impl(std::size_t index) const -> const void*;
+    auto get_impl(std::size_t index) -> void*;
+
+    auto unset_impl(std::size_t index) -> void;
 
 private:
-    auto get_impl(std::size_t idx) const -> const void*;
-    auto get_impl(std::size_t idx) -> void*;
+    static constexpr std::size_t npos = schema::npos;
 
-    auto unset_impl(std::size_t idx) -> void;
-
-private:
     // dense storage of component slots
     std::vector<component_slot> _slots{};
 
     // sparse mapping from component index to slot index
-    std::vector<slot_index> _component_to_slot{};
+    std::vector<std::size_t> _component_to_slot{};
 
     const schema* _schema{nullptr};
 };
@@ -74,54 +69,50 @@ auto env::has() const noexcept -> bool
 template<typename T>
 auto env::get() const noexcept -> const T*
 {
-    const auto idx = _schema->template index_of<T>();
-    ANT_ASSERT(idx != detail::component_index::npos(), "Component type not in schema");
-    return static_cast<const T*>(get_impl(idx));
+    const auto index = _schema->template index_of<T>();
+    ANT_ASSERT(index != npos, "Component type not in schema");
+    return static_cast<const T*>(get_impl(index));
 }
 
 template<typename T>
 auto env::get() noexcept -> T*
 {
-    const auto idx = _schema->template index_of<T>();
-    ANT_ASSERT(idx != detail::component_index::npos(), "Component type not in schema");
-    return static_cast<T*>(get_impl(idx));
+    const auto index = _schema->template index_of<T>();
+    ANT_ASSERT(index != npos, "Component type not in schema");
+    return static_cast<T*>(get_impl(index));
 }
 
 template<typename T, typename... Args>
 auto env::set(Args&&... args) -> T&
 {
-    const auto idx = _schema->template index_of<T>();
-    ANT_ASSERT(idx != detail::component_index::npos(), "Component type not in schema");
+    const auto index = _schema->template index_of<T>();
+    ANT_ASSERT(index != npos, "Component type not in schema");
 
     const auto deleter = [](void* p) { delete static_cast<T*>(p); };
 
-    if (_component_to_slot[idx] == slot_index::npos())
+    if (_component_to_slot[index] == npos)
     {
-        // Prevent vector reallocation after constructing T to avoid leaks on throw
-        _slots.reserve(_slots.size() + 1);
-
         T* ptr = new T(std::forward<Args>(args)...);
 
-        _slots.emplace_back(component_slot{.index = detail::component_index(idx),
-                                           .ptr = std::unique_ptr<void, void (*)(void*)>(ptr, deleter)});
+        _slots.emplace_back(component_slot{.ptr = std::unique_ptr<void, void (*)(void*)>(ptr, deleter), .index = index});
 
-        _component_to_slot[idx] = slot_index::cast(_slots.size() - 1);
+        _component_to_slot[index] = _slots.size() - 1;
     }
     else
     {
-        auto& slot = _slots[_component_to_slot[idx]];
+        auto& slot = _slots[_component_to_slot[index]];
         slot.ptr = std::unique_ptr<void, void (*)(void*)>(new T(std::forward<Args>(args)...), deleter);
     }
 
-    return *static_cast<T*>(_slots[_component_to_slot[idx]].ptr.get());
+    return *static_cast<T*>(_slots[_component_to_slot[index]].ptr.get());
 }
 
 template<typename T>
 auto env::unset() -> void
 {
-    const auto idx = _schema->template index_of<T>();
-    ANT_ASSERT(idx != detail::component_index::npos(), "Component type not in schema");
-    unset_impl(idx);
+    const auto index = _schema->template index_of<T>();
+    ANT_ASSERT(index != schema::npos, "Component type not in schema");
+    unset_impl(index);
 }
 
 } // namespace ant

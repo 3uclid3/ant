@@ -55,7 +55,7 @@ constexpr auto schema_builder::build() noexcept -> schema
     for (std::size_t i = 0; i < _metas.size(); ++i)
     {
         auto& meta = _metas[i];
-        meta.index = detail::component_index::cast(i);
+        meta.index = i;
 
         hashes.emplace_back(meta.hash);
     }
