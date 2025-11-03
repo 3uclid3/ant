@@ -4,36 +4,26 @@ set namespaceSeparator ::
 
 namespace ant {
 
-	' Aliases and simple types
-	class component_index <<alias>>
-	class table_index <<alias>>
-	class row_index <<alias>>
-
-	class table_location {
-		+table: table_index
-		+row: row_index
-		+{static} npos(): table_location
-	}
-
-	' Schema and builder
-	class "basic_schema<Database>" as basic_schema <<template>> {
-		+{static} id_of<T>(): component_id_type
-		+contains<T>(): bool
-		+index_of<T>(): component_index
+	' Schema and builder (public API)
+	class "basic_schema<Allocator>" as basic_schema <<template>> {
+		+index_of<T>(): size_type
 		+meta_of<T>(): const component_meta_type&
-		+meta_of(index: component_index): const component_meta_type&
+		+meta_of(index: size_type): const component_meta_type&
 		+empty(): bool
 		+size(): size_type
 	}
 
-	class "basic_schema_builder<Database>" as basic_schema_builder <<template>> {
-		+define<T>(name: string_view, version: component_version_type): basic_schema_builder&
-		+build(): basic_schema<Database>
+	class "basic_schema_builder<Allocator>" as basic_schema_builder <<template>> {
+		+basic_schema_builder()
+		+basic_schema_builder(alloc: allocator_type)
+		+define<T>(name: string_view, version: detail::component_version): basic_schema_builder&
+		+build(): basic_schema<Allocator>
 	}
 
-	' Environment
-	class "basic_env<Database>" as basic_env <<template>> {
-		+basic_env(schema: basic_schema<Database>, allocator: allocator_type)
+	' Environment (public API)
+	class "basic_env<Allocator>" as basic_env <<template>> {
+		+basic_env(schema: basic_schema<...>, allocator: allocator_type)
+		+~basic_env()
 		+has<T>(): bool
 		+get<T>(): const T*
 		+get<T>(): T*
@@ -42,67 +32,120 @@ namespace ant {
 		+empty(): bool
 	}
 
-	' Entity index
-	class "basic_entity_registry<Database>" as basic_entity_registry <<template>> {
+	' Entity registry (public API)
+	class "basic_entity_registry<Entity, Allocator>" as basic_entity_registry <<template>> {
 		+basic_entity_registry(allocator: allocator_type)
 		+contains(entity: entity_type): bool
 		+create(): entity_type
 		+destroy(entity: entity_type): void
-		+relocate(entity: entity_type, table: table_index, row: row_index): void
-		+locate(entity: entity_type): table_location
+		+relocate(entity: entity_type, table: detail::table_index, row: detail::row_index): void
+		+locate(entity: entity_type): detail::table_location
 		+version(entity: entity_type): version_type
 		+empty(): bool
 		+size(): size_t
 	}
 
-	' Table signature
-	class "basic_table_signature<Database>" as basic_table_signature <<template>> {
-		+basic_table_signature(allocator: allocator_type)
-		+has(index: component_index): bool
-		+add(index: component_index): void
-		+remove(index: component_index): void
-		+empty(): bool
-	}
-
-	' Column
-	class "basic_column<Database>" as basic_column <<template>> {
-		+basic_column(meta: component_meta_type, allocator: allocator_type)
-		+~basic_column()
-		+emplace_back(): row_index
-		+swap_and_pop(idx: row_index): void
-		+row(idx: row_index): const void*
-		+row(idx: row_index): void*
+	' Catalog (public API)
+	class "basic_catalog<Allocator>" as basic_catalog <<template>> {
+		+basic_catalog()
+		+basic_catalog(schema: basic_schema<allocator_type>)
 		+empty(): bool
 		+size(): size_t
+		+index_of(signature: detail::basic_table_signature<allocator_type>): detail::table_index
+		+ensure_index_of(signature: detail::basic_table_signature<allocator_type>): detail::table_index
+		+table(idx: detail::table_index): const detail::basic_table
+		+table(idx: detail::table_index): detail::basic_table
+		+for_each_table(required: detail::basic_component_bitset, f: F): void
 	}
 
-	' Table
-	class "basic_table<Database>" as basic_table <<template>> {
-		+basic_table(signature: basic_table_signature<Database>, columns: columns_type, allocator: allocator_type)
-		+add_row(entity: entity_type): row_index
-		+remove_row(entity: entity_type): void
-		+remove_row(index: row_index): void
-		+signature(): const basic_table_signature<Database>&
-		+columns(): span<const column_type>
-		+rows(): span<const entity_type>
+
+	namespace detail {
+
+		' Aliases and simple types (detail)
+		class component_index <<alias>>
+		class table_index <<alias>>
+		class row_index <<alias>>
+		class component_version <<alias>>
+
+		class table_location {
+			+table: table_index
+			+row: row_index
+			+{static} npos(): table_location
+		}
+
+		' Component metadata (detail)
+		class component_vtable {
+			+default_construct: fn
+			+relocate: fn
+			+clone: fn
+			+destroy: fn
+			+{static} of<T>(): component_vtable
+		}
+
+		class component_meta {
+			+hash: uint32_t
+			+vtable: component_vtable
+			+size: size_t
+			+alignment: size_t
+			+block_size: size_t
+			+name: string_view
+			+version: component_version
+			+index: component_index
+		}
+
+		class "basic_component_bitset<Allocator>" as basic_component_bitset <<template>>
+
+		' Table signature / column / table (detail)
+		class "basic_table_signature<Allocator>" as d_basic_table_signature <<template>> {
+			+basic_table_signature(allocator: allocator_type)
+			+has(index: component_index): bool
+			+add(index: component_index): void
+			+remove(index: component_index): void
+			+empty(): bool
+		}
+
+		class "basic_column<Allocator>" as d_basic_column <<template>> {
+			+basic_column(meta: component_meta)
+			+basic_column(meta: component_meta, allocator: allocator_type)
+			+~basic_column()
+			+emplace_back(): row_index
+			+swap_and_pop(idx: row_index): void
+			+row(idx: row_index): const void*
+			+row(idx: row_index): void*
+			+empty(): bool
+			+size(): size_t
+		}
+
+		class "basic_table<Entity, Allocator>" as d_basic_table <<template>> {
+			+basic_table(signature: basic_table_signature<allocator_type>, columns: columns_type, allocator: allocator_type)
+			+add_row(entity: entity_type): row_index
+			+remove_row(entity: entity_type): void
+			+remove_row(index: row_index): void
+			+signature(): const basic_table_signature<allocator_type>&
+			+columns(): span<const column_type>
+			+rows(): span<const entity_type>
+		}
+
+		' Relationships (detail)
+		d_basic_table ..> d_basic_table_signature
+		d_basic_table *-- d_basic_column : columns
+		d_basic_table ..> row_index
+
 	}
 
-	' Relationships
-	basic_schema_builder ..> basic_schema : build()
-	basic_env ..> basic_schema : uses
-	basic_entity_registry ..> table_location
-	basic_entity_registry ..> table_index
-	basic_entity_registry ..> row_index
-	basic_table ..> basic_table_signature
-	basic_table *-- basic_column : columns
-	basic_table ..> row_index
-
+	' Cross-namespace relationships
+	ant::basic_schema ..> ant::detail::component_meta : uses
+	ant::basic_schema_builder ..> ant::detail::component_meta : defines
+	ant::basic_schema_builder ..> ant::detail::component_version
+	ant::basic_schema_builder ..> ant::detail::component_vtable
+	ant::basic_env ..> ant::detail::component_index
+	ant::basic_env ..> ant::detail::component_meta
+	ant::basic_entity_registry ..> ant::detail::table_location
+	ant::basic_entity_registry ..> ant::detail::table_index
+	ant::basic_entity_registry ..> ant::detail::row_index
+	ant::basic_catalog ..> ant::detail::d_basic_table_signature
+	ant::basic_catalog ..> ant::detail::d_basic_table
+	ant::basic_catalog ..> ant::detail::basic_component_bitset
 }
-
-note as N1
-Aliases: component_index, table_index, row_index refer to ant::basic_index specializations.
-end note
-
-N1 .. ant
 
 @enduml
