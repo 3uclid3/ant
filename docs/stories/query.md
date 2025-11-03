@@ -5,7 +5,7 @@ A type-safe iterator over entities matching a component signature. Compile-time 
 ## Classes
 
 ```cpp
-// decorator`
+// decorator
 template<typename... T>
 struct exclude {}; // exclude entity having any of the components T...
 
@@ -67,7 +67,7 @@ ant::select_query select = ant::make_query<position, const velocity, weapon*>(da
 for (ant::row row : select)
 {
     const velocity& vel = row.get<const velocity>();
-    position& pos = row.get<const position>();
+    position& pos = row.get<position>();
     
     float fx = 1.0f;
     float fy = 1.0f;
