@@ -15,72 +15,68 @@ table_column::~table_column()
     {
         for (std::size_t i = 0; i < _size; ++i)
         {
-            const block_loc loc = to_loc(row_index::cast(i));
-
-            _meta->vtable.destroy(_blocks[loc.idx].get() + loc.off);
+            _meta->vtable.destroy(row(i));
         }
     }
 }
 
-auto table_column::emplace_back() -> row_index
+auto table_column::emplace_back() -> std::size_t
 {
     if (_size >= _blocks.size() * _meta->block_size)
     {
         _blocks.emplace_back(std::make_unique<std::byte[]>(_meta->block_size * _meta->size));
     }
 
-    const block_loc loc = to_loc(row_index::cast(_size++));
+    const std::size_t index = _size++;
+
     if (_meta->vtable.default_construct)
     {
-        _meta->vtable.default_construct(_blocks[loc.idx].get() + loc.off);
+        const std::size_t block_index = index / _meta->block_size;
+        const std::size_t block_offset = (index % _meta->block_size) * _meta->size;
+
+        _meta->vtable.default_construct(_blocks[block_index].get() + block_offset);
     }
 
-    return row_index::cast(_size - 1);
+    return index;
 }
 
-auto table_column::swap_and_pop(row_index idx) noexcept -> void
+auto table_column::swap_and_pop(std::size_t index) noexcept -> void
 {
-    ANT_ASSERT(static_cast<std::size_t>(idx) < _size, "Row index out of bounds");
+    ANT_ASSERT(index < _size, "Row index out of bounds");
 
-    const auto last_idx = row_index::cast(_size - 1);
+    const auto last_index = _size - 1;
 
-    if (idx != last_idx)
+    if (index != last_index)
     {
-        const block_loc src_loc = to_loc(last_idx);
-        const block_loc dst_loc = to_loc(idx);
-
-        void* dst_ptr = _blocks[dst_loc.idx].get() + dst_loc.off;
-        void* src_ptr = _blocks[src_loc.idx].get() + src_loc.off;
-
         if (_meta->vtable.relocate)
         {
-            _meta->vtable.relocate(dst_ptr, src_ptr);
+            _meta->vtable.relocate(row(index), row(last_index));
         }
         else
         {
-            std::memcpy(dst_ptr, src_ptr, _meta->size);
+            std::memcpy(row(index), row(last_index), _meta->size);
         }
     }
     else if (_meta->vtable.destroy)
     {
-        const block_loc loc = to_loc(idx);
-
-        _meta->vtable.destroy(_blocks[loc.idx].get() + loc.off);
+        _meta->vtable.destroy(row(index));
     }
 
     --_size;
 }
 
-auto table_column::row(row_index idx) const noexcept -> const void*
+auto table_column::row(std::size_t index) const noexcept -> const void*
 {
-    const block_loc loc = to_loc(idx);
-    return _blocks[loc.idx].get() + loc.off;
+    const auto block_index = index / _meta->block_size;
+    const auto block_offset = (index % _meta->block_size) * _meta->size;
+    return _blocks[block_index].get() + block_offset;
 }
 
-auto table_column::row(row_index idx) noexcept -> void*
+auto table_column::row(std::size_t index) noexcept -> void*
 {
-    const block_loc loc = to_loc(idx);
-    return _blocks[loc.idx].get() + loc.off;
+    const auto block_index = index / _meta->block_size;
+    const auto block_offset = (index % _meta->block_size) * _meta->size;
+    return _blocks[block_index].get() + block_offset;
 }
 
 auto table_column::empty() const noexcept -> bool
@@ -91,22 +87,6 @@ auto table_column::empty() const noexcept -> bool
 auto table_column::size() const noexcept -> std::size_t
 {
     return _size;
-}
-
-auto table_column::to_loc(row_index idx) const noexcept -> block_loc
-{
-    ANT_ASSERT(static_cast<std::size_t>(idx) < _size, "Row index out of bounds");
-    const std::size_t uidx = static_cast<std::size_t>(idx);
-
-    // Compute byte offset within blocks. Each block holds block_size elements.
-    const std::size_t elements_per_block = _meta->block_size;
-    ANT_ASSERT(elements_per_block > 0, "Invalid block size");
-
-    const std::size_t block_idx = uidx / elements_per_block;
-    const std::size_t off_elements = uidx % elements_per_block;
-    const std::size_t off_bytes = off_elements * _meta->size;
-
-    return {block_idx, off_bytes};
 }
 
 } // namespace ant::detail

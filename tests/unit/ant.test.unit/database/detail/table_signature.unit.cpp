@@ -2,17 +2,15 @@
 
 #include <ant/database/detail/table_signature.hpp>
 
-#include <ant/database/detail/component_index.hpp>
-
 namespace ant::detail { namespace {
 
 TEST_CASE("table_signature::add: updates membership")
 {
     table_signature signature;
 
-    const detail::component_index zero{0};
-    const detail::component_index five{5};
-    const detail::component_index ten{10};
+    const std::size_t zero{0};
+    const std::size_t five{5};
+    const std::size_t ten{10};
 
     CHECK(signature.empty());
     CHECK_FALSE(signature.has(zero));

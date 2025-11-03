@@ -10,7 +10,7 @@ table::table(table_signature signature, std::vector<table_column>&& columns) noe
 {
 }
 
-auto table::add_row(entity e) -> row_index
+auto table::insert(entity e) -> std::size_t
 {
     ANT_ASSERT(std::ranges::find(_rows, e) == _rows.end(), "Entity already exists in table");
 
@@ -23,22 +23,17 @@ auto table::add_row(entity e) -> row_index
         ANT_ASSERT(_rows.size() == column.size(), "Column size mismatch after adding row");
     }
 
-    return row_index::cast(_rows.size() - 1);
+    return _rows.size() - 1;
 }
 
-auto table::remove_row(entity e) -> void
+auto table::erase(entity e) -> void
 {
     auto it = std::ranges::find(_rows, e);
 
     ANT_ASSERT(it != _rows.end(), "Entity does not exist in table");
 
     const auto diff = std::distance(_rows.begin(), it);
-    remove_row(row_index{static_cast<row_index::value_type>(diff)});
-}
-
-auto table::remove_row(row_index index) -> void
-{
-    ANT_ASSERT(index < _rows.size(), "Invalid row index");
+    const auto index = static_cast<std::size_t>(diff);
 
     for (auto& column : _columns)
     {

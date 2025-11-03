@@ -22,8 +22,7 @@ TEST_CASE("entity_registry::create: registers handle and updates size")
     CHECK_EQ(entity_traits::to_version(e), 0);
 
     const auto loc = registry.locate(e); // default location
-    CHECK_EQ(loc.table, table_index::npos());
-    CHECK_EQ(loc.row, row_index::npos());
+    CHECK_EQ(loc, entity_location::invalid());
 }
 
 TEST_CASE("entity_registry::relocate: locate reflects new position")
@@ -31,17 +30,17 @@ TEST_CASE("entity_registry::relocate: locate reflects new position")
     entity_registry registry;
     const auto e = registry.create();
 
-    registry.relocate(e, static_cast<table_index>(1), static_cast<row_index>(7));
+    registry.relocate(e, entity_location{.table = 1, .row = 7});
     const auto loc = registry.locate(e);
-    CHECK_EQ(loc.table, static_cast<table_index>(1));
-    CHECK_EQ(loc.row, static_cast<row_index>(7));
+    CHECK_EQ(loc.table, 1);
+    CHECK_EQ(loc.row, 7);
 }
 
 TEST_CASE("entity_registry::destroy: invalidates and bumps recycled id version")
 {
     entity_registry registry;
     const auto e1 = registry.create();
-    const auto id = entity_traits::to_identifier(e1);
+    const auto id = entity_traits::to_index(e1);
     const auto v0 = entity_traits::to_version(e1);
 
     REQUIRE(registry.contains(e1));
@@ -50,7 +49,7 @@ TEST_CASE("entity_registry::destroy: invalidates and bumps recycled id version")
     CHECK_EQ(registry.size(), 0u);
 
     const auto e2 = registry.create();
-    const auto id2 = entity_traits::to_identifier(e2);
+    const auto id2 = entity_traits::to_index(e2);
     const auto v1 = entity_traits::to_version(e2);
 
     CHECK_EQ(id2, id); // id reused
@@ -64,8 +63,8 @@ TEST_CASE("entity_registry::destroy: free list is LIFO")
     entity_registry registry;
     const auto a = registry.create();
     const auto b = registry.create();
-    const auto id_a = entity_traits::to_identifier(a);
-    const auto id_b = entity_traits::to_identifier(b);
+    const auto id_a = entity_traits::to_index(a);
+    const auto id_b = entity_traits::to_index(b);
 
     registry.destroy(a);
     registry.destroy(b);
@@ -73,8 +72,8 @@ TEST_CASE("entity_registry::destroy: free list is LIFO")
     const auto c = registry.create();
     const auto d = registry.create();
 
-    CHECK_EQ(entity_traits::to_identifier(c), id_b); // last destroyed comes back first
-    CHECK_EQ(entity_traits::to_identifier(d), id_a);
+    CHECK_EQ(entity_traits::to_index(c), id_b); // last destroyed comes back first
+    CHECK_EQ(entity_traits::to_index(d), id_a);
 }
 
 }} // namespace ant::detail

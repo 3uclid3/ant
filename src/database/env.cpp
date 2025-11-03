@@ -6,7 +6,7 @@ env::env(const schema& schema) noexcept
     : _schema{&schema}
 {
     // Pre-size sparse mapping to the full schema size to eliminate per-set resize branches
-    _component_to_slot.resize(_schema->size(), slot_index{slot_index::npos()});
+    _component_to_slot.resize(_schema->size(), schema::npos);
 }
 
 auto env::get_impl(std::size_t idx) const -> const void*
@@ -18,7 +18,7 @@ auto env::get_impl(std::size_t idx) const -> const void*
 
     const auto slot_idx = _component_to_slot[idx];
 
-    if (slot_idx == slot_index::npos())
+    if (slot_idx == npos)
     {
         return nullptr;
     }
@@ -34,7 +34,7 @@ auto env::get_impl(std::size_t idx) -> void*
 auto env::unset_impl(std::size_t idx) -> void
 {
     const auto slot_idx = _component_to_slot[idx];
-    if (slot_idx == slot_index::npos())
+    if (slot_idx == npos)
     {
         return;
     }
@@ -50,7 +50,7 @@ auto env::unset_impl(std::size_t idx) -> void
     }
 
     _slots.pop_back();
-    _component_to_slot[idx] = slot_index::npos();
+    _component_to_slot[idx] = npos;
 }
 
 } // namespace ant
