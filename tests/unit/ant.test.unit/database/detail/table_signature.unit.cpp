@@ -6,8 +6,6 @@
 
 namespace ant::detail { namespace {
 
-using table_signature = basic_table_signature<std::allocator<std::byte>>;
-
 TEST_CASE("table_signature::add: updates membership")
 {
     table_signature signature;

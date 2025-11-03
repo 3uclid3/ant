@@ -3,17 +3,12 @@
 #include <ant/database/detail/table.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
-#include <ant/database/detail/column.hpp>
 #include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/detail/entity_traits.hpp>
 #include <ant/database/entity.hpp>
 
 namespace ant::detail { namespace {
-
-using allocator = std::allocator<std::byte>;
-using table_signature = basic_table_signature<allocator>;
-using table = basic_table<allocator>;
 
 static constexpr auto make_entity(std::uint32_t id, std::uint32_t ver = 0) -> entity
 {
@@ -22,17 +17,14 @@ static constexpr auto make_entity(std::uint32_t id, std::uint32_t ver = 0) -> en
 
 TEST_CASE("basic_table: default empty")
 {
-    table::columns_type columns{};
-    table_signature signature{};
-
-    table tbl{std::move(signature), std::move(columns)};
+    table tbl{table_signature{}, std::vector<table_column>{}};
 
     CHECK(tbl.rows().empty());
 }
 
 TEST_CASE("basic_table::signature: propagated from ctor")
 {
-    table::columns_type columns{};
+    std::vector<table_column> columns{};
     table_signature signature{};
     signature.add(component_index{3});
 
@@ -45,7 +37,7 @@ TEST_CASE("basic_table::columns: stores provided columns")
 {
     const auto meta = make_meta<test::trivial>("trivial");
 
-    table::columns_type columns{};
+    std::vector<table_column> columns{};
     columns.emplace_back(meta);
     columns.emplace_back(meta);
 
@@ -57,7 +49,7 @@ TEST_CASE("basic_table::columns: stores provided columns")
 
 TEST_CASE("basic_table::add_row: returns index 0 for first row")
 {
-    table::columns_type columns{};
+    std::vector<table_column> columns{};
     table_signature signature{};
     table tbl{std::move(signature), std::move(columns)};
 
@@ -68,7 +60,7 @@ TEST_CASE("basic_table::add_row: returns index 0 for first row")
 
 TEST_CASE("basic_table::add_row: adds a single row")
 {
-    table tbl{table_signature{}, table::columns_type{}};
+    table tbl{table_signature{}, std::vector<table_column>{}};
 
     (void)tbl.add_row(make_entity(2));
 
@@ -77,7 +69,7 @@ TEST_CASE("basic_table::add_row: adds a single row")
 
 TEST_CASE("basic_table::remove_row(entity): removes existing")
 {
-    table tbl{table_signature{}, table::columns_type{}};
+    table tbl{table_signature{}, std::vector<table_column>{}};
 
     const auto e0 = make_entity(10);
     const auto e1 = make_entity(11);
@@ -91,7 +83,7 @@ TEST_CASE("basic_table::remove_row(entity): removes existing")
 
 TEST_CASE("basic_table::remove_row(index): removes and compacts")
 {
-    table tbl{table_signature{}, table::columns_type{}};
+    table tbl{table_signature{}, std::vector<table_column>{}};
 
     const auto e0 = make_entity(20);
     const auto e1 = make_entity(21);
@@ -107,7 +99,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::add_row: grows all column
 {
     constexpr auto meta_tr = make_meta<test::tracked>("tracked");
 
-    table::columns_type columns{};
+    std::vector<table_column> columns{};
     columns.emplace_back(meta_tr);
     columns.emplace_back(meta_tr);
 
@@ -133,7 +125,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(entity): updat
 {
     constexpr auto meta_tr = make_meta<test::tracked>("tracked");
 
-    table::columns_type columns{};
+    std::vector<table_column> columns{};
     columns.emplace_back(meta_tr);
 
     table tbl{table_signature{}, std::move(columns)};
@@ -159,7 +151,7 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::remove_row(index): last e
 {
     constexpr auto meta_tr = make_meta<test::tracked>("tracked");
 
-    table::columns_type columns{};
+    std::vector<table_column> columns{};
     columns.emplace_back(meta_tr);
 
     table tbl{table_signature{}, std::move(columns)};

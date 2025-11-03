@@ -10,12 +10,10 @@
 
 namespace ant { namespace {
 
-using env = basic_env<std::allocator<std::byte>>;
-
 struct fixture
 {
     fixture()
-        : schema(basic_schema_builder<std::allocator<std::byte>>()
+        : schema(schema_builder()
                      .define<bool>("bool")
                      .define<int>("int")
                      .define<test::empty>("empty")
@@ -26,7 +24,7 @@ struct fixture
     {
     }
 
-    basic_schema<std::allocator<std::byte>> schema;
+    schema schema;
     env env;
 };
 

@@ -7,7 +7,7 @@
 
 > ⚠️ **Unstable API.** Active development, pre-1.0.
 ---
-`ant` is an elegant header-only entity-component system designed for clarity, speed, and big swarms.
+`ant` is an elegant entity-component system designed for clarity, speed, and big swarms.
 
 ## Setup & quick start
 

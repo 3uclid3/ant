@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 <!-- Add new changes here under the appropriate section (Added/Changed/Fixed/Removed/etc.) -->
 
+## [0.12.0] - 2025-11-03
+
+### Changed
+
+- **BREAKING**: Replaced the allocator-templated database surface (`basic_schema`, `basic_schema_builder`, `basic_env`, and the `detail::basic_table*` family) with runtime counterparts (`schema`, `schema_builder`, `env`, `detail::table`, `detail::table_signature`). Update includes, drop allocator template parameters, and migrate to the concrete types when constructing schemas, environments, and tables.
+- Database internals now centralize column storage via the new `detail::table_column` helper and move `env`, `table`, `table_column`, and `entity_registry` implementation into `.cpp` units to cut template churn and link all logic from the library binary.
+
+### Removed
+
+- **BREAKING**: Removed `ant/core/container.hpp`, `ant/core/memory.hpp`, `ant/database/detail/column.hpp`, `ant/database/entity_registry.hpp`, and `ant/database/detail/component_version.hpp`; downstream code should prefer the standard library containers and rely on the runtime database API.
+
+### Documentation
+
+- README: Drop the "header-only" description now that the database module ships compiled sources.
+
 ## [0.11.0] - 2025-11-02
 
 ### Changed

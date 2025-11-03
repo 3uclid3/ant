@@ -1,17 +1,15 @@
 #include <doctest/doctest.h>
 
-#include <ant/database/detail/column.hpp>
+#include <ant/database/detail/table_column.hpp>
 
 #include <ant.test.shared/database/component_types.hpp>
 #include <ant/database/schema.hpp>
 
 namespace ant::detail { namespace {
 
-using column = basic_column<std::allocator<std::byte>>;
-
 static constexpr auto meta = make_meta<test::trivial>("trivial");
 
-auto emplace(column& c, int value) -> row_index
+auto emplace(table_column& c, int value) -> row_index
 {
     const auto idx = c.emplace_back();
 
@@ -24,7 +22,7 @@ auto emplace(column& c, int value) -> row_index
     return idx;
 }
 
-auto get(column& c, row_index idx) -> test::trivial&
+auto get(table_column& c, row_index idx) -> test::trivial&
 {
     void* row_ptr = c.row(idx);
     REQUIRE_NE(row_ptr, nullptr);
@@ -32,16 +30,16 @@ auto get(column& c, row_index idx) -> test::trivial&
     return *static_cast<test::trivial*>(row_ptr);
 }
 
-TEST_CASE("column::ctor: default empty")
+TEST_CASE("table_column::ctor: default empty")
 {
-    column c{meta};
+    table_column c{meta};
     CHECK(c.empty());
     CHECK_EQ(c.size(), 0);
 }
 
-TEST_CASE("column::emplace_back: returns index")
+TEST_CASE("table_column::emplace_back: returns index")
 {
-    column c{meta};
+    table_column c{meta};
 
     const row_index idx = emplace(c, 42);
 
@@ -49,18 +47,18 @@ TEST_CASE("column::emplace_back: returns index")
     CHECK_EQ(get(c, idx).value, 42);
 }
 
-TEST_CASE("column::swap_and_pop: removes element")
+TEST_CASE("table_column::swap_and_pop: removes element")
 {
-    column c{meta};
+    table_column c{meta};
 
     c.swap_and_pop(c.emplace_back());
 
     CHECK(c.empty());
 }
 
-TEST_CASE("column::swap_and_pop: removes element and moves last to removed")
+TEST_CASE("table_column::swap_and_pop: removes element and moves last to removed")
 {
-    column c{meta};
+    table_column c{meta};
 
     const row_index idx0 = emplace(c, 42);
     emplace(c, 24);
@@ -74,10 +72,10 @@ TEST_CASE("column::swap_and_pop: removes element and moves last to removed")
     CHECK_EQ(trivial.value, 33);
 }
 
-TEST_CASE_FIXTURE(test::tracked_fixture, "column::emplace_back: default constructs when non-trivial default ctor present")
+TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::emplace_back: default constructs when non-trivial default ctor present")
 {
     constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    column c{meta_tr};
+    table_column c{meta_tr};
 
     const row_index idx = c.emplace_back();
     auto* ptr = static_cast<test::tracked*>(c.row(idx));
@@ -87,10 +85,10 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "column::emplace_back: default construc
     CHECK_EQ(test::tracked::ctor_count, 1);
 }
 
-TEST_CASE_FIXTURE(test::tracked_fixture, "column::swap_and_pop: uses relocate for non-trivial types")
+TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::swap_and_pop: uses relocate for non-trivial types")
 {
     constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    column c{meta_tr};
+    table_column c{meta_tr};
 
     const row_index i0 = c.emplace_back();
     const row_index i1 = c.emplace_back();
@@ -105,10 +103,10 @@ TEST_CASE_FIXTURE(test::tracked_fixture, "column::swap_and_pop: uses relocate fo
     CHECK(test::tracked::move_count >= 1);
 }
 
-TEST_CASE_FIXTURE(test::tracked_fixture, "column::swap_and_pop: last element calls destroy")
+TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::swap_and_pop: last element calls destroy")
 {
     constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    column c{meta_tr};
+    table_column c{meta_tr};
 
     const row_index idx = c.emplace_back();
     c.swap_and_pop(idx);
