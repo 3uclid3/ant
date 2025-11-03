@@ -19,7 +19,7 @@ class basic_env
 {
 public:
     using allocator_type = Allocator;
-    using schema_type = basic_schema<rebind_alloc_t<std::byte, allocator_type>>;
+    using schema_type = schema;
 
 public:
     explicit basic_env(const schema_type& schema, const allocator_type& allocator = {}) noexcept;

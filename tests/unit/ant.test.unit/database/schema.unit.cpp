@@ -8,10 +8,6 @@
 
 namespace ant { namespace {
 
-using allocator = std::allocator<std::byte>;
-using schema_builder = basic_schema_builder<allocator>;
-using schema = basic_schema<allocator>;
-
 TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly", T, bool, int, float, double, test::empty, test::trivial, test::non_trivial_copy, test::non_trivial)
 {
     static std::uint16_t version = 0;
