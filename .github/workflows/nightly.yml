@@ -87,7 +87,7 @@ jobs:
           printf 'matrix={"include":[%s]}\n' "$(IFS=,; echo "${items[*]}")" >>"$GITHUB_OUTPUT"
 
       - name: Upload benchmark artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: benchmark-results
           path: build/*.bench.json
