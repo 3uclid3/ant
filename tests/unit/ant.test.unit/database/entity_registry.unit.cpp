@@ -2,12 +2,10 @@
 
 #include <ant/database/entity_registry.hpp>
 
-#include <ant.test.shared/database/entity_types.hpp>
-
 namespace ant { namespace {
 
-using entity_registry = basic_entity_registry<test::entity32, std::allocator<test::entity32>>;
-using traits = entity_registry::traits;
+using entity_registry = basic_entity_registry<std::allocator<entity>>;
+using traits = detail::entity_traits;
 
 TEST_CASE("entity_registry::ctor: initially empty")
 {
@@ -59,7 +57,7 @@ TEST_CASE("entity_registry::destroy: invalidates and bumps recycled id version")
     const auto v1 = traits::to_version(e2);
 
     CHECK_EQ(id2, id); // id reused
-    CHECK_EQ(v1, static_cast<traits::version_type>((v0 + 1) % traits::layout_type::version_mask));
+    CHECK_EQ(v1, static_cast<traits::version_type>((v0 + 1) % traits::version_mask));
     CHECK(registry.contains(e2));
     CHECK_FALSE(registry.contains(e1)); // stale handle remains invalid
 }

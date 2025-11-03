@@ -2,20 +2,19 @@
 
 #include <ant/core/container.hpp>
 #include <ant/core/memory.hpp>
+#include <ant/database/detail/entity_traits.hpp>
 #include <ant/database/detail/table_index.hpp>
-#include <ant/database/entity_traits.hpp>
+#include <ant/database/entity.hpp>
 
 namespace ant {
 
-template<typename Entity, typename Allocator>
+template<typename Allocator>
 class basic_entity_registry
 {
 public:
     using allocator_type = Allocator;
     using allocator_traits_type = allocator_traits<allocator_type>;
-    using entity_type = Entity;
-    using traits = entity_traits<entity_type>;
-    using version_type = typename traits::version_type;
+    using version_type = detail::entity_traits::version_type;
 
     explicit basic_entity_registry(const allocator_type& allocator = {}) noexcept;
 
@@ -25,31 +24,29 @@ public:
     basic_entity_registry(const basic_entity_registry&) = delete;
     auto operator=(const basic_entity_registry&) noexcept -> basic_entity_registry& = delete;
 
-    [[nodiscard]] auto contains(entity_type entity) const noexcept -> bool;
+    [[nodiscard]] auto contains(entity e) const noexcept -> bool;
 
-    [[nodiscard]] auto create() -> entity_type;
-    auto destroy(entity_type entity) noexcept -> void;
+    [[nodiscard]] auto create() -> entity;
+    auto destroy(entity e) noexcept -> void;
 
-    auto relocate(entity_type entity, detail::table_index table, detail::row_index row) noexcept -> void;
-    [[nodiscard]] auto locate(entity_type entity) const noexcept -> detail::table_location;
-    [[nodiscard]] auto version(entity_type entity) const noexcept -> version_type;
+    auto relocate(entity e, detail::table_index table, detail::row_index row) noexcept -> void;
+    [[nodiscard]] auto locate(entity e) const noexcept -> detail::table_location;
+    [[nodiscard]] auto version(entity e) const noexcept -> version_type;
 
     auto empty() const noexcept -> bool;
     auto size() const noexcept -> std::size_t;
 
 private:
-    using index_type = typename traits::identifier_type;
-
     allocator_type _allocator;
 
     vector<detail::table_location, allocator_type> _location;
     vector<version_type, allocator_type> _versions;
 
-    vector<index_type, allocator_type> _free;
+    vector<detail::entity_traits::identifier_type, allocator_type> _free;
 };
 
-template<typename Entity, typename Allocator>
-basic_entity_registry<Entity, Allocator>::basic_entity_registry(const allocator_type& allocator) noexcept
+template<typename Allocator>
+basic_entity_registry<Allocator>::basic_entity_registry(const allocator_type& allocator) noexcept
     : _allocator{allocator}
     , _location{rebind_alloc(_allocator)}
     , _versions{rebind_alloc(_allocator)}
@@ -57,17 +54,17 @@ basic_entity_registry<Entity, Allocator>::basic_entity_registry(const allocator_
 {
 }
 
-template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::contains(entity_type entity) const noexcept -> bool
+template<typename Allocator>
+auto basic_entity_registry<Allocator>::contains(entity e) const noexcept -> bool
 {
-    const auto idx = traits::to_identifier(entity);
-    const auto ver = traits::to_version(entity);
+    const auto idx = detail::entity_traits::to_identifier(e);
+    const auto ver = detail::entity_traits::to_version(e);
 
     return static_cast<std::size_t>(idx) < _versions.size() && _versions[static_cast<std::size_t>(idx)] == ver;
 }
 
-template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::create() -> entity_type
+template<typename Allocator>
+auto basic_entity_registry<Allocator>::create() -> entity
 {
     if (!_free.empty())
     {
@@ -76,67 +73,67 @@ auto basic_entity_registry<Entity, Allocator>::create() -> entity_type
 
         const auto ver = _versions[idx];
 
-        return traits::construct(idx, ver);
+        return detail::entity_traits::construct(idx, ver);
     }
     else
     {
-        const auto idx = static_cast<index_type>(_versions.size());
+        const auto idx = static_cast<detail::entity_traits::identifier_type>(_versions.size());
 
         _versions.emplace_back(version_type{0});
         _location.emplace_back();
 
-        return traits::construct(idx, 0);
+        return detail::entity_traits::construct(idx, 0);
     }
 }
 
-template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::destroy(entity_type entity) noexcept -> void
+template<typename Allocator>
+auto basic_entity_registry<Allocator>::destroy(entity e) noexcept -> void
 {
-    ANT_ASSERT(contains(entity), "entity does not exist");
+    ANT_ASSERT(contains(e), "e does not exist");
 
-    const auto idx = traits::to_identifier(entity);
+    const auto idx = detail::entity_traits::to_identifier(e);
 
-    _versions[idx] = traits::to_version(traits::bump(entity));
+    _versions[idx] = detail::entity_traits::to_version(detail::entity_traits::bump(e));
     _location[idx] = {};
 
     _free.push_back(idx);
 }
 
-template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::relocate(entity_type entity, detail::table_index table, detail::row_index row) noexcept -> void
+template<typename Allocator>
+auto basic_entity_registry<Allocator>::relocate(entity e, detail::table_index table, detail::row_index row) noexcept -> void
 {
-    ANT_ASSERT(contains(entity), "entity does not exist");
+    ANT_ASSERT(contains(e), "e does not exist");
 
-    const auto idx = traits::to_identifier(entity);
+    const auto idx = detail::entity_traits::to_identifier(e);
     _location[idx] = {table, row};
 }
 
-template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::locate(entity_type entity) const noexcept -> detail::table_location
+template<typename Allocator>
+auto basic_entity_registry<Allocator>::locate(entity e) const noexcept -> detail::table_location
 {
-    ANT_ASSERT(contains(entity), "entity does not exist");
+    ANT_ASSERT(contains(e), "e does not exist");
 
-    const auto idx = traits::to_identifier(entity);
+    const auto idx = detail::entity_traits::to_identifier(e);
     return _location[idx];
 }
 
-template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::version(entity_type entity) const noexcept -> version_type
+template<typename Allocator>
+auto basic_entity_registry<Allocator>::version(entity e) const noexcept -> version_type
 {
-    ANT_ASSERT(contains(entity), "entity does not exist");
+    ANT_ASSERT(contains(e), "e does not exist");
 
-    const auto idx = traits::to_identifier(entity);
+    const auto idx = detail::entity_traits::to_identifier(e);
     return _versions[idx];
 }
 
-template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::empty() const noexcept -> bool
+template<typename Allocator>
+auto basic_entity_registry<Allocator>::empty() const noexcept -> bool
 {
     return size() == 0;
 }
 
-template<typename Entity, typename Allocator>
-auto basic_entity_registry<Entity, Allocator>::size() const noexcept -> std::size_t
+template<typename Allocator>
+auto basic_entity_registry<Allocator>::size() const noexcept -> std::size_t
 {
     return _versions.size() - _free.size();
 }
