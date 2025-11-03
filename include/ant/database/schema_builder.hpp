@@ -5,7 +5,6 @@
 #include <vector>
 
 #include <ant/core/assert.hpp>
-#include <ant/core/memory.hpp>
 #include <ant/core/type_info.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/detail/component_vtable.hpp>

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ant/core/dynamic_bitset.hpp>
-#include <ant/core/memory.hpp>
 #include <ant/database/detail/component_index.hpp>
 
 namespace ant::detail {
