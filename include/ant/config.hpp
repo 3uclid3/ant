@@ -1,10 +1,5 @@
 #pragma once
 
-#ifndef ANT_ENTITY_TYPE
-#include <cstdint>
-#define ANT_ENTITY_TYPE std::uint32_t
-#endif
-
 #ifndef ANT_PRETTY_FUNCTION
 #if defined __clang__ || defined __GNUC__
 #define ANT_PRETTY_FUNCTION __PRETTY_FUNCTION__

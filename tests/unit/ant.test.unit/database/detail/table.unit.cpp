@@ -6,18 +6,18 @@
 #include <ant/database/detail/column.hpp>
 #include <ant/database/detail/component_index.hpp>
 #include <ant/database/detail/component_meta.hpp>
-#include <ant/database/entity_traits.hpp>
-#include <ant/entity.hpp>
+#include <ant/database/detail/entity_traits.hpp>
+#include <ant/database/entity.hpp>
 
 namespace ant::detail { namespace {
 
 using allocator = std::allocator<std::byte>;
 using table_signature = basic_table_signature<allocator>;
-using table = basic_table<entity, allocator>;
+using table = basic_table<allocator>;
 
 static constexpr auto make_entity(std::uint32_t id, std::uint32_t ver = 0) -> entity
 {
-    return entity_traits<entity>::construct(id, ver);
+    return detail::entity_traits::construct(id, ver);
 }
 
 TEST_CASE("basic_table: default empty")
