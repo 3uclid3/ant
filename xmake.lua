@@ -1,5 +1,5 @@
 set_project("ant")
-set_version("0.11.0")
+set_version("0.1.0")
 set_license("MIT")
 
 set_languages("cxx23")
@@ -19,13 +19,19 @@ option("benchmarks")
     set_description("Enable Benchmark test targets")
    
 target("ant")
-    set_kind("headeronly")
+    set_kind("static")
     
     add_includedirs("include", { public = true })
     add_headerfiles("include/**.hpp")
+    add_files("src/**.cpp")
 
     if is_mode("coverage") then
         add_defines("ANT_ASSERT_ENABLED=0", { public = true })
+    end
+    
+    -- TODO: review if this is necessary
+    if is_plat("windows") then
+        set_runtimes("MD", { public = true })
     end
 
     on_load(function(t)
@@ -39,4 +45,5 @@ target("ant")
         t:add("defines", string.format("ANT_VERSION_PATCH=%d", v:patch()), { public = true })
         t:add("defines", string.format("ANT_VERSION_SEMVER=\"%s\"", tostring(v)), { public = true })
     end)
+
 includes("tests")

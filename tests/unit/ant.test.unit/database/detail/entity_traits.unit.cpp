@@ -8,29 +8,29 @@ namespace ant::detail { namespace {
 
 struct entity_entry
 {
-    using identifier_type = entity_traits::identifier_type;
+    using index_type = entity_traits::index_type;
     using version_type = entity_traits::version_type;
 
     entity_entry() noexcept = default;
-    entity_entry(identifier_type id, version_type ver) noexcept
+    entity_entry(index_type id, version_type ver) noexcept
         : value{entity_traits::construct(id, ver)}
-        , identifier{id}
+        , index{id}
         , version{ver}
     {
     }
 
     entity value;
-    identifier_type identifier;
+    index_type index;
     version_type version;
 };
 
 struct entity_bump_entry
 {
-    using identifier_type = entity_traits::identifier_type;
+    using index_type = entity_traits::index_type;
     using version_type = entity_traits::version_type;
 
     entity_bump_entry() noexcept = default;
-    entity_bump_entry(identifier_type id, version_type ver, version_type next_ver) noexcept
+    entity_bump_entry(index_type id, version_type ver, version_type next_ver) noexcept
         : current{id, ver}
         , next{id, next_ver}
     {
@@ -45,17 +45,17 @@ TEST_CASE("entity_traits::construct: basic")
     auto entry = GENERATE(entity_entry{0, 0},
                           entity_entry{1, 0},
                           entity_entry{0, 1},
-                          entity_entry{entity_traits::identifier_max, entity_traits::version_max});
+                          entity_entry{entity_traits::index_max, entity_traits::version_max});
 
-    CHECK_EQ(entity_traits::to_identifier(entry.value), entry.identifier);
+    CHECK_EQ(entity_traits::to_index(entry.value), entry.index);
     CHECK_EQ(entity_traits::to_version(entry.value), entry.version);
 }
 
 TEST_CASE("entity_traits::construct: overflow")
 {
-    auto value = entity_traits::construct(entity_traits::identifier_max + 1, entity_traits::version_max + 1);
+    auto value = entity_traits::construct(entity_traits::index_max + 1, entity_traits::version_max + 1);
 
-    CHECK_EQ(entity_traits::to_identifier(value), 0);
+    CHECK_EQ(entity_traits::to_index(value), 0);
     CHECK_EQ(entity_traits::to_version(value), 0);
 }
 
@@ -64,12 +64,12 @@ TEST_CASE("entity_traits::bump: basic")
     auto entry = GENERATE(entity_bump_entry{0, 0, 1},
                           entity_bump_entry{1, 0, 1},
                           entity_bump_entry{0, 1, 2},
-                          entity_bump_entry{entity_traits::identifier_max, entity_traits::version_max, 0});
+                          entity_bump_entry{entity_traits::index_max, entity_traits::version_max, 0});
 
-    CHECK_EQ(entity_traits::to_identifier(entry.current.value), entry.current.identifier);
+    CHECK_EQ(entity_traits::to_index(entry.current.value), entry.current.index);
     CHECK_EQ(entity_traits::to_version(entry.current.value), entry.current.version);
 
-    CHECK_EQ(entity_traits::to_identifier(entry.next.value), entry.current.identifier); // same identifier as current
+    CHECK_EQ(entity_traits::to_index(entry.next.value), entry.current.index); // same index as current
     CHECK_EQ(entity_traits::to_version(entry.next.value), entry.next.version);
 }
 
@@ -78,7 +78,7 @@ TEST_CASE("entity_traits::bump: overflow")
     auto current = entity_traits::construct(4, entity_traits::version_max);
     auto bumped = entity_traits::bump(current);
 
-    CHECK_EQ(entity_traits::to_identifier(bumped), 4);
+    CHECK_EQ(entity_traits::to_index(bumped), 4);
     CHECK_EQ(entity_traits::to_version(bumped), 0);
 }
 
