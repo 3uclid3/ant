@@ -10,8 +10,6 @@
 
 namespace ant { namespace {
 
-using env = basic_env<std::allocator<std::byte>>;
-
 struct fixture
 {
     fixture()

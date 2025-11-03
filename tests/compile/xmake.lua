@@ -25,10 +25,6 @@ for _, testfile in ipairs(os.files("ant.test.compile/**.compile.fail.cpp")) do
 
         add_deps("ant", "ant.test.shared")
 
-        if is_plat("windows") then
-            set_runtimes("MD")
-        end
-
         add_files(testfile)
 end
 
@@ -43,10 +39,6 @@ for _, testfile in ipairs(os.files("ant.test.compile/**.compile.fail.cpp")) do
         set_warnings("none")
 
         add_deps("ant", "ant.test.shared")
-
-        if is_plat("windows") then
-            set_runtimes("MD")
-        end
 
         add_files(testfile)
 end
