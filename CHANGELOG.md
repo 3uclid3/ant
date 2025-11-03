@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 <!-- Add new changes here under the appropriate section (Added/Internal/Docs/etc.) -->
 
-## [0.1.0] - 2025-10-23 to 2025-11-03
+## [0.1.0] - 2025-11-03
 
 ### Added
 - Core modules for ECS and database foundation (`core`, `database`).
