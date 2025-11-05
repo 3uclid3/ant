@@ -2,117 +2,132 @@
 
 #include <ant/database/detail/table_column.hpp>
 
-#include <ant.test.shared/database/component_types.hpp>
+#include <ant.test.shared/database/component.hpp>
 #include <ant/database/schema.hpp>
 
 namespace ant::detail { namespace {
 
-static constexpr auto meta = make_meta<test::trivial>("trivial");
-
-auto emplace(table_column& c, int value) -> std::size_t
+struct fixture : test::component_fixture
 {
-    const auto idx = c.emplace_back();
+    using component = test::component<42>;
 
-    void* row_ptr = c.row(idx);
-    REQUIRE_NE(row_ptr, nullptr);
+    static constexpr component_meta meta = make_meta<component>("component");
 
-    test::trivial* trivial_ptr = static_cast<test::trivial*>(row_ptr);
-    trivial_ptr->value = value;
+    auto track() const -> const test::component_track&
+    {
+        return test::component_tracker::track<component>();
+    }
 
-    return idx;
+    auto emplace_indexed(std::size_t size, table_column& column) -> void
+    {
+        const std::size_t initial_size = column.size();
+        for (std::size_t i = 0; i < size; ++i)
+        {
+            column.emplace_back();
+
+            column.row_as<component>(initial_size + i).value = i;
+        }
+
+        // reset tracker after setup
+        test::component_tracker::reset();
+    }
+
+    auto emplace_indexed(std::size_t size) -> void
+    {
+        emplace_indexed(size, column);
+    }
+
+    table_column column{meta};
+};
+
+TEST_CASE_FIXTURE(fixture, "table_column::ctor: is empty with correct meta")
+{
+    CHECK(column.empty());
+    CHECK_EQ(column.size(), 0u);
+    CHECK_EQ(&column.meta(), &meta);
 }
 
-auto get(table_column& c, std::size_t idx) -> test::trivial&
+TEST_CASE_FIXTURE(fixture, "table_column::emplace_back: construct component")
 {
-    void* row_ptr = c.row(idx);
-    REQUIRE_NE(row_ptr, nullptr);
+    for (std::size_t i = 0; i < 10; ++i)
+    {
+        const auto index = column.emplace_back();
 
-    return *static_cast<test::trivial*>(row_ptr);
+        CHECK_EQ(column.size(), i + 1);
+        CHECK_EQ(index, i);
+        CHECK_EQ(track(), test::component_track{.ctor = i + 1});
+        CHECK_EQ(column.row_as<component>(index).value, 42u);
+    }
 }
 
-TEST_CASE("table_column::ctor: default empty")
+TEST_CASE_FIXTURE(fixture, "table_column::splice_back: relocate component")
 {
-    table_column c{meta};
-    CHECK(c.empty());
-    CHECK_EQ(c.size(), 0);
+    constexpr std::size_t initial_size = 5;
+
+    table_column source(meta);
+
+    emplace_indexed(initial_size);
+    emplace_indexed(initial_size, source);
+
+    // we alway slice from index 0 so the first spliced is always value 0
+    // and the remaining are swapped from the back
+    // 2 move and dtor: one for splice, one for source swap last
+    // 1 move and dtor for last splice where no swap occurs
+    column.splice_back(source, 0);
+    CHECK_EQ(column.size(), initial_size + 1);
+    CHECK_EQ(source.size(), initial_size - 1);
+    CHECK_EQ(track(), test::component_track{.dtor = 2, .move = 2});
+    CHECK_EQ(column.row_as<component>(initial_size).value, 0);
+
+    for (std::size_t i = 1; i < initial_size - 1; ++i)
+    {
+        column.splice_back(source, 0);
+        CHECK_EQ(column.size(), initial_size + i + 1);
+        CHECK_EQ(source.size(), initial_size - i - 1);
+        CHECK_EQ(track(), test::component_track{.dtor = (i + 1) * 2, .move = (i + 1) * 2});
+        CHECK_EQ(column.row_as<component>(initial_size + i).value, initial_size - i);
+    }
+
+    column.splice_back(source, 0);
+    CHECK_EQ(column.size(), initial_size * 2);
+    CHECK_EQ(source.size(), 0);
+    CHECK_EQ(track(), test::component_track{.dtor = 9, .move = 9}); // last splice, no swap
+    CHECK_EQ(column.row_as<component>(initial_size * 2 - 1).value, 1);
 }
 
-TEST_CASE("table_column::emplace_back: returns index")
+TEST_CASE_FIXTURE(fixture, "table_column::swap_and_pop: relocate and destroy component")
 {
-    table_column c{meta};
+    constexpr std::size_t initial_size = 5;
 
-    const std::size_t idx = emplace(c, 42);
+    emplace_indexed(initial_size);
 
-    CHECK_EQ(c.size(), 1);
-    CHECK_EQ(get(c, idx).value, 42);
-}
+    // we always pop from index 0 so the last element does not swap
+    // remove all except last
+    for (std::size_t i = 0; i < initial_size - 1; ++i)
+    {
+        CAPTURE(i);
 
-TEST_CASE("table_column::swap_and_pop: removes element")
-{
-    table_column c{meta};
+        column.swap_and_pop(0);
 
-    c.swap_and_pop(c.emplace_back());
+        CHECK_EQ(column.size(), initial_size - i - 1);
+        CHECK_EQ(track(), test::component_track{.dtor = i + 1, .move = i + 1});
 
-    CHECK(c.empty());
-}
+        // check relocated values
+        // first is always the last one from previous state
+        CHECK_EQ(column.row_as<component>(0).value, initial_size - i - 1);
 
-TEST_CASE("table_column::swap_and_pop: removes element and moves last to removed")
-{
-    table_column c{meta};
+        // remaining values are in order
+        for (std::size_t j = 1; j < column.size(); ++j)
+        {
+            CAPTURE(j);
+            CHECK_EQ(column.row_as<component>(j).value, j);
+        }
+    }
 
-    const std::size_t idx0 = emplace(c, 42);
-    emplace(c, 24);
-    emplace(c, 33);
-
-    c.swap_and_pop(idx0);
-
-    REQUIRE_EQ(c.size(), 2);
-
-    const test::trivial& trivial = get(c, idx0);
-    CHECK_EQ(trivial.value, 33);
-}
-
-TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::emplace_back: default constructs when non-trivial default ctor present")
-{
-    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    table_column c{meta_tr};
-
-    const std::size_t idx = c.emplace_back();
-    auto* ptr = static_cast<test::tracked*>(c.row(idx));
-    REQUIRE_NE(ptr, nullptr);
-
-    CHECK_EQ(ptr->value, 7);
-    CHECK_EQ(test::tracked::ctor_count, 1);
-}
-
-TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::swap_and_pop: uses relocate for non-trivial types")
-{
-    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    table_column c{meta_tr};
-
-    const std::size_t i0 = c.emplace_back();
-    const std::size_t i1 = c.emplace_back();
-
-    static_cast<test::tracked*>(c.row(i0))->value = 1;
-    static_cast<test::tracked*>(c.row(i1))->value = 2;
-
-    c.swap_and_pop(i0);
-
-    CHECK_EQ(c.size(), 1);
-    CHECK_EQ(static_cast<test::tracked*>(c.row(0))->value, 2);
-    CHECK(test::tracked::move_count >= 1);
-}
-
-TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::swap_and_pop: last element calls destroy")
-{
-    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    table_column c{meta_tr};
-
-    const std::size_t idx = c.emplace_back();
-    c.swap_and_pop(idx);
-
-    CHECK_EQ(c.size(), 0);
-    CHECK_EQ(test::tracked::dtor_count, 1);
+    // last one, no relocate
+    column.swap_and_pop(0);
+    CHECK_EQ(column.size(), 0u);
+    CHECK_EQ(track(), test::component_track{.dtor = initial_size, .move = initial_size - 1});
 }
 
 }} // namespace ant::detail

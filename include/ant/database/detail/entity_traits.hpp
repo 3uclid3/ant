@@ -27,6 +27,8 @@ struct entity_traits
     static constexpr integral_type index_max{(index_mask >> index_shift) - 1};
     static constexpr integral_type version_max{(version_mask >> version_shift) - 1};
 
+    static constexpr integral_type index_npos = index_max + 1;
+
     [[nodiscard]] static constexpr auto to_integral(value_type value) noexcept -> integral_type;
     [[nodiscard]] static constexpr auto to_index(value_type value) noexcept -> index_type;
     [[nodiscard]] static constexpr auto to_version(value_type value) noexcept -> version_type;
@@ -57,7 +59,7 @@ constexpr auto entity_traits::to_version(value_type value) noexcept -> version_t
     return static_cast<version_type>((integral & version_mask) >> version_shift);
 }
 
-constexpr auto entity_traits::construct(index_type index, version_type version [[maybe_unused]]) noexcept -> value_type
+constexpr auto entity_traits::construct(index_type index, version_type version) noexcept -> value_type
 {
     return static_cast<value_type>(
         ((static_cast<integral_type>(index) << index_shift) % index_mask) | ((static_cast<integral_type>(version) << version_shift) % version_mask));

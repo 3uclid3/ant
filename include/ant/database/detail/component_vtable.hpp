@@ -7,10 +7,10 @@ namespace ant::detail {
 
 struct component_vtable
 {
-    using default_construct_fn = void (*)(void*);
-    using relocate_fn = void (*)(void*, void*) noexcept;
-    using clone_fn = void (*)(void*, const void*);
-    using destroy_fn = void (*)(void*) noexcept;
+    using default_construct_fn = void (*)(void* src);
+    using relocate_fn = void (*)(void* dst, void* src) noexcept;
+    using clone_fn = void (*)(void* dst, const void* src);
+    using destroy_fn = void (*)(void* src) noexcept;
 
     template<typename T>
     static consteval auto of() noexcept -> component_vtable;
