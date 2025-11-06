@@ -4,6 +4,13 @@
 
 namespace ant::detail { namespace {
 
-[[maybe_unused]] auto vtable = component_vtable::of<test::with_throw_copy>();
+struct with_throw_copy
+{
+    with_throw_copy() noexcept = default;
+    with_throw_copy(const with_throw_copy&) noexcept(false) = default;
+    with_throw_copy(with_throw_copy&& other) noexcept = default;
+};
+
+[[maybe_unused]] auto vtable = component_vtable::of<with_throw_copy>();
 
 }} // namespace ant::detail

@@ -4,11 +4,14 @@
 
 namespace ant::detail { namespace {
 
+struct with_throw_dtor
+{
+    ~with_throw_dtor() noexcept(false) = default;
+};
+
 auto func() -> void
 {
-#ifndef ANT_COMPILE_TEST_FORCE_PASS
-    auto vtable = component_vtable::of<test::with_throw_dtor>();
-#endif
+    auto vtable = component_vtable::of<with_throw_dtor>();
 }
 
 }} // namespace ant::detail
