@@ -31,9 +31,9 @@ component_management:
       name: core
       paths:
         - include/ant/core/**
-        - src/ant/core/**
+        - src/core/**
     - component_id: ant_database
       name: database
       paths:
         - include/ant/database/**
-        - src/ant/database/**
+        - src/database/**
