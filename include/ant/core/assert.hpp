@@ -1,10 +1,7 @@
 #pragma once
 
-#include <cstdlib>
-#include <format>
 #include <source_location>
 #include <string_view>
-#include <utility>
 
 #include <ant/core/coverage.hpp>
 
@@ -17,6 +14,7 @@
 #endif
 
 #if ANT_ASSERT_ENABLED
+#include <format>
 #define ANT_ASSERT(condition, ...) \
     do \
     { \
@@ -48,28 +46,5 @@ private:
 
     static inline handler_type _handler{default_handler};
 };
-
-ANT_COVERAGE_FUNCTION_DISABLED inline auto assertion::set_handler(handler_type handler) noexcept -> void
-{
-    _handler = handler != nullptr ? handler : default_handler;
-}
-
-ANT_COVERAGE_FUNCTION_DISABLED inline auto assertion::reset_handler() noexcept -> void
-{
-    _handler = default_handler;
-}
-
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-ANT_COVERAGE_FUNCTION_DISABLED inline auto assertion::default_handler(std::string_view expr [[maybe_unused]], std::string_view msg [[maybe_unused]], std::source_location location [[maybe_unused]]) -> void
-{
-    std::abort();
-}
-
-ANT_COVERAGE_FUNCTION_DISABLED inline auto assertion::fail(std::string_view expr, std::string_view msg, std::source_location location) -> void
-{
-    _handler(expr, msg, location);
-
-    std::unreachable();
-}
 
 } // namespace ant
