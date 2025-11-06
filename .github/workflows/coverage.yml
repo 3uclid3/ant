@@ -102,6 +102,7 @@ jobs:
           gcovr \
             --root "$GITHUB_WORKSPACE" \
             --filter "$GITHUB_WORKSPACE/include" \
+            --filter "$GITHUB_WORKSPACE/src" \
             --gcov-executable "llvm-cov gcov" \
             --object-directory "build/.objs" \
             --xml --xml-pretty \
