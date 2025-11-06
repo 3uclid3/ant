@@ -11,6 +11,15 @@
 namespace ant::test {
 
 template<std::size_t Index>
+struct trivial_component
+{
+    static constexpr std::size_t index{Index};
+    static inline const std::string name{std::format("trivial_component_{}", index)};
+
+    std::size_t value{index};
+};
+
+template<std::size_t Index>
 struct component
 {
     static constexpr std::size_t index{Index};
