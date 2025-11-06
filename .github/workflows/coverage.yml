@@ -88,9 +88,6 @@ jobs:
       - name: Run unit tests
         run: xmake test -g tests/unit
 
-      - name: Run compile tests
-        run: xmake test -g tests/compile
-
       - name: Upload test results to Codecov
         if: always()
         uses: codecov/test-results-action@v1
