@@ -3,6 +3,7 @@
 #include <ant/database/detail/table_column.hpp>
 
 #include <ant.test.shared/database/component.hpp>
+#include <ant.test.shared/doctest/generator.hpp>
 #include <ant/database/schema.hpp>
 
 namespace ant::detail { namespace {
@@ -24,7 +25,6 @@ struct fixture : test::component_fixture
         for (std::size_t i = 0; i < size; ++i)
         {
             column.emplace_back();
-
             column.row_as<component>(initial_size + i).value = i;
         }
 
@@ -49,85 +49,103 @@ TEST_CASE_FIXTURE(fixture, "table_column::ctor: is empty with correct meta")
 
 TEST_CASE_FIXTURE(fixture, "table_column::emplace_back: construct component")
 {
-    for (std::size_t i = 0; i < 10; ++i)
-    {
-        const auto index = column.emplace_back();
+    const std::size_t size = GENERATE(0, 1, 2, 5, 10);
 
-        CHECK_EQ(column.size(), i + 1);
-        CHECK_EQ(index, i);
-        CHECK_EQ(track(), test::component_track{.ctor = i + 1});
-        CHECK_EQ(column.row_as<component>(index).value, 42u);
+    for (std::size_t i = 0; i < size; ++i)
+    {
+        column.emplace_back();
     }
+
+    CHECK_EQ(column.size(), size);
+    CHECK_EQ(track(), test::component_track{.ctor = size});
 }
 
 TEST_CASE_FIXTURE(fixture, "table_column::splice_back: relocate component")
 {
-    constexpr std::size_t initial_size = 5;
+    constexpr std::size_t size = 10;
 
     table_column source(meta);
+    emplace_indexed(size);
+    emplace_indexed(size, source);
 
-    emplace_indexed(initial_size);
-    emplace_indexed(initial_size, source);
+    std::size_t index = GENERATE(0, 1, 2, 6, 8);
 
-    // we alway slice from index 0 so the first spliced is always value 0
-    // and the remaining are swapped from the back
-    // 2 move and dtor: one for splice, one for source swap last
-    // 1 move and dtor for last splice where no swap occurs
-    column.splice_back(source, 0);
-    CHECK_EQ(column.size(), initial_size + 1);
-    CHECK_EQ(source.size(), initial_size - 1);
+    CHECK_EQ(column.splice_back(source, index), size);
+
+    CHECK_EQ(column.size(), size + 1);
+    CHECK_EQ(column.row_as<component>(size).value, index);
+
+    CHECK_EQ(source.size(), size - 1);
+    CHECK_EQ(source.row_as<component>(index).value, size - 1);
+
     CHECK_EQ(track(), test::component_track{.dtor = 2, .move = 2});
-    CHECK_EQ(column.row_as<component>(initial_size).value, 0);
-
-    for (std::size_t i = 1; i < initial_size - 1; ++i)
-    {
-        column.splice_back(source, 0);
-        CHECK_EQ(column.size(), initial_size + i + 1);
-        CHECK_EQ(source.size(), initial_size - i - 1);
-        CHECK_EQ(track(), test::component_track{.dtor = (i + 1) * 2, .move = (i + 1) * 2});
-        CHECK_EQ(column.row_as<component>(initial_size + i).value, initial_size - i);
-    }
-
-    column.splice_back(source, 0);
-    CHECK_EQ(column.size(), initial_size * 2);
-    CHECK_EQ(source.size(), 0);
-    CHECK_EQ(track(), test::component_track{.dtor = 9, .move = 9}); // last splice, no swap
-    CHECK_EQ(column.row_as<component>(initial_size * 2 - 1).value, 1);
 }
 
-TEST_CASE_FIXTURE(fixture, "table_column::swap_and_pop: relocate and destroy component")
+TEST_CASE_FIXTURE(fixture, "table_column::splice_back: relocate last component")
 {
-    constexpr std::size_t initial_size = 5;
+    const std::size_t size = GENERATE(1, 2, 10);
+    const std::size_t index = size - 1;
 
-    emplace_indexed(initial_size);
+    table_column source(meta);
+    emplace_indexed(size);
+    emplace_indexed(size, source);
 
-    // we always pop from index 0 so the last element does not swap
-    // remove all except last
-    for (std::size_t i = 0; i < initial_size - 1; ++i)
+    CHECK_EQ(column.splice_back(source, index), size);
+
+    CHECK_EQ(column.size(), size + 1);
+    CHECK_EQ(source.size(), size - 1);
+
+    CHECK_EQ(column.row_as<component>(size).value, index);
+
+    CHECK_EQ(track(), test::component_track{.dtor = 1, .move = 1});
+}
+
+TEST_CASE_FIXTURE(fixture, "table_column::swap_and_pop(non last): relocates last into index")
+{
+    constexpr std::size_t size = 10;
+
+    emplace_indexed(size);
+
+    const std::size_t index = GENERATE(0, 1, 2, 6, 8);
+
+    column.swap_and_pop(index);
+
+    CHECK_EQ(column.size(), size - 1);
+
+    // check remaining values are intact
+    for (std::size_t i = 0; i < column.size(); ++i)
     {
-        CAPTURE(i);
-
-        column.swap_and_pop(0);
-
-        CHECK_EQ(column.size(), initial_size - i - 1);
-        CHECK_EQ(track(), test::component_track{.dtor = i + 1, .move = i + 1});
-
-        // check relocated values
-        // first is always the last one from previous state
-        CHECK_EQ(column.row_as<component>(0).value, initial_size - i - 1);
-
-        // remaining values are in order
-        for (std::size_t j = 1; j < column.size(); ++j)
+        if (i == index)
         {
-            CAPTURE(j);
-            CHECK_EQ(column.row_as<component>(j).value, j);
+            CHECK_EQ(column.row_as<component>(i).value, size - 1);
+        }
+        else
+        {
+            CHECK_EQ(column.row_as<component>(i).value, i);
         }
     }
 
-    // last one, no relocate
-    column.swap_and_pop(0);
-    CHECK_EQ(column.size(), 0u);
-    CHECK_EQ(track(), test::component_track{.dtor = initial_size, .move = initial_size - 1});
+    CHECK_EQ(track(), test::component_track{.dtor = 1, .move = 1});
+}
+
+TEST_CASE_FIXTURE(fixture, "table_column::swap_and_pop(last): destroys last only")
+{
+    const std::size_t size = GENERATE(1, 2, 10);
+    const std::size_t index = size - 1;
+
+    emplace_indexed(size);
+
+    column.swap_and_pop(index);
+
+    CHECK_EQ(column.size(), size - 1);
+
+    // check remaining values are intact
+    for (std::size_t i = 0; i < column.size(); ++i)
+    {
+        CHECK_EQ(column.row_as<component>(i).value, i);
+    }
+
+    CHECK_EQ(track(), test::component_track{.dtor = 1});
 }
 
 }} // namespace ant::detail
