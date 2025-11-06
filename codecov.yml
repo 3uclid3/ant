@@ -10,6 +10,7 @@ coverage:
         threshold: 15%
         paths:
           - "include/**"
+          - "src/**"
     patch:
       default:
         informational: true
@@ -30,7 +31,9 @@ component_management:
       name: core
       paths:
         - include/ant/core/**
+        - src/core/**
     - component_id: ant_database
       name: database
       paths:
         - include/ant/database/**
+        - src/database/**
