@@ -84,11 +84,7 @@ auto table_column::row(std::size_t index) const noexcept -> const void*
 
 auto table_column::row(std::size_t index) noexcept -> void*
 {
-    const std::size_t block_index = index / _meta->block_size;
-    const std::size_t block_offset = (index % _meta->block_size) * _meta->size;
-
-    ANT_ASSERT(block_index < _blocks.size());
-    return _blocks[block_index].get() + block_offset;
+    return const_cast<void*>(std::as_const(*this).row(index));
 }
 
 auto table_column::empty() const noexcept -> bool
