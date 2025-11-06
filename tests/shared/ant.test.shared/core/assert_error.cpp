@@ -6,6 +6,9 @@ namespace ant::test {
 
 assert_error::assert_error(std::string_view expr, std::string_view msg, std::source_location location)
     : std::logic_error(format_message(expr, msg, location))
+    , _expression(expr)
+    , _message(msg)
+    , _location(location)
 {
 }
 
