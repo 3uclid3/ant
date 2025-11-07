@@ -118,7 +118,7 @@ auto table::erase_impl(entity e, bool erase_columns) -> bool
     if (row_index != last_row_index)
     {
         _rows[row_index] = _rows.back();
-        _sparse[last_row_index] = row_index;
+        _sparse[entity_traits::to_index(_rows[last_row_index])] = row_index;
     }
 
     _sparse[index] = npos;

@@ -13,7 +13,7 @@
 
 #define WARN_NOASSERT(expr) WARN_NOTHROW(expr)
 #define CHECK_NOASSERT(expr) CHECK_NOTHROW(expr)
-#define REQUIRE_NOASSERTS(expr) REQUIRE_NOTHROW(expr)
+#define REQUIRE_NOASSERT(expr) REQUIRE_NOTHROW(expr)
 
 #else
 
@@ -23,6 +23,6 @@
 
 #define WARN_NOASSERT(expr) (void)0
 #define CHECK_NOASSERT(expr) (void)0
-#define REQUIRE_NOASSERTS(expr) (void)0
+#define REQUIRE_NOASSERT(expr) (void)0
 
 #endif
