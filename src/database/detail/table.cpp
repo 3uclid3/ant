@@ -93,6 +93,19 @@ auto table::erase(entity e) -> bool
     return erase_impl(e, true);
 }
 
+auto table::column_of(std::uint32_t hash) const noexcept -> std::size_t
+{
+    auto it = std::ranges::lower_bound(_columns, hash, {}, [](const table_column& c) { return c.meta().hash; });
+    return it != _columns.end() && it->meta().hash == hash ? std::distance(_columns.begin(), it) : npos;
+}
+
+auto table::row_of(entity e) const noexcept -> std::size_t
+{
+    const auto index = entity_traits::to_index(e);
+    ANT_ASSERT(index != npos, "Invalid entity index");
+    return index < _sparse.size() ? _sparse[index] : npos;
+}
+
 auto table::erase_impl(entity e, bool erase_columns) -> bool
 {
     const auto index = entity_traits::to_index(e);

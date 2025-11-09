@@ -22,16 +22,34 @@ public:
     table() noexcept = default;
     table(dynamic_bitset components, const schema& schema);
 
+    table(const table&) = delete;
+    table& operator=(const table&) = delete;
+
+    table(table&&) noexcept = default;
+    table& operator=(table&&) noexcept = default;
+
     auto contains(entity e) const noexcept -> bool;
     auto insert(entity e) -> std::size_t;
     auto splice(entity e, table& source) -> std::size_t;
     auto erase(entity e) -> bool;
 
-    auto columns() const noexcept -> std::span<const table_column>;
-    auto rows() const noexcept -> std::span<const entity>;
+    template<typename T>
+    auto column_of() const noexcept -> std::size_t;
+    auto column_of(std::uint32_t hash) const noexcept -> std::size_t;
+
+    auto row_of(entity e) const noexcept -> std::size_t;
+
+    template<typename T>
+    auto at(std::size_t column_index, std::size_t row_index) const noexcept -> const T&;
+
+    template<typename T>
+    auto at(std::size_t column_index, std::size_t row_index) noexcept -> T&;
 
     auto empty() const noexcept -> bool;
     auto size() const noexcept -> std::size_t;
+
+    auto components() const noexcept -> const dynamic_bitset&;
+    auto entities() const noexcept -> std::span<const entity>;
 
 private:
     auto erase_impl(entity e, bool erase_columns = true) -> bool;
@@ -44,14 +62,24 @@ private:
     std::vector<entity_traits::index_type> _sparse;
 };
 
-inline auto table::columns() const noexcept -> std::span<const table_column>
+template<typename T>
+auto table::column_of() const noexcept -> std::size_t
 {
-    return _columns;
+    return column_of(type_hash<T>::value());
 }
 
-inline auto table::rows() const noexcept -> std::span<const entity>
+template<typename T>
+auto table::at(std::size_t column_index, std::size_t row_index) const noexcept -> const T&
 {
-    return _rows;
+    ANT_ASSERT(column_index < _columns.size());
+    ANT_ASSERT(row_index < _rows.size());
+    return _columns[column_index].at<T>(row_index);
+}
+
+template<typename T>
+auto table::at(std::size_t column_index, std::size_t row_index) noexcept -> T&
+{
+    return const_cast<T&>(std::as_const(*this).at<T>(column_index, row_index));
 }
 
 inline auto table::empty() const noexcept -> bool
@@ -62,6 +90,16 @@ inline auto table::empty() const noexcept -> bool
 inline auto table::size() const noexcept -> std::size_t
 {
     return _rows.size();
+}
+
+inline auto table::components() const noexcept -> const dynamic_bitset&
+{
+    return _components;
+}
+
+inline auto table::entities() const noexcept -> std::span<const entity>
+{
+    return _rows;
 }
 
 } // namespace ant::detail

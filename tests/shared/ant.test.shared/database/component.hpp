@@ -10,20 +10,20 @@
 
 namespace ant::test {
 
-template<std::size_t Index>
+template<std::size_t Id>
 struct trivial_component
 {
-    static constexpr std::size_t index{Index};
-    static inline const std::string name{std::format("trivial_component_{}", index)};
+    static constexpr std::size_t id{Id};
+    static inline const std::string name{std::format("trivial_component_{}", id)};
 
-    std::size_t value{index};
+    std::size_t value{id};
 };
 
-template<std::size_t Index>
+template<std::size_t Id>
 struct component
 {
-    static constexpr std::size_t index{Index};
-    static inline const std::string name{std::format("component_{}", index)};
+    static constexpr std::size_t id{Id};
+    static inline const std::string name{std::format("component_{}", id)};
 
     static inline int ctor_count{0};
     static inline int copy_count{0};
@@ -36,10 +36,10 @@ struct component
     component(component&& other) noexcept;
     ~component() noexcept;
 
-    auto get_index() const noexcept -> std::size_t;
+    auto get_id() const noexcept -> std::size_t;
     auto get_name() const noexcept -> std::string_view;
 
-    std::size_t value{index};
+    std::size_t value{id};
 };
 
 struct component_fixture
@@ -86,47 +86,47 @@ private:
     static auto tracks() -> std::vector<component_track>&;
 };
 
-template<std::size_t Index>
-component<Index>::component() noexcept
+template<std::size_t Id>
+component<Id>::component() noexcept
 {
-    component_tracker::ctor<component<Index>>();
+    component_tracker::ctor<component<Id>>();
 }
 
-template<std::size_t Index>
-component<Index>::component(std::size_t value) noexcept
+template<std::size_t Id>
+component<Id>::component(std::size_t value) noexcept
     : value(value)
 {
-    component_tracker::ctor<component<Index>>();
+    component_tracker::ctor<component<Id>>();
 }
 
-template<std::size_t Index>
-component<Index>::component(const component& other) noexcept
+template<std::size_t Id>
+component<Id>::component(const component& other) noexcept
     : value(other.value)
 {
-    component_tracker::copy<component<Index>>();
+    component_tracker::copy<component<Id>>();
 }
 
-template<std::size_t Index>
-component<Index>::component(component&& other) noexcept
+template<std::size_t Id>
+component<Id>::component(component&& other) noexcept
     : value(std::exchange(other.value, 0))
 {
-    component_tracker::move<component<Index>>();
+    component_tracker::move<component<Id>>();
 }
 
-template<std::size_t Index>
-component<Index>::~component() noexcept
+template<std::size_t Id>
+component<Id>::~component() noexcept
 {
-    component_tracker::dtor<component<Index>>();
+    component_tracker::dtor<component<Id>>();
 }
 
-template<std::size_t Index>
-auto component<Index>::get_index() const noexcept -> std::size_t
+template<std::size_t Id>
+auto component<Id>::get_id() const noexcept -> std::size_t
 {
-    return index;
+    return id;
 }
 
-template<std::size_t Index>
-auto component<Index>::get_name() const noexcept -> std::string_view
+template<std::size_t Id>
+auto component<Id>::get_name() const noexcept -> std::string_view
 {
     return name;
 }
@@ -170,11 +170,11 @@ template<typename T>
 auto component_tracker::ensure_track() -> component_track&
 {
     auto& all = tracks();
-    if (T::index >= all.size())
+    if (T::id >= all.size())
     {
-        all.resize(T::index + 1);
+        all.resize(T::id + 1);
     }
-    return all[T::index];
+    return all[T::id];
 }
 
 } // namespace ant::test

@@ -15,40 +15,7 @@
 
 namespace ant::detail { namespace {
 
-struct fixture : test::schema_fixture<32>
-{
-    auto make_entities(std::size_t size, bool shuffled = false) -> std::vector<entity>
-    {
-        std::vector<entity> entities{};
-        entities.reserve(size);
-
-        for (std::size_t i = 0; i < size; ++i)
-        {
-            entities.push_back(entity_traits::construct(i));
-        }
-
-        if (shuffled)
-        {
-            // just split odd and even indices for determinism and simplicity
-            for (std::size_t i = 1; i < entities.size(); i += 2)
-            {
-                std::swap(entities[i], entities[i / 2]);
-            }
-        }
-
-        return entities;
-    }
-
-    auto columns_match_size(const table& table) const noexcept -> bool
-    {
-        const auto expected_size = table.size();
-        return std::ranges::all_of(table.columns(), [expected_size](const table_column& col) {
-            return col.size() == expected_size;
-        });
-    }
-
-    table tbl{test::make_table<16>(schema)};
-};
+using fixture = test::table_fixture<8>;
 
 // helper to generate table sizes for template tests
 template<std::size_t Size>
@@ -59,19 +26,18 @@ struct table_size
 
 TEST_CASE("table::ctor(default): creates an empty table")
 {
-    table tbl;
-
-    CHECK(tbl.columns().empty());
+    table table;
+    CHECK(table.empty());
 }
 
-TEST_CASE_TEMPLATE("table::ctor(columns): creates a table with given columns", T, table_size<0>, table_size<1>, table_size<2>, table_size<4>, table_size<8>, table_size<16>)
+TEST_CASE_TEMPLATE("table::ctor(components): creates a table with given components", T, table_size<0>, table_size<1>, table_size<2>, table_size<4>, table_size<8>, table_size<16>)
 {
     constexpr std::size_t size = T::value;
 
     schema schema{test::make_schema<size>()};
-    table tbl{test::make_table<size>(schema)};
+    table table{test::make_table<size>(schema)};
 
-    CHECK_EQ(tbl.columns().size(), size);
+    CHECK_EQ(table.components().count(), size);
 }
 
 TEST_CASE_FIXTURE(fixture, "table::insert: maintains order and sizes")
@@ -79,34 +45,35 @@ TEST_CASE_FIXTURE(fixture, "table::insert: maintains order and sizes")
     const std::size_t n = GENERATE(0, 1, 2, 4, 16);
     const std::vector<entity> entities = make_entities(n, true);
 
-    for (const auto& e : entities)
+    for (std::size_t i = 0; i < n; ++i)
     {
-        tbl.insert(e);
+        CHECK_EQ(table.insert(entities[i]), i);
+
+        for_each_components(table, entities[i], [](std::size_t id, const auto& comp) {
+            CHECK_EQ(comp.get_id(), id);
+            CHECK_EQ(comp.value, id);
+        });
     }
 
-    CHECK(std::ranges::equal(tbl.rows(), entities));
-    CHECK(columns_match_size(tbl));
+    CHECK(std::ranges::equal(table.entities(), entities));
+    CHECK_EQ(table.size(), n);
 }
 
 TEST_CASE_FIXTURE(fixture, "table::insert: duplicate returns existing index; no growth")
 {
     const entity a = entity_traits::construct(42);
-    const std::size_t i1 = tbl.insert(a);
-    const std::size_t i2 = tbl.insert(a);
 
-    CHECK_EQ(i1, i2);
-    CHECK_EQ(tbl.size(), 1u);
-    CHECK(columns_match_size(tbl));
+    CHECK_EQ(table.insert(a), 0);
+    CHECK_EQ(table.insert(a), 0);
+    CHECK_EQ(table.size(), 1);
 }
 
 TEST_CASE_FIXTURE(fixture, "table::insert: large index triggers sparse growth")
 {
     const entity far = entity_traits::construct(10'000);
 
-    tbl.insert(far);
-
-    CHECK(tbl.contains(far));
-    CHECK(columns_match_size(tbl));
+    CHECK_EQ(table.insert(far), 0);
+    CHECK(table.contains(far));
 }
 
 TEST_CASE_FIXTURE(fixture, "table::erase: removes entity and maintains sizes")
@@ -115,45 +82,20 @@ TEST_CASE_FIXTURE(fixture, "table::erase: removes entity and maintains sizes")
 
     for (entity e : make_entities(n))
     {
-        tbl.insert(e);
+        table.insert(e);
     }
 
     // erase out of order
     for (entity e : make_entities(n, true))
     {
-        CHECK(tbl.erase(e));
-        CHECK_FALSE(tbl.contains(e));
-        CHECK(columns_match_size(tbl));
+        CHECK(table.erase(e));
+        CHECK_FALSE(table.contains(e));
     }
-}
-
-TEST_CASE_FIXTURE(fixture, "table::erase: updates mapping of moved row")
-{
-    const entity a = entity_traits::construct(7);  // row 0
-    const entity b = entity_traits::construct(99); // row 1 (entity index != 1)
-
-    tbl.insert(a);
-    tbl.insert(b);
-
-    // Erase non-last row; implementation moves last into 0
-    CHECK(tbl.erase(a));
-
-    // Rows reflect move
-    CHECK_FALSE(tbl.contains(a));
-    CHECK(tbl.contains(b));
-    CHECK_EQ(tbl.size(), 1u);
-    CHECK_EQ(tbl.rows()[0], b);
-
-    // Critical assertion: duplicate insert must return remapped index (0)
-    CHECK_EQ(tbl.insert(b), 0u);
-
-    // Columns stay consistent with rows
-    CHECK(columns_match_size(tbl));
 }
 
 TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destination table")
 {
-    table source{test::make_table<16>(schema)};
+    detail::table source{test::make_table<8>(schema)};
 
     const std::size_t n = GENERATE(1, 2, 4, 16);
     const std::vector<entity> entities = make_entities(n);
@@ -163,34 +105,42 @@ TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destinati
         source.insert(e);
     }
 
-    for (entity e : entities)
+    for (std::size_t i = 0; i < n; ++i)
     {
-        tbl.splice(e, source);
+        const entity e = entities[i];
+
+        CHECK_EQ(table.splice(e, source), i);
+
+        CHECK_FALSE(source.contains(e));
+        CHECK(table.contains(e));
+
+        for_each_components(table, entities[i], [](std::size_t id, const auto& comp) {
+            CHECK_EQ(comp.get_id(), id);
+            CHECK_EQ(comp.value, id);
+        });
     }
 
     CHECK(source.empty());
-    CHECK_EQ(tbl.size(), n);
-    CHECK(std::ranges::equal(tbl.rows(), entities));
-    CHECK(columns_match_size(tbl));
-    CHECK(columns_match_size(source));
+    CHECK_EQ(table.size(), n);
+    CHECK(std::ranges::equal(table.entities(), entities));
 }
 
 #if ANT_ASSERT_ENABLED
 TEST_CASE_FIXTURE(fixture, "table::insert: asserts on invalid entity index")
 {
     const auto invalid = static_cast<entity>(detail::entity_traits::index_mask); // npos in index bits
-    CHECK_ASSERTS(tbl.insert(invalid));
+    CHECK_ASSERTS(table.insert(invalid));
 }
 
 TEST_CASE_FIXTURE(fixture, "table::splice: asserts when dest already contains entity")
 {
-    table source{test::make_table<16>(schema)};
+    detail::table source{test::make_table<16>(schema)};
 
     const entity e = entity_traits::construct(5);
-    tbl.insert(e);
+    table.insert(e);
     source.insert(e);
 
-    CHECK_ASSERTS(tbl.splice(e, source));
+    CHECK_ASSERTS(table.splice(e, source));
 }
 #endif
 

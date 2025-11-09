@@ -26,7 +26,7 @@ struct fixture : test::component_fixture
         for (std::size_t i = 0; i < size; ++i)
         {
             column.emplace_back();
-            column.row_as<component>(initial_size + i).value = i;
+            column.at<component>(initial_size + i).value = i;
         }
 
         // reset tracker after setup
@@ -84,10 +84,10 @@ TEST_CASE_TEMPLATE("table_column::splice_back: relocate component", T, test::com
     CHECK_EQ(f.column.splice_back(source, index), size);
 
     CHECK_EQ(f.column.size(), size + 1);
-    CHECK_EQ(f.column.template row_as<T>(size).value, index);
+    CHECK_EQ(f.column.template at<T>(size).value, index);
 
     CHECK_EQ(source.size(), size - 1);
-    CHECK_EQ(source.template row_as<T>(index).value, size - 1);
+    CHECK_EQ(source.template at<T>(index).value, size - 1);
 
     if constexpr (!std::is_trivially_destructible_v<T> && !std::is_trivially_move_constructible_v<T>)
     {
@@ -111,7 +111,7 @@ TEST_CASE_TEMPLATE("table_column::splice_back: relocate last component", T, test
     CHECK_EQ(f.column.size(), size + 1);
     CHECK_EQ(source.size(), size - 1);
 
-    CHECK_EQ(f.column.template row_as<T>(size).value, index);
+    CHECK_EQ(f.column.template at<T>(size).value, index);
 
     if constexpr (!std::is_trivially_destructible_v<T> && !std::is_trivially_move_constructible_v<T>)
     {
@@ -137,11 +137,11 @@ TEST_CASE_TEMPLATE("table_column::swap_and_pop(non last): relocates last into in
     {
         if (i == index)
         {
-            CHECK_EQ(f.column.template row_as<T>(i).value, size - 1);
+            CHECK_EQ(f.column.template at<T>(i).value, size - 1);
         }
         else
         {
-            CHECK_EQ(f.column.template row_as<T>(i).value, i);
+            CHECK_EQ(f.column.template at<T>(i).value, i);
         }
     }
 
@@ -167,7 +167,7 @@ TEST_CASE_TEMPLATE("table_column::swap_and_pop(last): destroys last only", T, te
     // check remaining values are intact
     for (std::size_t i = 0; i < f.column.size(); ++i)
     {
-        CHECK_EQ(f.column.template row_as<T>(i).value, i);
+        CHECK_EQ(f.column.template at<T>(i).value, i);
     }
 
     if constexpr (!std::is_trivially_destructible_v<T>)
