@@ -133,6 +133,28 @@ TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destinati
     CHECK(std::ranges::equal(table.entities(), entities));
 }
 
+TEST_CASE_FIXTURE(fixture, "table::column_of: returns correct column indices")
+{
+    CHECK_NE(table.column_of<test::component<0>>(), detail::table::npos);
+    CHECK_NE(table.column_of<test::component<1>>(), detail::table::npos);
+
+    CHECK_EQ(table.column_of<test::component<10'000>>(), detail::table::npos);
+}
+
+TEST_CASE_FIXTURE(fixture, "table::row_of: returns npos for non-existent entity")
+{
+    CHECK_EQ(table.row_of(entity_traits::construct(0)), detail::table::npos);      // in sparse range
+    CHECK_EQ(table.row_of(entity_traits::construct(10'000)), detail::table::npos); // out of sparse range
+}
+
+TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity returns false")
+{
+    table.insert(entity_traits::construct(1));
+
+    CHECK_FALSE(table.erase(entity_traits::construct(0)));      // in sparse range
+    CHECK_FALSE(table.erase(entity_traits::construct(10'000))); // out of sparse range
+}
+
 #if ANT_ASSERT_ENABLED
 TEST_CASE_FIXTURE(fixture, "table::insert: asserts on invalid entity index")
 {
