@@ -1,5 +1,7 @@
 #include <ant/database/detail/table_column.hpp>
 
+#include <cstring>
+
 #include <ant/core/assert.hpp>
 #include <ant/database/detail/component_meta.hpp>
 
@@ -118,7 +120,7 @@ auto table_column::relocate(void* dst, void* src) noexcept -> void
     }
 }
 
-auto table_column::at_raw(std::size_t index, std::uint32_t type_hash) const noexcept -> const void*
+auto table_column::at_raw(std::size_t index, std::uint32_t type_hash [[maybe_unused]]) const noexcept -> const void*
 {
     ANT_ASSERT(_meta->hash == type_hash, "Mismatched component type");
     return at_raw(index);
@@ -134,7 +136,7 @@ auto table_column::at_raw(std::size_t index) const noexcept -> const void*
     return _blocks[block_index] + block_offset;
 }
 
-auto table_column::at_raw(std::size_t index, std::uint32_t type_hash) noexcept -> void*
+auto table_column::at_raw(std::size_t index, std::uint32_t type_hash [[maybe_unused]]) noexcept -> void*
 {
     ANT_ASSERT(_meta->hash == type_hash, "Mismatched component type");
     return at_raw(index);
