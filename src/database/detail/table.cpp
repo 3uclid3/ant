@@ -15,7 +15,7 @@ table::table(dynamic_bitset components, const schema& schema)
         _columns.emplace_back(schema.meta_of(index));
     });
 
-    ensure_sparse_capacity(8);
+    _sparse.resize(8, npos);
 }
 
 auto table::contains(entity e) const noexcept -> bool

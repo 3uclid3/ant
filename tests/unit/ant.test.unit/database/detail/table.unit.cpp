@@ -97,8 +97,8 @@ TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity returns false")
 {
     table.insert(entity_traits::construct(1));
 
-    CHECK_FALSE(table.erase(entity_traits::construct(0))); // in sparse range
-    CHECK_FALSE(table.erase(entity_traits::construct(2))); // out of sparse range
+    CHECK_FALSE(table.erase(entity_traits::construct(0)));      // in sparse range
+    CHECK_FALSE(table.erase(entity_traits::construct(10'000))); // out of sparse range
 }
 
 TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destination table")
