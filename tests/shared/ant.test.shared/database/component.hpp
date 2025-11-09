@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include <ant/database/detail/component_meta.hpp>
+
 namespace ant::test {
 
 template<std::size_t Id>
@@ -16,8 +18,15 @@ struct trivial_component
     static constexpr std::size_t id{Id};
     static inline const std::string name{std::format("trivial_component_{}", id)};
 
-    std::size_t value{id};
+    auto get_id() const noexcept -> std::size_t;
+    auto get_name() const noexcept -> std::string_view;
+
+    std::size_t value;
 };
+static_assert(detail::component_vtable::of<trivial_component<0>>().default_construct == nullptr);
+static_assert(detail::component_vtable::of<trivial_component<0>>().relocate == nullptr);
+static_assert(detail::component_vtable::of<trivial_component<0>>().clone == nullptr);
+static_assert(detail::component_vtable::of<trivial_component<0>>().destroy == nullptr);
 
 template<std::size_t Id>
 struct component
@@ -85,6 +94,18 @@ private:
 
     static auto tracks() -> std::vector<component_track>&;
 };
+
+template<std::size_t Id>
+auto trivial_component<Id>::get_id() const noexcept -> std::size_t
+{
+    return id;
+}
+
+template<std::size_t Id>
+auto trivial_component<Id>::get_name() const noexcept -> std::string_view
+{
+    return name;
+}
 
 template<std::size_t Id>
 component<Id>::component() noexcept
