@@ -93,9 +93,17 @@ TEST_CASE_FIXTURE(fixture, "table::erase: removes entity and maintains sizes")
     }
 }
 
+TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity returns false")
+{
+    table.insert(entity_traits::construct(1));
+
+    CHECK_FALSE(table.erase(entity_traits::construct(0))); // in sparse range
+    CHECK_FALSE(table.erase(entity_traits::construct(2))); // out of sparse range
+}
+
 TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destination table")
 {
-    detail::table source{test::make_table<8>(schema)};
+    detail::table source{test::make_table<4>(schema)};
 
     const std::size_t n = GENERATE(1, 2, 4, 16);
     const std::vector<entity> entities = make_entities(n);
