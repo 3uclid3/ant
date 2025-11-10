@@ -28,7 +28,7 @@ public:
     schema& operator=(schema&&) noexcept = default;
 
     template<typename... T>
-    constexpr auto bitset_for() noexcept -> dynamic_bitset;
+    constexpr auto bitset_for() const noexcept -> dynamic_bitset;
 
     template<typename T>
     constexpr auto index_of() const noexcept -> size_type;
@@ -50,7 +50,7 @@ private:
 };
 
 template<typename... T>
-constexpr auto schema::bitset_for() noexcept -> dynamic_bitset
+constexpr auto schema::bitset_for() const noexcept -> dynamic_bitset
 {
     dynamic_bitset bitset;
     bitset.resize(size());
