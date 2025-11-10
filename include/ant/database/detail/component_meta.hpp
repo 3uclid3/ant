@@ -34,7 +34,7 @@ constexpr auto make_meta(std::string_view name, std::uint16_t version = 0) noexc
     meta.vtable = component_vtable::of<T>();
     meta.size = sizeof(T);
     meta.alignment = alignof(T);
-    meta.stride = (meta.size + meta.alignment - 1) / meta.alignment * meta.alignment;
+    meta.stride = ((meta.size + meta.alignment - 1) / meta.alignment) * meta.alignment;
     meta.name = name;
     meta.version = version;
 
