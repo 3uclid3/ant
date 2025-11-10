@@ -18,6 +18,8 @@ public:
 public:
     static constexpr size_type npos = std::numeric_limits<size_type>::max();
 
+    schema() = delete;
+
     schema(const schema&) = delete;
     schema& operator=(const schema&) = delete;
 
