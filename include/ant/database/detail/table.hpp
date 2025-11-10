@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory_resource>
 #include <span>
 #include <vector>
 
@@ -20,7 +21,7 @@ public:
     static constexpr auto npos = entity_traits::index_npos;
 
     table() noexcept = default;
-    table(dynamic_bitset components, const schema& schema);
+    table(dynamic_bitset components, const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
 
     table(const table&) = delete;
     table& operator=(const table&) = delete;
@@ -57,9 +58,9 @@ private:
     auto ensure_sparse_capacity(std::size_t capacity) -> void;
 
     dynamic_bitset _components;
-    std::vector<table_column> _columns;
-    std::vector<entity> _rows;
-    std::vector<entity_traits::index_type> _sparse;
+    std::pmr::vector<table_column> _columns;
+    std::pmr::vector<entity> _rows;
+    std::pmr::vector<entity_traits::index_type> _sparse;
 };
 
 template<typename T>

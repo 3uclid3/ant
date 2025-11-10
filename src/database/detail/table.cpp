@@ -7,12 +7,15 @@
 
 namespace ant::detail {
 
-table::table(dynamic_bitset components, const schema& schema)
+table::table(dynamic_bitset components, const schema& schema, std::pmr::memory_resource* memory_resource)
     : _components(std::move(components))
+    , _columns(memory_resource)
+    , _rows(memory_resource)
+    , _sparse(memory_resource)
 {
     _columns.reserve(_components.count());
-    _components.for_each_set([this, &schema](std::size_t index) {
-        _columns.emplace_back(schema.meta_of(index));
+    _components.for_each_set([this, &schema, memory_resource](std::size_t index) {
+        _columns.emplace_back(schema.meta_of(index), memory_resource);
     });
 
     _sparse.resize(8, npos);

@@ -18,6 +18,14 @@ public:
 public:
     static constexpr size_type npos = std::numeric_limits<size_type>::max();
 
+    schema() = delete;
+
+    schema(const schema&) = delete;
+    schema& operator=(const schema&) = delete;
+
+    schema(schema&&) noexcept = default;
+    schema& operator=(schema&&) noexcept = default;
+
     template<typename T>
     constexpr auto index_of() const noexcept -> size_type;
 
