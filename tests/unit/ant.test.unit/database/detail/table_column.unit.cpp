@@ -2,117 +2,178 @@
 
 #include <ant/database/detail/table_column.hpp>
 
-#include <ant.test.shared/database/component_types.hpp>
+#include <ant.test.shared/database/component.hpp>
+#include <ant.test.shared/doctest/generator.hpp>
 #include <ant/database/schema.hpp>
 
 namespace ant::detail { namespace {
 
-static constexpr auto meta = make_meta<test::trivial>("trivial");
-
-auto emplace(table_column& c, int value) -> std::size_t
+template<typename Component>
+struct fixture : test::component_fixture
 {
-    const auto idx = c.emplace_back();
+    using component = Component;
 
-    void* row_ptr = c.row(idx);
-    REQUIRE_NE(row_ptr, nullptr);
+    static constexpr component_meta meta = make_meta<component>("component");
 
-    test::trivial* trivial_ptr = static_cast<test::trivial*>(row_ptr);
-    trivial_ptr->value = value;
+    auto track() const -> const test::component_track&
+    {
+        return test::component_tracker::track<component>();
+    }
 
-    return idx;
+    auto emplace_indexed(std::size_t size, table_column& column) -> void
+    {
+        const std::size_t initial_size = column.size();
+        for (std::size_t i = 0; i < size; ++i)
+        {
+            column.emplace_back();
+            column.at<component>(initial_size + i).value = i;
+        }
+
+        // reset tracker after setup
+        test::component_tracker::reset();
+    }
+
+    auto emplace_indexed(std::size_t size) -> void
+    {
+        emplace_indexed(size, column);
+    }
+
+    table_column column{meta};
+};
+
+TEST_CASE_TEMPLATE("table_column::ctor: is empty with correct meta", T, test::component<0>, test::trivial_component<1>)
+{
+    fixture<T> f;
+
+    CHECK(f.column.empty());
+    CHECK_EQ(f.column.size(), 0u);
+    CHECK_EQ(&f.column.meta(), &f.meta);
 }
 
-auto get(table_column& c, std::size_t idx) -> test::trivial&
+TEST_CASE_TEMPLATE("table_column::emplace_back: construct component", T, test::component<0>, test::trivial_component<1>)
 {
-    void* row_ptr = c.row(idx);
-    REQUIRE_NE(row_ptr, nullptr);
+    fixture<T> f;
 
-    return *static_cast<test::trivial*>(row_ptr);
+    const std::size_t size = GENERATE(0, 1, 2, 5, 10);
+
+    for (std::size_t i = 0; i < size; ++i)
+    {
+        f.column.emplace_back();
+    }
+
+    CHECK_EQ(f.column.size(), size);
+
+    if constexpr (!std::is_trivially_move_constructible_v<T>)
+    {
+        CHECK_EQ(f.track(), test::component_track{.ctor = size});
+    }
 }
 
-TEST_CASE("table_column::ctor: default empty")
+TEST_CASE_TEMPLATE("table_column::splice_back: relocate component", T, test::component<0>, test::trivial_component<1>)
 {
-    table_column c{meta};
-    CHECK(c.empty());
-    CHECK_EQ(c.size(), 0);
+    fixture<T> f;
+
+    constexpr std::size_t size = 10;
+
+    table_column source(f.meta);
+    f.emplace_indexed(size);
+    f.emplace_indexed(size, source);
+
+    std::size_t index = GENERATE(0, 1, 2, 6, 8);
+
+    CHECK_EQ(f.column.splice_back(source, index), size);
+
+    CHECK_EQ(f.column.size(), size + 1);
+    CHECK_EQ(f.column.template at<T>(size).value, index);
+
+    CHECK_EQ(source.size(), size - 1);
+    CHECK_EQ(source.template at<T>(index).value, size - 1);
+
+    if constexpr (!std::is_trivially_destructible_v<T> && !std::is_trivially_move_constructible_v<T>)
+    {
+        CHECK_EQ(f.track(), test::component_track{.dtor = 2, .move = 2});
+    }
 }
 
-TEST_CASE("table_column::emplace_back: returns index")
+TEST_CASE_TEMPLATE("table_column::splice_back: relocate last component", T, test::component<0>, test::trivial_component<1>)
 {
-    table_column c{meta};
+    fixture<T> f;
 
-    const std::size_t idx = emplace(c, 42);
+    const std::size_t size = GENERATE(1, 2, 10);
+    const std::size_t index = size - 1;
 
-    CHECK_EQ(c.size(), 1);
-    CHECK_EQ(get(c, idx).value, 42);
+    table_column source(f.meta);
+    f.emplace_indexed(size);
+    f.emplace_indexed(size, source);
+
+    CHECK_EQ(f.column.splice_back(source, index), size);
+
+    CHECK_EQ(f.column.size(), size + 1);
+    CHECK_EQ(source.size(), size - 1);
+
+    CHECK_EQ(f.column.template at<T>(size).value, index);
+
+    if constexpr (!std::is_trivially_destructible_v<T> && !std::is_trivially_move_constructible_v<T>)
+    {
+        CHECK_EQ(f.track(), test::component_track{.dtor = 1, .move = 1});
+    }
 }
 
-TEST_CASE("table_column::swap_and_pop: removes element")
+TEST_CASE_TEMPLATE("table_column::swap_and_pop(non last): relocates last into index", T, test::component<0>, test::trivial_component<1>)
 {
-    table_column c{meta};
+    fixture<T> f;
 
-    c.swap_and_pop(c.emplace_back());
+    constexpr std::size_t size = 10;
+    f.emplace_indexed(size);
 
-    CHECK(c.empty());
+    const std::size_t index = GENERATE(0, 1, 2, 6, 8);
+
+    f.column.swap_and_pop(index);
+
+    CHECK_EQ(f.column.size(), size - 1);
+
+    // check remaining values are intact
+    for (std::size_t i = 0; i < f.column.size(); ++i)
+    {
+        if (i == index)
+        {
+            CHECK_EQ(f.column.template at<T>(i).value, size - 1);
+        }
+        else
+        {
+            CHECK_EQ(f.column.template at<T>(i).value, i);
+        }
+    }
+
+    if constexpr (!std::is_trivially_destructible_v<T> && !std::is_trivially_move_constructible_v<T>)
+    {
+        CHECK_EQ(f.track(), test::component_track{.dtor = 1, .move = 1});
+    }
 }
 
-TEST_CASE("table_column::swap_and_pop: removes element and moves last to removed")
+TEST_CASE_TEMPLATE("table_column::swap_and_pop(last): destroys last only", T, test::component<0>, test::trivial_component<1>)
 {
-    table_column c{meta};
+    fixture<T> f;
 
-    const std::size_t idx0 = emplace(c, 42);
-    emplace(c, 24);
-    emplace(c, 33);
+    const std::size_t size = GENERATE(1, 2, 10);
+    const std::size_t index = size - 1;
 
-    c.swap_and_pop(idx0);
+    f.emplace_indexed(size);
 
-    REQUIRE_EQ(c.size(), 2);
+    f.column.swap_and_pop(index);
 
-    const test::trivial& trivial = get(c, idx0);
-    CHECK_EQ(trivial.value, 33);
-}
+    CHECK_EQ(f.column.size(), size - 1);
 
-TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::emplace_back: default constructs when non-trivial default ctor present")
-{
-    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    table_column c{meta_tr};
+    // check remaining values are intact
+    for (std::size_t i = 0; i < f.column.size(); ++i)
+    {
+        CHECK_EQ(f.column.template at<T>(i).value, i);
+    }
 
-    const std::size_t idx = c.emplace_back();
-    auto* ptr = static_cast<test::tracked*>(c.row(idx));
-    REQUIRE_NE(ptr, nullptr);
-
-    CHECK_EQ(ptr->value, 7);
-    CHECK_EQ(test::tracked::ctor_count, 1);
-}
-
-TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::swap_and_pop: uses relocate for non-trivial types")
-{
-    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    table_column c{meta_tr};
-
-    const std::size_t i0 = c.emplace_back();
-    const std::size_t i1 = c.emplace_back();
-
-    static_cast<test::tracked*>(c.row(i0))->value = 1;
-    static_cast<test::tracked*>(c.row(i1))->value = 2;
-
-    c.swap_and_pop(i0);
-
-    CHECK_EQ(c.size(), 1);
-    CHECK_EQ(static_cast<test::tracked*>(c.row(0))->value, 2);
-    CHECK(test::tracked::move_count >= 1);
-}
-
-TEST_CASE_FIXTURE(test::tracked_fixture, "table_column::swap_and_pop: last element calls destroy")
-{
-    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-    table_column c{meta_tr};
-
-    const std::size_t idx = c.emplace_back();
-    c.swap_and_pop(idx);
-
-    CHECK_EQ(c.size(), 0);
-    CHECK_EQ(test::tracked::dtor_count, 1);
+    if constexpr (!std::is_trivially_destructible_v<T>)
+    {
+        CHECK_EQ(f.track(), test::component_track{.dtor = 1});
+    }
 }
 
 }} // namespace ant::detail

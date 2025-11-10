@@ -4,11 +4,16 @@
 
 namespace ant::detail { namespace {
 
+struct with_throw_move
+{
+    with_throw_move() noexcept = default;
+    with_throw_move(const with_throw_move&) noexcept = default;
+    with_throw_move(with_throw_move&& other) noexcept(false) = default;
+};
+
 auto func() -> void
 {
-#ifndef ANT_COMPILE_TEST_FORCE_PASS
-    auto vtable = component_vtable::of<test::with_throw_move>();
-#endif
+    auto vtable = component_vtable::of<with_throw_move>();
 }
 
 }} // namespace ant::detail

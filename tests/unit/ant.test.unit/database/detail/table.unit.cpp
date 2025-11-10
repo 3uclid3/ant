@@ -2,148 +2,176 @@
 
 #include <ant/database/detail/table.hpp>
 
-#include <ant.test.shared/database/component_types.hpp>
+#include <algorithm>
+#include <vector>
+
+#include <ant.test.shared/database/table.hpp>
+#include <ant.test.shared/doctest/check.hpp>
+#include <ant.test.shared/doctest/generator.hpp>
 #include <ant/database/detail/component_meta.hpp>
 #include <ant/database/detail/entity_traits.hpp>
 #include <ant/database/entity.hpp>
+#include <ant/database/schema.hpp>
 
 namespace ant::detail { namespace {
 
-static constexpr auto make_entity(std::uint32_t id, std::uint32_t ver = 0) -> entity
+using fixture = test::table_fixture<8>;
+
+// helper to generate table sizes for template tests
+template<std::size_t Size>
+struct table_size
 {
-    return detail::entity_traits::construct(id, ver);
+    static constexpr std::size_t value = Size;
+};
+
+TEST_CASE("table::ctor(default): creates an empty table")
+{
+    table table;
+    CHECK(table.empty());
 }
 
-TEST_CASE("basic_table: default empty")
+TEST_CASE_TEMPLATE("table::ctor(components): creates a table with given components", T, table_size<0>, table_size<1>, table_size<2>, table_size<4>, table_size<8>, table_size<16>)
 {
-    table tbl{table_signature{}, std::vector<table_column>{}};
+    constexpr std::size_t size = T::value;
 
-    CHECK(tbl.rows().empty());
+    schema schema{test::make_schema<size>()};
+    table table{test::make_table<size>(schema)};
+
+    CHECK_EQ(table.components().count(), size);
 }
 
-TEST_CASE("basic_table::signature: propagated from ctor")
+TEST_CASE_FIXTURE(fixture, "table::insert: maintains order and sizes")
 {
-    std::vector<table_column> columns{};
-    table_signature signature{};
-    signature.add(3);
+    const std::size_t n = 16;
+    const std::vector<entity> entities = make_entities(n, true);
 
-    table tbl{std::move(signature), std::move(columns)};
-
-    CHECK(tbl.signature().has(3));
-}
-
-TEST_CASE("basic_table::columns: stores provided columns")
-{
-    const auto meta = make_meta<test::trivial>("trivial");
-
-    std::vector<table_column> columns{};
-    columns.emplace_back(meta);
-    columns.emplace_back(meta);
-
-    table_signature signature{};
-    table tbl{std::move(signature), std::move(columns)};
-
-    CHECK_EQ(tbl.columns().size(), 2);
-}
-
-TEST_CASE("basic_table::insert: returns index 0 for first row")
-{
-    std::vector<table_column> columns{};
-    table_signature signature{};
-    table tbl{std::move(signature), std::move(columns)};
-
-    const auto idx = tbl.insert(make_entity(1));
-
-    CHECK_EQ(idx, 0);
-}
-
-TEST_CASE("basic_table::insert: adds a single row")
-{
-    table tbl{table_signature{}, std::vector<table_column>{}};
-
-    (void)tbl.insert(make_entity(2));
-
-    CHECK_EQ(tbl.rows().size(), 1);
-}
-
-TEST_CASE("basic_table::erase(entity): removes existing")
-{
-    table tbl{table_signature{}, std::vector<table_column>{}};
-
-    const auto e0 = make_entity(10);
-    const auto e1 = make_entity(11);
-    tbl.insert(e0);
-    tbl.insert(e1);
-
-    tbl.erase(e0);
-
-    CHECK_EQ(tbl.rows().size(), 1);
-}
-
-TEST_CASE("basic_table::erase(index): removes and compacts")
-{
-    table tbl{table_signature{}, std::vector<table_column>{}};
-
-    const auto e0 = make_entity(20);
-    const auto e1 = make_entity(21);
-    tbl.insert(e0);
-    tbl.insert(e1);
-
-    tbl.erase(e0);
-
-    CHECK_EQ(tbl.rows().size(), 1);
-}
-
-TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::insert: grows all columns and default constructs")
-{
-    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
-
-    std::vector<table_column> columns{};
-    columns.emplace_back(meta_tr);
-    columns.emplace_back(meta_tr);
-
-    table tbl{table_signature{}, std::move(columns)};
-
-    const auto idx = tbl.insert(make_entity(100));
-
-    CHECK_EQ(idx, 0);
-    CHECK_EQ(tbl.columns().size(), 2);
-
-    for (const auto& col : tbl.columns())
+    for (std::size_t i = 0; i < n; ++i)
     {
-        const auto* ptr = static_cast<const test::tracked*>(col.row(idx));
-        REQUIRE_NE(ptr, nullptr);
-        CHECK_EQ(ptr->value, 7);
-        CHECK_EQ(col.size(), 1);
+        CHECK_EQ(table.insert(entities[i]), i);
+
+        for_each_components(table, entities[i], [](std::size_t id, const auto& comp) {
+            CHECK_EQ(comp.get_id(), id);
+            CHECK_EQ(comp.value, id);
+        });
     }
 
-    CHECK_EQ(test::tracked::ctor_count, 2);
+    CHECK(std::ranges::equal(table.entities(), entities));
+    CHECK_EQ(table.size(), n);
 }
 
-TEST_CASE_FIXTURE(test::tracked_fixture, "basic_table::erase(entity): updates columns with relocate")
+TEST_CASE_FIXTURE(fixture, "table::insert: duplicate returns existing index; no growth")
 {
-    constexpr auto meta_tr = make_meta<test::tracked>("tracked");
+    const entity e = entity_traits::construct(42);
 
-    std::vector<table_column> columns{};
-    columns.emplace_back(meta_tr);
-
-    table tbl{table_signature{}, std::move(columns)};
-
-    const auto e0 = make_entity(200);
-    const auto e1 = make_entity(201);
-    const auto i0 = tbl.insert(e0);
-    const auto i1 = tbl.insert(e1);
-
-    const auto* cptr0 = static_cast<const test::tracked*>(tbl.columns()[0].row(i0));
-    const auto* cptr1 = static_cast<const test::tracked*>(tbl.columns()[0].row(i1));
-    const_cast<test::tracked*>(cptr0)->value = 1;
-    const_cast<test::tracked*>(cptr1)->value = 9;
-
-    tbl.erase(e0);
-
-    CHECK_EQ(tbl.rows().size(), 1);
-    const auto* moved = static_cast<const test::tracked*>(tbl.columns()[0].row(0));
-    CHECK_EQ(moved->value, 9);
+    CHECK_EQ(table.insert(e), 0);
+    CHECK_EQ(table.insert(e), 0);
+    CHECK_EQ(table.size(), 1);
 }
+
+TEST_CASE_FIXTURE(fixture, "table::insert: large index triggers sparse growth")
+{
+    const entity e = entity_traits::construct(10'000);
+
+    CHECK_EQ(table.insert(e), 0);
+    CHECK(table.contains(e));
+}
+
+TEST_CASE_FIXTURE(fixture, "table::erase: removes entity and maintains sizes")
+{
+    const std::size_t n = GENERATE(1, 2, 4, 16);
+
+    for (entity e : make_entities(n))
+    {
+        table.insert(e);
+    }
+
+    // erase out of order
+    for (entity e : make_entities(n, true))
+    {
+        CHECK(table.erase(e));
+        CHECK_FALSE(table.contains(e));
+    }
+}
+
+TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity returns false")
+{
+    table.insert(entity_traits::construct(1));
+
+    CHECK_FALSE(table.erase(entity_traits::construct(0)));      // in sparse range
+    CHECK_FALSE(table.erase(entity_traits::construct(10'000))); // out of sparse range
+}
+
+TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destination table")
+{
+    detail::table source{GENERATE(test::make_table<4>(schema), test::make_table<8>(schema), test::make_table<16>(schema))};
+
+    const std::size_t n = 16;
+    const std::vector<entity> entities = make_entities(n);
+
+    for (entity e : entities)
+    {
+        source.insert(e);
+    }
+
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        const entity e = entities[i];
+
+        CHECK_EQ(table.splice(e, source), i);
+
+        CHECK_FALSE(source.contains(e));
+        CHECK(table.contains(e));
+
+        for_each_components(table, entities[i], [](std::size_t id, const auto& comp) {
+            CHECK_EQ(comp.get_id(), id);
+            CHECK_EQ(comp.value, id);
+        });
+    }
+
+    CHECK(source.empty());
+    CHECK_EQ(table.size(), n);
+    CHECK(std::ranges::equal(table.entities(), entities));
+}
+
+TEST_CASE_FIXTURE(fixture, "table::column_of: returns correct column indices")
+{
+    CHECK_NE(table.column_of<test::component<0>>(), detail::table::npos);
+    CHECK_NE(table.column_of<test::component<1>>(), detail::table::npos);
+
+    CHECK_EQ(table.column_of<test::component<10'000>>(), detail::table::npos);
+}
+
+TEST_CASE_FIXTURE(fixture, "table::row_of: returns npos for non-existent entity")
+{
+    CHECK_EQ(table.row_of(entity_traits::construct(0)), detail::table::npos);      // in sparse range
+    CHECK_EQ(table.row_of(entity_traits::construct(10'000)), detail::table::npos); // out of sparse range
+}
+
+TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity returns false")
+{
+    table.insert(entity_traits::construct(1));
+
+    CHECK_FALSE(table.erase(entity_traits::construct(0)));      // in sparse range
+    CHECK_FALSE(table.erase(entity_traits::construct(10'000))); // out of sparse range
+}
+
+#if ANT_ASSERT_ENABLED
+TEST_CASE_FIXTURE(fixture, "table::insert: asserts on invalid entity index")
+{
+    const auto invalid = static_cast<entity>(detail::entity_traits::index_mask); // npos in index bits
+    CHECK_ASSERTS(table.insert(invalid));
+}
+
+TEST_CASE_FIXTURE(fixture, "table::splice: asserts when dest already contains entity")
+{
+    detail::table source{test::make_table<16>(schema)};
+
+    const entity e = entity_traits::construct(5);
+    table.insert(e);
+    source.insert(e);
+
+    CHECK_ASSERTS(table.splice(e, source));
+}
+#endif
 
 }} // namespace ant::detail
