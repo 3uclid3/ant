@@ -39,7 +39,7 @@ public:
 private:
     struct slot_deleter
     {
-        void operator()(void* p);
+        auto operator()(void* p) noexcept -> void;
 
         std::pmr::memory_resource* _memory_resource{nullptr};
         const detail::component_meta* _meta{nullptr};

@@ -2,8 +2,13 @@
 
 namespace ant {
 
-auto env::slot_deleter::operator()(void* p) -> void
+auto env::slot_deleter::operator()(void* p) noexcept -> void
 {
+    if (_meta->vtable.destroy != nullptr)
+    {
+        _meta->vtable.destroy(p);
+    }
+
     _memory_resource->deallocate(p, _meta->size, _meta->alignment);
 }
 
@@ -19,6 +24,7 @@ env::env(const schema& schema, std::pmr::memory_resource* memory_resource) noexc
 
 auto env::at_raw(std::size_t index) const -> const void*
 {
+    ANT_ASSERT(index < _sparse.size(), "index out of bounds");
     const auto slot_index = _sparse[index];
     return slot_index != npos ? _slots[slot_index].ptr.get() : nullptr;
 }
