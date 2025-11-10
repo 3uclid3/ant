@@ -4,20 +4,23 @@
 #include <ant/database/schema.hpp>
 #include <ant/database/schema_builder.hpp>
 
-#include <ant.test.shared/database/component_types.hpp>
+#include <ant.test.shared/database/component.hpp>
+#include <ant.test.shared/database/schema.hpp>
 
 namespace ant { namespace {
 
-TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly", T, bool, int, float, double, test::empty, test::trivial, test::non_trivial_copy, test::non_trivial)
+TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly", T, test::trivial_component<24>, test::component<42>)
 {
-    static std::uint16_t version = 0;
+    constexpr std::uint16_t version = T::id; // use the id as version
 
     schema_builder builder;
     builder.define<T>(type_name<T>(), version);
 
     schema built_schema = builder.build();
 
-    const auto& meta = built_schema.meta_of<T>();
+    const detail::component_meta& meta = built_schema.meta_of<T>();
+
+    CHECK_EQ(built_schema.index_of<T>(), meta.index);
 
     CHECK_EQ(meta.hash, type_hash<T>());
     CHECK_EQ(meta.name, type_name<T>());
@@ -25,37 +28,17 @@ TEST_CASE_TEMPLATE("schema_builder::define: store component metadata correctly",
     CHECK_EQ(meta.size, sizeof(T));
     CHECK_EQ(meta.alignment, alignof(T));
     CHECK_EQ(meta.vtable, detail::component_vtable::of<T>());
-
-    ++version;
 }
 
-TEST_CASE("schema_builder::define: store components metadata correctly")
+TEST_CASE("schema::bitset_for: create bitset from component types")
 {
-    schema_builder builder;
-    builder.define<bool>("bool");
-    builder.define<int>("int");
-    builder.define<float>("float");
-    builder.define<double>("double");
-    builder.define<test::empty>("empty");
-    builder.define<test::trivial>("trivial");
-    builder.define<test::non_trivial_copy>("non_trivial_copy");
-    builder.define<test::non_trivial>("non_trivial");
+    schema schema = test::make_schema<4>();
 
-    schema built_schema = builder.build();
+    dynamic_bitset bitset = schema.bitset_for<test::component<1>, test::component<2>>();
 
-    CHECK_NE(built_schema.index_of<bool>(), schema::npos);
-    CHECK_NE(built_schema.index_of<int>(), schema::npos);
-    CHECK_NE(built_schema.index_of<float>(), schema::npos);
-    CHECK_NE(built_schema.index_of<double>(), schema::npos);
-
-    CHECK_NE(built_schema.index_of<test::empty>(), schema::npos);
-    CHECK_NE(built_schema.index_of<test::trivial>(), schema::npos);
-    CHECK_NE(built_schema.index_of<test::non_trivial_copy>(), schema::npos);
-    CHECK_NE(built_schema.index_of<test::non_trivial>(), schema::npos);
-
-    // TODO review component_index
-    // CHECK_EQ(built_schema.index_of<struct unknown>(), schema::npos);
-    // CHECK_EQ(built_schema.index_of<struct unknown_other>(), schema::npos);
+    CHECK_EQ(bitset.count(), 2);
+    CHECK(bitset.test(schema.index_of<test::component<1>>()));
+    CHECK(bitset.test(schema.index_of<test::component<2>>()));
 }
 
 }} // namespace ant

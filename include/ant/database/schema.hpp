@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <ant/core/assert.hpp>
+#include <ant/core/dynamic_bitset.hpp>
 #include <ant/core/type_info.hpp>
 #include <ant/database/detail/component_meta.hpp>
 
@@ -26,6 +27,9 @@ public:
     schema(schema&&) noexcept = default;
     schema& operator=(schema&&) noexcept = default;
 
+    template<typename... T>
+    constexpr auto bitset_for() noexcept -> dynamic_bitset;
+
     template<typename T>
     constexpr auto index_of() const noexcept -> size_type;
 
@@ -44,6 +48,15 @@ private:
 
     friend class schema_builder;
 };
+
+template<typename... T>
+constexpr auto schema::bitset_for() noexcept -> dynamic_bitset
+{
+    dynamic_bitset bitset;
+    bitset.resize(size());
+    (bitset.set(index_of<T>()), ...);
+    return bitset;
+}
 
 template<typename T>
 constexpr auto schema::index_of() const noexcept -> size_type
