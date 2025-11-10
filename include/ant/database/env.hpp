@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <memory_resource>
 #include <new>
 #include <vector>
 
@@ -12,7 +13,7 @@ namespace ant {
 class env
 {
 public:
-    explicit env(const schema& schema) noexcept;
+    explicit env(const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource()) noexcept;
 
     env(const env&) = delete;
     auto operator=(const env&) -> env& = delete;
@@ -36,27 +37,38 @@ public:
     auto unset() -> void;
 
 private:
-    struct component_slot
+    struct slot_deleter
     {
-        std::unique_ptr<void, void (*)(void*)> ptr;
+        auto operator()(void* p) noexcept -> void;
+
+        std::pmr::memory_resource* _memory_resource{nullptr};
+        const detail::component_meta* _meta{nullptr};
+    };
+
+    using slot_ptr = std::unique_ptr<void, slot_deleter>;
+
+    struct slot
+    {
+        slot_ptr ptr;
         std::size_t index{schema::npos};
     };
 
 private:
-    auto get_impl(std::size_t index) const -> const void*;
-    auto get_impl(std::size_t index) -> void*;
+    template<typename T, typename... Args>
+    auto make_var(Args&&... args) -> slot_ptr;
 
-    auto unset_impl(std::size_t index) -> void;
+    auto at_raw(std::size_t index) const -> const void*;
+    auto at_raw(std::size_t index) -> void*;
+
+    auto unset_at(std::size_t index) -> void;
 
 private:
     static constexpr std::size_t npos = schema::npos;
 
-    // dense storage of component slots
-    std::vector<component_slot> _slots{};
+    std::pmr::vector<slot> _slots;
+    std::pmr::vector<std::size_t> _sparse;
 
-    // sparse mapping from component index to slot index
-    std::vector<std::size_t> _component_to_slot{};
-
+    std::pmr::memory_resource* _memory_resource{nullptr};
     const schema* _schema{nullptr};
 };
 
@@ -71,7 +83,7 @@ auto env::get() const noexcept -> const T*
 {
     const auto index = _schema->template index_of<T>();
     ANT_ASSERT(index != npos, "Component type not in schema");
-    return static_cast<const T*>(get_impl(index));
+    return static_cast<const T*>(at_raw(index));
 }
 
 template<typename T>
@@ -79,40 +91,47 @@ auto env::get() noexcept -> T*
 {
     const auto index = _schema->template index_of<T>();
     ANT_ASSERT(index != npos, "Component type not in schema");
-    return static_cast<T*>(get_impl(index));
+    return static_cast<T*>(at_raw(index));
 }
 
 template<typename T, typename... Args>
 auto env::set(Args&&... args) -> T&
 {
-    const auto index = _schema->template index_of<T>();
-    ANT_ASSERT(index != npos, "Component type not in schema");
+    const std::size_t sparse_index = _schema->template index_of<T>();
+    ANT_ASSERT(sparse_index != npos, "Component type not in schema");
 
-    const auto deleter = [](void* p) { delete static_cast<T*>(p); };
-
-    if (_component_to_slot[index] == npos)
+    if (_sparse[sparse_index] == npos)
     {
-        T* ptr = new T(std::forward<Args>(args)...);
-
-        _slots.emplace_back(component_slot{.ptr = std::unique_ptr<void, void (*)(void*)>(ptr, deleter), .index = index});
-
-        _component_to_slot[index] = _slots.size() - 1;
+        _sparse[sparse_index] = _slots.size();
+        _slots.emplace_back(slot{.ptr = make_var<T>(std::forward<Args>(args)...), .index = sparse_index});
     }
     else
     {
-        auto& slot = _slots[_component_to_slot[index]];
-        slot.ptr = std::unique_ptr<void, void (*)(void*)>(new T(std::forward<Args>(args)...), deleter);
+        const std::size_t index = _sparse[sparse_index];
+        _slots[index].ptr = make_var<T>(std::forward<Args>(args)...);
     }
 
-    return *static_cast<T*>(_slots[_component_to_slot[index]].ptr.get());
+    const std::size_t index = _sparse[sparse_index];
+    return *static_cast<T*>(_slots[index].ptr.get());
 }
 
 template<typename T>
 auto env::unset() -> void
 {
-    const auto index = _schema->template index_of<T>();
-    ANT_ASSERT(index != schema::npos, "Component type not in schema");
-    unset_impl(index);
+    const std::size_t sparse_index = _schema->template index_of<T>();
+    ANT_ASSERT(sparse_index != schema::npos, "Component type not in schema");
+    unset_at(sparse_index);
+}
+
+template<typename T, typename... Args>
+auto env::make_var(Args&&... args) -> slot_ptr
+{
+    void* raw_ptr = _memory_resource->allocate(sizeof(T), alignof(T));
+    T* ptr = new (raw_ptr) T(std::forward<Args>(args)...);
+    slot_deleter deleter = {
+        ._memory_resource = _memory_resource,
+        ._meta = &_schema->template meta_of<T>()};
+    return slot_ptr(ptr, deleter);
 }
 
 } // namespace ant
