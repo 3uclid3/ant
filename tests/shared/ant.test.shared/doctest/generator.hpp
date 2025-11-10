@@ -4,7 +4,6 @@
 #include <format>
 #include <initializer_list>
 #include <iterator>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -60,19 +59,26 @@ constexpr auto make_range(Ts&&... xs)
     ([&]() { \
         auto gen_range = ::ant::test::detail::make_range(__VA_ARGS__); \
         using gen_val_t = std::decay_t<decltype(*std::ranges::begin(gen_range))>; \
-        std::optional<gen_val_t> gen_value; \
+        gen_val_t* gen_value{nullptr}; \
         std::size_t gen_idx = 0; \
-        for (const auto& gen_in : gen_range) \
+        for (auto& gen_in : gen_range) \
         { \
             std::string gen_subcase_name = std::format("{{{}}}[{}]", #__VA_ARGS__, gen_idx++); \
             DOCTEST_SUBCASE(gen_subcase_name.c_str()) \
             { \
-                gen_value = gen_in; \
+                gen_value = &gen_in; \
             } \
         } \
-        if (!gen_value.has_value()) \
+        if (gen_value == nullptr) \
         { \
             DOCTEST_FAIL("GENERATE(...) was called with an empty range or no values."); \
         } \
-        return *gen_value; \
+        if constexpr (std::is_copy_constructible_v<gen_val_t>) \
+        { \
+            return *gen_value; \
+        } \
+        else \
+        { \
+            return std::move(*gen_value); \
+        } \
     }())
