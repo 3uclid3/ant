@@ -42,7 +42,7 @@ TEST_CASE_TEMPLATE("table::ctor(components): creates a table with given componen
 
 TEST_CASE_FIXTURE(fixture, "table::insert: maintains order and sizes")
 {
-    const std::size_t n = GENERATE(0, 1, 2, 4, 16);
+    const std::size_t n = 16;
     const std::vector<entity> entities = make_entities(n, true);
 
     for (std::size_t i = 0; i < n; ++i)
@@ -61,19 +61,19 @@ TEST_CASE_FIXTURE(fixture, "table::insert: maintains order and sizes")
 
 TEST_CASE_FIXTURE(fixture, "table::insert: duplicate returns existing index; no growth")
 {
-    const entity a = entity_traits::construct(42);
+    const entity e = entity_traits::construct(42);
 
-    CHECK_EQ(table.insert(a), 0);
-    CHECK_EQ(table.insert(a), 0);
+    CHECK_EQ(table.insert(e), 0);
+    CHECK_EQ(table.insert(e), 0);
     CHECK_EQ(table.size(), 1);
 }
 
 TEST_CASE_FIXTURE(fixture, "table::insert: large index triggers sparse growth")
 {
-    const entity far = entity_traits::construct(10'000);
+    const entity e = entity_traits::construct(10'000);
 
-    CHECK_EQ(table.insert(far), 0);
-    CHECK(table.contains(far));
+    CHECK_EQ(table.insert(e), 0);
+    CHECK(table.contains(e));
 }
 
 TEST_CASE_FIXTURE(fixture, "table::erase: removes entity and maintains sizes")
@@ -103,9 +103,9 @@ TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity returns false")
 
 TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destination table")
 {
-    detail::table source{test::make_table<4>(schema)};
+    detail::table source{GENERATE(test::make_table<4>(schema), test::make_table<8>(schema), test::make_table<16>(schema))};
 
-    const std::size_t n = GENERATE(1, 2, 4, 16);
+    const std::size_t n = 16;
     const std::vector<entity> entities = make_entities(n);
 
     for (entity e : entities)

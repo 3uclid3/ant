@@ -82,8 +82,19 @@ auto table::splice(entity e, table& source) -> std::size_t
         ANT_ASSERT(_rows.size() == column.size(), "column size mismatch after adding row");
     }
 
+    dynamic_bitset components_to_erase = source._components & ~_components;
+    for (table_column& src_column : source._columns)
+    {
+        if (!components_to_erase.test(src_column.meta().index))
+            continue;
+
+        src_column.swap_and_pop(source._sparse[index]);
+    }
+
     constexpr bool erase_columns = false;
     source.erase_impl(e, erase_columns);
+
+    ANT_ASSERT(std::ranges::all_of(_columns, [this](const table_column& c) { return c.size() == _rows.size(); }), "column size mismatch after splicing row");
 
     return _sparse[index];
 }
