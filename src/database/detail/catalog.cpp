@@ -86,7 +86,7 @@ auto catalog::find_seed_component(const dynamic_bitset& required) const noexcept
         const std::size_t current = i * 64U + bit;
         const std::size_t count = _component_tables[current].count();
 
-        if (count < best_count)
+        if (count > 0 && count < best_count)
         {
             best = current;
             best_count = count;
