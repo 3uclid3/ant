@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
-
 #include <ant/database/detail/entity_registry.hpp>
+
+#include <ant.test.shared/doctest.hpp>
 
 namespace ant::detail { namespace {
 

@@ -1,11 +1,10 @@
-#include <doctest/doctest.h>
-
 #include <ant/database/detail/table.hpp>
 
 #include <algorithm>
 #include <vector>
 
 #include <ant.test.shared/database/table.hpp>
+#include <ant.test.shared/doctest.hpp>
 #include <ant.test.shared/doctest/check.hpp>
 #include <ant.test.shared/doctest/generator.hpp>
 #include <ant/database/detail/component_meta.hpp>

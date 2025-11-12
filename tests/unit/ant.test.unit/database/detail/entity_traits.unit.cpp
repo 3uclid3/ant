@@ -1,7 +1,6 @@
-#include <doctest/doctest.h>
-
 #include <ant/database/detail/entity_traits.hpp>
 
+#include <ant.test.shared/doctest.hpp>
 #include <ant.test.shared/doctest/generator.hpp>
 
 namespace ant::detail { namespace {

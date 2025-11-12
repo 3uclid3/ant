@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT
-#include <doctest/doctest.h>
+#include <ant.test.shared/doctest.hpp>
 
 #include <ant.test.shared/core/assert_error.hpp>
 #include <ant/core/assert.hpp>

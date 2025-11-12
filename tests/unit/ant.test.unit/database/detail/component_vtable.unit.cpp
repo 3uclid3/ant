@@ -1,13 +1,13 @@
-#include <doctest/doctest.h>
-
 #include <ant/database/detail/component_vtable.hpp>
 
 #include <memory>
 #include <new>
 
 #include <ant.test.shared/database/component_types.hpp>
+#include <ant.test.shared/doctest.hpp>
 
 namespace ant::detail { namespace {
+
 struct component_mock
 {
     struct invoke_table
