@@ -1069,3 +1069,12 @@ constexpr auto operator~(const basic_dynamic_bitset<Allocator>& rhs) -> basic_dy
 }
 
 } // namespace ant
+
+template<typename Allocator>
+struct std::hash<ant::basic_dynamic_bitset<Allocator>>
+{
+    [[nodiscard]] constexpr auto operator()(const ant::basic_dynamic_bitset<Allocator>& bitset) const noexcept -> std::size_t
+    {
+        return static_cast<std::size_t>(bitset.hash());
+    }
+};
