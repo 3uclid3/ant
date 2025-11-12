@@ -18,7 +18,6 @@ class catalog
 public:
     static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
 
-    catalog() = default;
     catalog(const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
 
     catalog(const catalog&) = delete;
