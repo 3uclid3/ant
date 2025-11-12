@@ -11,7 +11,7 @@
 
 #include <doctest/doctest.h>
 
-namespace ant::test::detail {
+namespace ant::test::generator {
 
 template<class T>
 struct is_init_list : std::false_type
@@ -45,7 +45,7 @@ constexpr auto make_range(Ts&&... xs)
     return std::array{common_type_t(std::forward<Ts>(xs))...};
 }
 
-} // namespace ant::test::detail
+} // namespace ant::test::generator
 
 // Usage:
 //   auto a = GENERATE({0, 1, 2});
@@ -57,7 +57,7 @@ constexpr auto make_range(Ts&&... xs)
 
 #define GENERATE(...) \
     ([&]() { \
-        auto gen_range = ::ant::test::detail::make_range(__VA_ARGS__); \
+        auto gen_range = ::ant::test::generator::make_range(__VA_ARGS__); \
         using gen_val_t = std::decay_t<decltype(*std::ranges::begin(gen_range))>; \
         gen_val_t* gen_value{nullptr}; \
         std::size_t gen_idx = 0; \
