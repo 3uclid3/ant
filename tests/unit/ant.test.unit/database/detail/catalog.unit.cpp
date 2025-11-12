@@ -49,6 +49,13 @@ TEST_CASE_FIXTURE(fixture, "basic_catalog::ensure_of: create and retrieve table 
     CHECK_EQ(table.components(), components);
 }
 
+TEST_CASE_FIXTURE(fixture, "basic_catalog::index_of: returns npos for non-existing table")
+{
+    dynamic_bitset components{schema.bitset_for<test::component<3>, test::component<4>>()};
+
+    CHECK_EQ(catalog.index_of(components), catalog.npos);
+}
+
 TEST_CASE_FIXTURE(fixture, "basic_catalog::for_each: match tables by components")
 {
     emplace_combinations<3>();
