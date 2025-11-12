@@ -1,4 +1,4 @@
-#include <doctest/doctest.h>
+#include <ant.test.shared/doctest.hpp>
 
 #include <ant/version.hpp>
 

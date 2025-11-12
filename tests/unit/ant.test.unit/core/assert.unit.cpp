@@ -1,10 +1,8 @@
-#include <doctest/doctest.h>
-
 #include <ant/core/assert.hpp>
 
-#if ANT_ASSERT_ENABLED
+#include <ant.test.shared/doctest.hpp>
 
-#include <ant.test.shared/doctest/check.hpp>
+#if ANT_ASSERT_ENABLED
 
 namespace ant { namespace {
 

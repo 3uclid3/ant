@@ -1,8 +1,7 @@
-#include <doctest/doctest.h>
-
 #include <ant/database/detail/table_column.hpp>
 
 #include <ant.test.shared/database/component.hpp>
+#include <ant.test.shared/doctest.hpp>
 #include <ant.test.shared/doctest/generator.hpp>
 #include <ant/database/schema.hpp>
 

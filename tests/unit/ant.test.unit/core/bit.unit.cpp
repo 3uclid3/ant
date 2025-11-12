@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
-
 #include <ant/core/bit.hpp>
+
+#include <ant.test.shared/doctest.hpp>
 
 namespace ant { namespace {
 

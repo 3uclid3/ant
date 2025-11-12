@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
-
 #include <ant/core/hash.hpp>
+
+#include <ant.test.shared/doctest.hpp>
 
 namespace ant::hash { namespace {
 

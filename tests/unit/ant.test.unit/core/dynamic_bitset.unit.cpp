@@ -1,12 +1,10 @@
-#include <doctest/doctest.h>
-
 #include <ant/core/dynamic_bitset.hpp>
 
 #include <bitset>
 #include <iostream>
 #include <utility>
-#include <vector>
 
+#include <ant.test.shared/doctest.hpp>
 #include <ant.test.shared/doctest/generator.hpp>
 
 namespace ant {

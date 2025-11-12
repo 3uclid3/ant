@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
-
 #include <ant/core/type_info.hpp>
+
+#include <ant.test.shared/doctest.hpp>
 
 namespace ant {
 
