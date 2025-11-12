@@ -1075,6 +1075,15 @@ struct std::hash<ant::basic_dynamic_bitset<Allocator>>
 {
     [[nodiscard]] constexpr auto operator()(const ant::basic_dynamic_bitset<Allocator>& bitset) const noexcept -> std::size_t
     {
-        return static_cast<std::size_t>(bitset.hash());
+        if constexpr (sizeof(std::size_t) >= sizeof(std::uint64_t))
+        {
+            return static_cast<std::size_t>(bitset.hash());
+        }
+        else
+        {
+            // Combine the high and low 32 bits for 32-bit size_t
+            const std::uint64_t h = bitset.hash();
+            return static_cast<std::size_t>(h ^ (h >> 32));
+        }
     }
 };
