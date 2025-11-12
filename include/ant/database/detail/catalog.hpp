@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <limits>
 #include <memory_resource>
 #include <unordered_map>
