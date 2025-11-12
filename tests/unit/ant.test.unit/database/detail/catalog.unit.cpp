@@ -37,6 +37,8 @@ TEST_CASE_FIXTURE(fixture, "basic_catalog::ensure_of: create and retrieve table 
 {
     dynamic_bitset components{schema.bitset_for<test::component<1>, test::component<2>>()};
 
+    CHECK(catalog.empty());
+
     auto first_idx = catalog.ensure_of(components);
     auto second_idx = catalog.ensure_of(components);
 
@@ -84,6 +86,18 @@ TEST_CASE_FIXTURE(fixture, "basic_catalog::for_each: required none matches all t
         catalog.index_of(schema.bitset_for<test::component<1>>()),
         catalog.index_of(schema.bitset_for<test::component<0>, test::component<1>>())};
     CHECK(test::equivalent(matched_tables, expected_tables));
+}
+
+TEST_CASE_FIXTURE(fixture, "basic_catalog::for_each: required none matches no tables when catalog empty")
+{
+    dynamic_bitset required; // empty
+
+    std::vector<std::size_t> matched_tables;
+    catalog.for_each(required, [&matched_tables](std::size_t idx, const auto& table [[maybe_unused]]) {
+        matched_tables.push_back(idx);
+    });
+
+    CHECK(matched_tables.empty());
 }
 
 TEST_CASE_FIXTURE(fixture, "basic_catalog::for_each: no matches when required component absent")

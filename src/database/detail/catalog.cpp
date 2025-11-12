@@ -62,8 +62,7 @@ auto catalog::at(std::size_t idx) const -> const table&
 
 auto catalog::at(std::size_t idx) -> table&
 {
-    ANT_ASSERT(idx < size(), "table index out of range");
-    return _tables[idx];
+    return const_cast<table&>(std::as_const(*this).at(idx));
 }
 
 auto catalog::find_seed_component(const dynamic_bitset& required) const noexcept -> std::size_t
