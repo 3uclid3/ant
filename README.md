@@ -53,7 +53,7 @@ xmake.lua           → root build configuration
 CHANGELOG.md        → human-maintained change log
 ```
 
-For contribution style, commit rules, and diagram updates, see **[AGENTS.md](AGENTS.md)**. Also see **[LICENSE](LICENSE)** and **[CHANGELOG](CHANGELOG.md)**.
+For contribution style, commit rules, and diagram updates, see **[AGENTS.md](AGENTS.md)**. See also **[LICENSE](LICENSE)** and **[CHANGELOG](CHANGELOG.md)**.
 
 ---
 
