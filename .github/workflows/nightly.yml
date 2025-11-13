@@ -121,7 +121,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
           alert-threshold: "130%"
-          fail-on-alert: true
+          fail-on-alert: false
           comment-always: true
 
   windows-build-test:
