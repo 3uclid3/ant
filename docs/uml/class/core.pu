@@ -14,44 +14,64 @@ namespace ant {
 		+basic_bitset(allocator: allocator_type)
 		+basic_bitset(bits_size: size_t, allocator: allocator_type)
 		+size(): size_t
-		+count(): size_t
-		+none(): bool
-		+all(): bool
-		+test(bit_index: size_t): bool
-		+set(bit_index: size_t): void
-		+unset(bit_index: size_t): void
-		+resize(bits_size: size_t): void
-	}
+		@startuml "ant - core"
+		skinparam classAttributeIconSize 0
+		set namespaceSeparator ::
 
-		class "basic_index<Tag, T, Npos>" as basic_index <<template>> {
-			+{static} npos(): basic_index
-		+value(): T
-		+operator T(): T
-		+operator+=(offset: T): basic_index&
-		+operator-=(offset: T): basic_index&
-		+operator++(): basic_index&
-		+operator++(int): basic_index
-		+operator--(): basic_index&
-		+operator--(int): basic_index
-	}
+		namespace ant {
 
-	class type_info {
-		+hash(): uint32_t
-		+name(): string_view
-	}
+			class assertion {
+				+handler_type
+				+{static} set_handler(handler: handler_type): void
+				+{static} reset_handler(): void
+				+{static} fail(expr: string_view, msg: string_view, location: source_location): void
+			}
 
-		class "type_name<T>" <<template>> {
-			+{static} value(): string_view
-		+operator string_view(): string_view
-	}
+			class "basic_dynamic_bitset<Allocator>" as basic_dynamic_bitset <<template>> {
+				+basic_dynamic_bitset()
+				+basic_dynamic_bitset(size_bits: size_t)
+				+size(): size_t
+				+capacity(): size_t
+				+empty(): bool
+				+test(bit_index: size_t): bool
+				+all(): bool
+				+any(): bool
+				+none(): bool
+				+count(): size_t
+				+set(): basic_dynamic_bitset&
+				+set(bit_index: size_t): basic_dynamic_bitset&
+				+reset(): basic_dynamic_bitset&
+				+reset(bit_index: size_t): basic_dynamic_bitset&
+				+flip(): basic_dynamic_bitset&
+				+flip(bit_index: size_t): basic_dynamic_bitset&
+				+reserve(size_bits: size_t): void
+				+resize(size_bits: size_t, value: bool=false): void
+				+clear(): void
+			}
 
-		class "type_hash<T>" <<template>> {
-			+{static} value(): uint32_t
-		+operator uint32_t(): uint32_t
-	}
+			class type_info {
+				+hash(): uint32_t
+				+name(): string_view
+			}
 
-	type_info ..> "type_name<T>"
-	type_info ..> "type_hash<T>"
-}
+			class "type_name<T>" <<template>> {
+				+{static} value(): string_view
+				+operator string_view(): string_view
+			}
 
-@enduml
+			class "type_hash<T>" <<template>> {
+				+{static} value(): uint32_t
+				+operator uint32_t(): uint32_t
+			}
+
+			' Aliases
+			class dynamic_bitset <<alias>>
+			package pmr {
+				class dynamic_bitset <<alias>>
+			}
+
+			type_info ..> "type_name<T>"
+			type_info ..> "type_hash<T>"
+		}
+
+		@enduml
