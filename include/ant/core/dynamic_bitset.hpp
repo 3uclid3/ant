@@ -807,7 +807,7 @@ template<typename Allocator>
 template<typename U, typename F>
 constexpr auto basic_dynamic_bitset<Allocator>::for_each_other_blocks(const basic_dynamic_bitset<U>& other, F&& func) -> basic_dynamic_bitset&
 {
-    ANT_ASSERT(_size == other._size);
+    ANT_ASSERT(_size == other.size());
 
     using callback_result = std::invoke_result_t<F, block_type&, block_type>;
     constexpr bool is_interruptible = std::is_same_v<std::remove_cvref_t<callback_result>, bool>;

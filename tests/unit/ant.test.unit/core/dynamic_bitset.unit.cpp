@@ -989,10 +989,10 @@ TEST_CASE("basic_dynamic_bitset::operator=: copy from different allocator type")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_dynamic_bitset::operator<: same size orders by most-significant bit different allocator type")
+TEST_CASE("basic_dynamic_bitset::operator<: from different allocator type")
 {
     dynamic_bitset a{64};
-    dynamic_bitset b{64};
+    pmr::dynamic_bitset b{64};
     a.set(3); // ...00001000
     b.set(5); // ...00100000 (greater)
 
