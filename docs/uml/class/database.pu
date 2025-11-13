@@ -4,131 +4,131 @@ set namespaceSeparator ::
 
 namespace ant {
 
-    ' Public API: Schema and Builder
-    class schema {
-        +bitset_for<T...>(): ant::dynamic_bitset
-        +index_of<T>(): size_t
-        +meta_of<T>(): const component_meta_type&
-        +meta_of(index: size_t): const component_meta_type&
-        +empty(): bool
-        +size(): size_t
-    }
+	' Public API: Schema and Builder
+	class schema {
+		+bitset_for<T...>(): ant::dynamic_bitset
+		+index_of<T>(): size_t
+		+meta_of<T>(): const component_meta_type&
+		+meta_of(index: size_t): const component_meta_type&
+		+empty(): bool
+		+size(): size_t
+	}
 
-    class schema_builder {
-        +schema_builder()
-        +define<T>(name: string_view, version: uint16_t=0): schema_builder&
-        +build(): schema
-    }
+	class schema_builder {
+		+schema_builder()
+		+define<T>(name: string_view, version: uint16_t=0): schema_builder&
+		+build(): schema
+	}
 
-    ' Public API: Environment
-    class env {
-        +env(schema: schema, memory_resource: pmr::memory_resource*=default)
-        +has<T>(): bool
-        +get<T>(): const T*
-        +get<T>(): T*
-        +set<T, Args...>(args): T&
-        +unset<T>(): void
-    }
+	' Public API: Environment
+	class env {
+		+env(schema: schema, memory_resource: pmr::memory_resource*=default)
+		+has<T>(): bool
+		+get<T>(): const T*
+		+get<T>(): T*
+		+set<T, Args...>(args): T&
+		+unset<T>(): void
+	}
 
-    ' Public API: Entity type
-    class entity <<enumeration>>
+	' Public API: Entity type
+	class entity <<enumeration>>
 
-    namespace detail {
+	namespace detail {
 
-        ' Component vtable and meta
-        class component_vtable {
-            +default_construct: fn
-            +relocate: fn
-            +clone: fn
-            +destroy: fn
-            +{static} of<T>(): component_vtable
-        }
+		' Component vtable and meta
+		class component_vtable {
+			+default_construct: fn
+			+relocate: fn
+			+clone: fn
+			+destroy: fn
+			+{static} of<T>(): component_vtable
+		}
 
-        class component_meta {
-            +hash: uint32_t
-            +vtable: component_vtable
-            +size: size_t
-            +alignment: size_t
-            +stride: size_t
-            +stride_per_block: size_t
-            +index: size_t
-            +name: string_view
-            +version: uint16_t
-        }
+		class component_meta {
+			+hash: uint32_t
+			+vtable: component_vtable
+			+size: size_t
+			+alignment: size_t
+			+stride: size_t
+			+stride_per_block: size_t
+			+index: size_t
+			+name: string_view
+			+version: uint16_t
+		}
 
-        ' Entity traits and location
-        class entity_traits {
-            +value_type
-            +integral_type
-            +index_type
-            +version_type
-            +index_bits: size_t
-            +version_bits: size_t
-            +index_mask: integral_type
-            +version_mask: integral_type
-            +index_npos: integral_type
-        }
+		' Entity traits and location
+		class entity_traits {
+			+value_type
+			+integral_type
+			+index_type
+			+version_type
+			+index_bits: size_t
+			+version_bits: size_t
+			+index_mask: integral_type
+			+version_mask: integral_type
+			+index_npos: integral_type
+		}
 
-        class entity_location {
-            +table: size_t
-            +row: size_t
-            +{static} invalid(): entity_location
-        }
+		class entity_location {
+			+table: size_t
+			+row: size_t
+			+{static} invalid(): entity_location
+		}
 
-        class entity_registry {
-            +contains(e: ant::entity): bool
-            +create(): ant::entity
-            +destroy(e: ant::entity): void
-            +relocate(e: ant::entity, loc: entity_location): void
-            +locate(e: ant::entity): entity_location
-            +version(e: ant::entity): version_type
-            +empty(): bool
-            +size(): size_t
-        }
+		class entity_registry {
+			+contains(e: ant::entity): bool
+			+create(): ant::entity
+			+destroy(e: ant::entity): void
+			+relocate(e: ant::entity, loc: entity_location): void
+			+locate(e: ant::entity): entity_location
+			+version(e: ant::entity): version_type
+			+empty(): bool
+			+size(): size_t
+		}
 
-        ' Table column and table
-        class table_column {
-            +table_column(meta: component_meta, mr: pmr::memory_resource*=default)
-            +~table_column()
-            +emplace_back(): size_t
-            +splice_back(src: table_column, index: size_t): size_t
-            +swap_and_pop(index: size_t): void
-            +at<T>(index: size_t): const T&
-            +at<T>(index: size_t): T&
-            +empty(): bool
-            +size(): size_t
-            +meta(): const component_meta&
-        }
+		' Table column and table
+		class table_column {
+			+table_column(meta: component_meta, mr: pmr::memory_resource*=default)
+			+~table_column()
+			+emplace_back(): size_t
+			+splice_back(src: table_column, index: size_t): size_t
+			+swap_and_pop(index: size_t): void
+			+at<T>(index: size_t): const T&
+			+at<T>(index: size_t): T&
+			+empty(): bool
+			+size(): size_t
+			+meta(): const component_meta&
+		}
 
-        class table {
-            +table()
-            +table(components: ant::dynamic_bitset, schema: ant::schema, mr: pmr::memory_resource*=default)
-            +contains(e: ant::entity): bool
-            +insert(e: ant::entity): size_t
-            +splice(e: ant::entity, source: table): size_t
-            +erase(e: ant::entity): bool
-            +column_of<T>(): size_t
-            +column_of(hash: uint32_t): size_t
-            +row_of(e: ant::entity): size_t
-            +at<T>(col: size_t, row: size_t): const T&
-            +at<T>(col: size_t, row: size_t): T&
-            +empty(): bool
-            +size(): size_t
-            +components(): const ant::dynamic_bitset&
-            +entities(): span<const ant::entity>
-        }
+		class table {
+			+table()
+			+table(components: ant::dynamic_bitset, schema: ant::schema, mr: pmr::memory_resource*=default)
+			+contains(e: ant::entity): bool
+			+insert(e: ant::entity): size_t
+			+splice(e: ant::entity, source: table): size_t
+			+erase(e: ant::entity): bool
+			+column_of<T>(): size_t
+			+column_of(hash: uint32_t): size_t
+			+row_of(e: ant::entity): size_t
+			+at<T>(col: size_t, row: size_t): const T&
+			+at<T>(col: size_t, row: size_t): T&
+			+empty(): bool
+			+size(): size_t
+			+components(): const ant::dynamic_bitset&
+			+entities(): span<const ant::entity>
+		}
 
-        ' Relationships (detail)
-        table *-- table_column : columns
-        table ..> ant::dynamic_bitset
-        entity_registry ..> entity_location
-    }
+		' Relationships (detail)
+		table *-- table_column : columns
+		table ..> ant::dynamic_bitset
+		entity_registry ..> entity_location
+	}
 
-    ' Cross-namespace relationships
-    ant::schema ..> ant::detail::component_meta : uses
-    ant::schema_builder ..> ant::detail::component_meta : defines
-    ant::schema_builder ..> ant::detail::component_vtable
-    ant::env ..> ant::schema
+	' Cross-namespace relationships
+	ant::schema ..> ant::detail::component_meta : uses
+	ant::schema_builder ..> ant::detail::component_meta : defines
+	ant::schema_builder ..> ant::detail::component_vtable
+	ant::env ..> ant::schema
 }
 
 @enduml
