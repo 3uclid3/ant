@@ -968,5 +968,37 @@ TEST_CASE("basic_dynamic_bitset::operator<: cross-block higher block dominates l
     CHECK_FALSE(b < a);
 }
 
+TEST_CASE("basic_dynamic_bitset::ctor: copy from different allocator type")
+{
+    dynamic_bitset from{odd_bitset(pmr::dynamic_bitset::inplace_capacity + 1)};
+
+    pmr::dynamic_bitset to{from};
+
+    CHECK(to.is_heap());
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_dynamic_bitset::operator=: copy from different allocator type")
+{
+    dynamic_bitset from{odd_bitset(dynamic_bitset::inplace_capacity + 1)};
+    pmr::dynamic_bitset to{even_bitset(pmr::dynamic_bitset::inplace_capacity + 1)};
+
+    to = from;
+
+    CHECK(to.is_heap());
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_dynamic_bitset::operator<: same size orders by most-significant bit different allocator type")
+{
+    dynamic_bitset a{64};
+    dynamic_bitset b{64};
+    a.set(3); // ...00001000
+    b.set(5); // ...00100000 (greater)
+
+    CHECK(a < b);
+    CHECK_FALSE(b < a);
+}
+
 } // namespace
 } // namespace ant

@@ -6,6 +6,7 @@
 #include <cstring>
 #include <iterator>
 #include <memory>
+#include <memory_resource>
 #include <numeric>
 #include <span>
 #include <type_traits>
@@ -20,6 +21,10 @@ template<typename Allocator>
 class basic_dynamic_bitset;
 
 using dynamic_bitset = basic_dynamic_bitset<std::allocator<std::uint64_t>>;
+
+namespace pmr {
+using dynamic_bitset = basic_dynamic_bitset<std::pmr::polymorphic_allocator<std::uint64_t>>;
+} // namespace pmr
 
 // A dynamic bitset with small-size optimization for up to 256 bits (32 bytes).
 // Sizes and Capacities are in bits.
@@ -52,11 +57,25 @@ public:
     constexpr auto operator=(const basic_dynamic_bitset& other) -> basic_dynamic_bitset&;
     constexpr auto operator=(basic_dynamic_bitset&& other) noexcept(alloc_traits::propagate_on_container_move_assignment::value || alloc_traits::is_always_equal::value) -> basic_dynamic_bitset&;
 
+    template<typename U>
+    constexpr basic_dynamic_bitset(const basic_dynamic_bitset<U>& other);
+
+    template<typename U>
+    constexpr basic_dynamic_bitset(const basic_dynamic_bitset<U>& other, const allocator_type& alloc);
+
+    template<typename U>
+    constexpr auto operator=(const basic_dynamic_bitset<U>& other) -> basic_dynamic_bitset&;
+
     constexpr ~basic_dynamic_bitset() noexcept;
 
-    constexpr auto operator&=(const basic_dynamic_bitset& other) -> basic_dynamic_bitset&;
-    constexpr auto operator|=(const basic_dynamic_bitset& other) -> basic_dynamic_bitset&;
-    constexpr auto operator^=(const basic_dynamic_bitset& other) -> basic_dynamic_bitset&;
+    template<typename U>
+    constexpr auto operator&=(const basic_dynamic_bitset<U>& other) -> basic_dynamic_bitset&;
+
+    template<typename U>
+    constexpr auto operator|=(const basic_dynamic_bitset<U>& other) -> basic_dynamic_bitset&;
+
+    template<typename U>
+    constexpr auto operator^=(const basic_dynamic_bitset<U>& other) -> basic_dynamic_bitset&;
 
     [[nodiscard]] constexpr auto test(size_type bit_idx) const noexcept -> bool;
     [[nodiscard]] constexpr auto all() const noexcept -> bool;
@@ -112,8 +131,8 @@ private:
     using inplace_storage = block_type[inplace_blocks_size];
     using heap_storage = block_type*;
 
-    template<typename F>
-    constexpr auto for_each_other_blocks(const basic_dynamic_bitset& other, F&& func) -> basic_dynamic_bitset&;
+    template<typename U, typename F>
+    constexpr auto for_each_other_blocks(const basic_dynamic_bitset<U>& other, F&& func) -> basic_dynamic_bitset&;
 
     template<typename F>
     constexpr auto for_each_blocks(F&& func) -> basic_dynamic_bitset&;
@@ -135,6 +154,12 @@ private:
 
     constexpr auto move_blocks_from(basic_dynamic_bitset&& other) -> void;
 
+    template<typename U>
+    constexpr auto copy_blocks_from(const basic_dynamic_bitset<U>& other) -> void;
+
+    template<typename U>
+    constexpr auto copy_from(const basic_dynamic_bitset<U>& other) -> void;
+
     union
     {
         inplace_storage _inplace{};
@@ -150,23 +175,23 @@ private:
     static_assert(std::is_same_v<typename alloc_traits::value_type, block_type>, "Allocator::value_type must be Block");
 };
 
-template<typename Allocator>
-[[nodiscard]] constexpr auto operator==(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool;
+template<typename LhsAllocator, typename RhsAllocator>
+[[nodiscard]] constexpr auto operator==(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool;
 
-template<typename Allocator>
-[[nodiscard]] constexpr auto operator!=(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool;
+template<typename LhsAllocator, typename RhsAllocator>
+[[nodiscard]] constexpr auto operator!=(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool;
 
-template<typename Allocator>
-[[nodiscard]] constexpr auto operator<(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool;
+template<typename LhsAllocator, typename RhsAllocator>
+[[nodiscard]] constexpr auto operator<(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool;
 
-template<typename Allocator>
-[[nodiscard]] constexpr auto operator<=(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool;
+template<typename LhsAllocator, typename RhsAllocator>
+[[nodiscard]] constexpr auto operator<=(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool;
 
-template<typename Allocator>
-[[nodiscard]] constexpr auto operator>(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool;
+template<typename LhsAllocator, typename RhsAllocator>
+[[nodiscard]] constexpr auto operator>(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool;
 
-template<typename Allocator>
-[[nodiscard]] constexpr auto operator>=(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool;
+template<typename LhsAllocator, typename RhsAllocator>
+[[nodiscard]] constexpr auto operator>=(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool;
 
 template<typename Allocator>
 [[nodiscard]] constexpr auto operator&(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) -> basic_dynamic_bitset<Allocator>;
@@ -206,16 +231,7 @@ constexpr basic_dynamic_bitset<Allocator>::basic_dynamic_bitset(const basic_dyna
     , _capacity(other._capacity)
     , _is_heap(other._is_heap)
 {
-    if (other._is_heap)
-    {
-        const size_type blocks = compute_blocks_size(_size);
-        _heap = _allocator.allocate(blocks);
-        std::memcpy(_heap, other._heap, blocks * sizeof(block_type));
-    }
-    else
-    {
-        std::memcpy(_inplace, other._inplace, sizeof(_inplace));
-    }
+    copy_blocks_from(other);
 }
 
 template<typename Allocator>
@@ -233,20 +249,7 @@ constexpr auto basic_dynamic_bitset<Allocator>::operator=(const basic_dynamic_bi
 {
     if (this != &other)
     {
-        if (other._size > _capacity)
-        {
-            if (_is_heap)
-            {
-                _allocator.deallocate(_heap, compute_blocks_size(_capacity));
-            }
-
-            _heap = _allocator.allocate(compute_blocks_size(other._size));
-            _is_heap = true;
-            _capacity = other._size;
-        }
-
-        std::memcpy(data(), other.data(), compute_blocks_size(other._size) * sizeof(block_type));
-        _size = other._size;
+        copy_from(other);
     }
 
     return *this;
@@ -273,6 +276,36 @@ constexpr auto basic_dynamic_bitset<Allocator>::operator=(basic_dynamic_bitset&&
 }
 
 template<typename Allocator>
+template<typename U>
+constexpr basic_dynamic_bitset<Allocator>::basic_dynamic_bitset(const basic_dynamic_bitset<U>& other)
+    : _size(other.size())
+    , _capacity(other.capacity())
+    , _is_heap(other.is_heap())
+{
+    copy_blocks_from(other);
+}
+
+template<typename Allocator>
+template<typename U>
+constexpr basic_dynamic_bitset<Allocator>::basic_dynamic_bitset(const basic_dynamic_bitset<U>& other, const allocator_type& alloc)
+    : _allocator(alloc)
+    , _size(other.size())
+    , _capacity(other.capacity())
+    , _is_heap(other.is_heap())
+{
+    copy_blocks_from(other);
+}
+
+template<typename Allocator>
+template<typename U>
+constexpr auto basic_dynamic_bitset<Allocator>::operator=(const basic_dynamic_bitset<U>& other) -> basic_dynamic_bitset&
+{
+    copy_from(other);
+
+    return *this;
+}
+
+template<typename Allocator>
 constexpr basic_dynamic_bitset<Allocator>::~basic_dynamic_bitset() noexcept
 {
     if (_is_heap)
@@ -282,19 +315,22 @@ constexpr basic_dynamic_bitset<Allocator>::~basic_dynamic_bitset() noexcept
 }
 
 template<typename Allocator>
-constexpr auto basic_dynamic_bitset<Allocator>::operator&=(const basic_dynamic_bitset& other) -> basic_dynamic_bitset&
+template<typename U>
+constexpr auto basic_dynamic_bitset<Allocator>::operator&=(const basic_dynamic_bitset<U>& other) -> basic_dynamic_bitset&
 {
     return for_each_other_blocks(other, [](block_type& self, block_type other) { self &= other; });
 }
 
 template<typename Allocator>
-constexpr auto basic_dynamic_bitset<Allocator>::operator|=(const basic_dynamic_bitset& other) -> basic_dynamic_bitset&
+template<typename U>
+constexpr auto basic_dynamic_bitset<Allocator>::operator|=(const basic_dynamic_bitset<U>& other) -> basic_dynamic_bitset&
 {
     return for_each_other_blocks(other, [](block_type& self, block_type other) { self |= other; });
 }
 
 template<typename Allocator>
-constexpr auto basic_dynamic_bitset<Allocator>::operator^=(const basic_dynamic_bitset& other) -> basic_dynamic_bitset&
+template<typename U>
+constexpr auto basic_dynamic_bitset<Allocator>::operator^=(const basic_dynamic_bitset<U>& other) -> basic_dynamic_bitset&
 {
     return for_each_other_blocks(other, [](block_type& self, block_type other) { self ^= other; });
 }
@@ -768,8 +804,8 @@ constexpr auto basic_dynamic_bitset<Allocator>::get_allocator() const noexcept -
 }
 
 template<typename Allocator>
-template<typename F>
-constexpr auto basic_dynamic_bitset<Allocator>::for_each_other_blocks(const basic_dynamic_bitset& other, F&& func) -> basic_dynamic_bitset&
+template<typename U, typename F>
+constexpr auto basic_dynamic_bitset<Allocator>::for_each_other_blocks(const basic_dynamic_bitset<U>& other, F&& func) -> basic_dynamic_bitset&
 {
     ANT_ASSERT(_size == other._size);
 
@@ -971,29 +1007,66 @@ constexpr auto basic_dynamic_bitset<Allocator>::move_blocks_from(basic_dynamic_b
 }
 
 template<typename Allocator>
+template<typename U>
+constexpr auto basic_dynamic_bitset<Allocator>::copy_blocks_from(const basic_dynamic_bitset<U>& other) -> void
+{
+    const size_type blocks_size = compute_blocks_size(_size);
+
+    if (other.is_heap())
+    {
+        _heap = _allocator.allocate(blocks_size);
+    }
+
+    std::memcpy(data(), other.data(), blocks_size * sizeof(block_type));
+}
+
+template<typename Allocator>
+template<typename U>
+constexpr auto basic_dynamic_bitset<Allocator>::copy_from(const basic_dynamic_bitset<U>& other) -> void
+{
+    const size_type other_size = other.size();
+    if (other_size > _capacity)
+    {
+        if (_is_heap)
+        {
+            _allocator.deallocate(_heap, compute_blocks_size(_capacity));
+        }
+
+        _heap = _allocator.allocate(compute_blocks_size(other_size));
+        _is_heap = true;
+        _capacity = other_size;
+    }
+
+    std::memcpy(data(), other.data(), compute_blocks_size(other_size) * sizeof(block_type));
+    _size = other_size;
+}
+
+template<typename Allocator>
 constexpr auto swap(basic_dynamic_bitset<Allocator>& lhs, basic_dynamic_bitset<Allocator>& rhs) noexcept(noexcept(lhs.swap(rhs))) -> void
 {
     lhs.swap(rhs);
 }
 
-template<typename Allocator>
-constexpr auto operator==(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool
+template<typename LhsAllocator, typename RhsAllocator>
+constexpr auto operator==(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool
 {
-    const std::size_t bits_per_block = basic_dynamic_bitset<Allocator>::bits_per_block;
+    static_assert(basic_dynamic_bitset<LhsAllocator>::bits_per_block == basic_dynamic_bitset<RhsAllocator>::bits_per_block, "Bitsets with different block sizes cannot be compared");
+
+    const std::size_t bits_per_block = basic_dynamic_bitset<LhsAllocator>::bits_per_block;
     const std::size_t blocks_size = (lhs.size() + bits_per_block - 1) / bits_per_block;
     return lhs.size() == rhs.size() && std::equal(lhs.data(), lhs.data() + blocks_size, rhs.data());
 }
 
-template<typename Allocator>
-constexpr auto operator!=(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool
+template<typename LhsAllocator, typename RhsAllocator>
+constexpr auto operator!=(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool
 {
     return !(lhs == rhs);
 }
 
-template<typename Allocator>
-constexpr auto operator<(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool
+template<typename LhsAllocator, typename RhsAllocator>
+constexpr auto operator<(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool
 {
-    using size_type = typename basic_dynamic_bitset<Allocator>::size_type;
+    using size_type = typename basic_dynamic_bitset<LhsAllocator>::size_type;
 
     // Compare from most-significant block to least, padding the shorter with zero blocks.
     const size_type lhs_blocks = lhs.blocks_size();
@@ -1018,20 +1091,20 @@ constexpr auto operator<(const basic_dynamic_bitset<Allocator>& lhs, const basic
     return false;
 }
 
-template<typename Allocator>
-constexpr auto operator<=(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool
+template<typename LhsAllocator, typename RhsAllocator>
+constexpr auto operator<=(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool
 {
     return !(rhs < lhs);
 }
 
-template<typename Allocator>
-constexpr auto operator>(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool
+template<typename LhsAllocator, typename RhsAllocator>
+constexpr auto operator>(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool
 {
     return (rhs < lhs);
 }
 
-template<typename Allocator>
-constexpr auto operator>=(const basic_dynamic_bitset<Allocator>& lhs, const basic_dynamic_bitset<Allocator>& rhs) noexcept -> bool
+template<typename LhsAllocator, typename RhsAllocator>
+constexpr auto operator>=(const basic_dynamic_bitset<LhsAllocator>& lhs, const basic_dynamic_bitset<RhsAllocator>& rhs) noexcept -> bool
 {
     return !(lhs < rhs);
 }
