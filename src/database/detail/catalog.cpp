@@ -96,19 +96,13 @@ auto catalog::find_seed_component(const dynamic_bitset& required) const noexcept
 }
 
 // use the seed component's list of tables and filter down to matches
-auto catalog::find_matches(const dynamic_bitset& required, std::size_t seed_index) const noexcept -> dynamic_bitset
+auto catalog::find_matches(const dynamic_bitset& required, std::size_t seed_index, pmr::dynamic_bitset& matches) const noexcept -> void
 {
-    // TODO support initialization with different allocator
-    // Switch to stack big enough to realistically never allocate heap memory
-    // pmr::dynamic_bitset matches(_memory_resource);
-
-    dynamic_bitset matches(_component_tables[seed_index]);
+    matches = _component_tables[seed_index];
 
     required.for_each_set([this, &matches](std::size_t index) {
         matches &= _component_tables[index];
     });
-
-    return matches;
 }
 
 auto catalog::emplace_table(const dynamic_bitset& components) -> std::size_t

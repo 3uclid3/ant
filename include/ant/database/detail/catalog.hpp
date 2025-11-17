@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <limits>
 #include <memory_resource>
 #include <unordered_map>
@@ -44,7 +46,7 @@ public:
 private:
     // bitset used for matching tables
     auto find_seed_component(const dynamic_bitset& required) const noexcept -> std::size_t;
-    auto find_matches(const dynamic_bitset& required, std::size_t seed_index) const noexcept -> dynamic_bitset;
+    auto find_matches(const dynamic_bitset& required, std::size_t seed_index, pmr::dynamic_bitset& matches) const noexcept -> void;
 
     auto emplace_table(const dynamic_bitset& components) -> std::size_t;
 
@@ -78,7 +80,11 @@ auto catalog::for_each(const dynamic_bitset& components, F&& f) noexcept -> void
     }
 
     // build matching bitset
-    dynamic_bitset matches = find_matches(components, seed_index);
+    std::array<std::byte, 1024U * 16U> buffer{}; // 16 KiB stack buffer
+    std::pmr::monotonic_buffer_resource buffer_resource{buffer.data(), buffer.size(), _memory_resource};
+    pmr::dynamic_bitset matches{&buffer_resource};
+    find_matches(components, seed_index, matches);
+
     matches.for_each_set([this, &f](std::size_t table_index) {
         f(table_index, at(table_index));
     });
