@@ -80,7 +80,7 @@ auto catalog::for_each(const dynamic_bitset& components, F&& f) noexcept -> void
     }
 
     // build matching bitset
-    std::array<std::byte, 1024U * 64U> buffer{}; // 64 KiB stack buffer, should be enough to never allocate heap memory
+    std::array<std::byte, 1024U * 16U> buffer{}; // 16 KiB stack buffer
     std::pmr::monotonic_buffer_resource buffer_resource{buffer.data(), buffer.size(), _memory_resource};
     pmr::dynamic_bitset matches{&buffer_resource};
     find_matches(components, seed_index, matches);
