@@ -41,14 +41,14 @@ template<typename T, typename TypeList>
 static inline constexpr std::size_t type_list_index_of_v = type_list_index_of<T, TypeList>::value;
 
 // check if type_list contains a type T
-template<class T, class TypeList>
+template<typename T, typename TypeList>
 struct type_list_contains;
 
-template<class T, class... Types>
+template<typename T, typename... Types>
 struct type_list_contains<T, type_list<Types...>> : std::bool_constant<(std::is_same_v<T, Types> || ...)>
 {};
 
-template<class T, class TypeList>
+template<typename T, typename TypeList>
 static inline constexpr bool type_list_contains_v = type_list_contains<T, TypeList>::value;
 
 // concatenate two type_lists
@@ -74,13 +74,13 @@ struct type_list_fold_concat<>
     using type = type_list<>;
 };
 
-template<class L>
+template<typename L>
 struct type_list_fold_concat<L>
 {
     using type = L;
 };
 
-template<class L, class R, class... Rest>
+template<typename L, typename R, typename... Rest>
 struct type_list_fold_concat<L, R, Rest...>
 {
     using type = typename type_list_fold_concat<type_list_concat_t<L, R>, Rest...>::type;
@@ -90,36 +90,36 @@ template<typename... TypeLists>
 using type_list_fold_concat_t = typename type_list_fold_concat<TypeLists...>::type;
 
 // unique: removes duplicate types from a type_list
-template<class In, class Out = type_list<>>
+template<typename In, typename Out = type_list<>>
 struct type_list_unique;
 
-template<class Out>
+template<typename Out>
 struct type_list_unique<type_list<>, Out>
 {
     using type = Out;
 };
 
-template<class H, class... T, class... Us>
+template<typename H, typename... T, typename... Us>
 struct type_list_unique<type_list<H, T...>, type_list<Us...>> : std::conditional_t<type_list_contains_v<H, type_list<Us...>>,
                                                                                    type_list_unique<type_list<T...>, type_list<Us...>>,
                                                                                    type_list_unique<type_list<T...>, type_list<Us..., H>>>
 {};
 
-template<class TypeList>
+template<typename TypeList>
 using type_list_unique_t = typename type_list_unique<TypeList>::type;
 
 // filter: accepts any predicate template with ::value convertible to bool
 // e.g. std::is_pointer, std::is_const, custom_trait< T >
-template<template<class> class Pred, class List>
+template<template<typename> typename Pred, typename List>
 struct type_list_filter;
 
-template<template<class> class Pred>
+template<template<typename> typename Pred>
 struct type_list_filter<Pred, type_list<>>
 {
     using type = type_list<>;
 };
 
-template<template<class> class Pred, class Head, class... Tail>
+template<template<typename> typename Pred, typename Head, typename... Tail>
 struct type_list_filter<Pred, type_list<Head, Tail...>>
 {
     using type = std::conditional_t<
@@ -128,7 +128,7 @@ struct type_list_filter<Pred, type_list<Head, Tail...>>
         typename type_list_filter<Pred, type_list<Tail...>>::type>;
 };
 
-template<template<class> class Pred, class List>
+template<template<typename> typename Pred, typename List>
 using type_list_filter_t = typename type_list_filter<Pred, List>::type;
 
 } // namespace ant
