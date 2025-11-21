@@ -1,113 +1,69 @@
 
 #include <ant/database/env.hpp>
 
-#include <ant.test.shared/database/component_types.hpp>
+#include <ant.test.shared/database/component.hpp>
+#include <ant.test.shared/database/schema.hpp>
 #include <ant.test.shared/doctest.hpp>
-#include <ant/database/schema_builder.hpp>
 
 namespace ant { namespace {
 
-struct fixture
+struct fixture : test::schema_fixture<5>
 {
     fixture()
-        : schema(schema_builder()
-                     .define<bool>("bool")
-                     .define<int>("int")
-                     .define<test::empty>("empty")
-                     .define<test::trivial>("trivial")
-                     .define<test::non_trivial>("non_trivial")
-                     .build())
-        , env(schema)
     {
+        registry.set<test::component<0>>();
+        registry.set<test::component<1>>();
+        registry.set<test::component<2>>();
+        registry.set<test::component<3>>();
     }
 
-    schema schema;
-    env env;
+    detail::env_registry registry{schema};
 };
 
-TEST_CASE_FIXTURE(fixture, "env::ctor: initially no components are set")
+TEST_CASE_FIXTURE(fixture, "env: readonly component")
 {
-    CHECK_EQ(env.get<bool>(), nullptr);
-    CHECK_EQ(env.get<int>(), nullptr);
-    CHECK_EQ(env.get<test::empty>(), nullptr);
-    CHECK_EQ(env.get<test::trivial>(), nullptr);
-    CHECK_EQ(env.get<test::non_trivial>(), nullptr);
-    CHECK_FALSE(env.has<bool>());
-    CHECK_FALSE(env.has<int>());
-    CHECK_FALSE(env.has<test::empty>());
-    CHECK_FALSE(env.has<test::trivial>());
-    CHECK_FALSE(env.has<test::non_trivial>());
+    env_of<const test::component<0>, const test::component<1>> env{registry};
+
+    CHECK_EQ(env.get<test::component<0>>().value, 0);
+    CHECK_EQ(env.get<test::component<1>>().value, 1);
 }
 
-TEST_CASE_FIXTURE(fixture, "env::set: stores and retrieves bool")
+TEST_CASE_FIXTURE(fixture, "env: write component")
 {
-    env.set<bool>(true);
-    CHECK(env.has<bool>());
-    CHECK_NE(env.get<bool>(), nullptr);
-    CHECK(*env.get<bool>());
+    env_of<test::component<2>, test::component<3>> env{registry};
+
+    env.get<test::component<2>>().value = 42;
+    env.get<test::component<3>>().value = 24;
+
+    CHECK_EQ(registry.get<test::component<2>>()->value, 42);
+    CHECK_EQ(registry.get<test::component<3>>()->value, 24);
 }
 
-TEST_CASE_FIXTURE(fixture, "env::set: second assignment overwrites value")
+TEST_CASE_FIXTURE(fixture, "env: readonly optional component")
 {
-    env.set<int>(1);
-    env.set<int>(42);
-    CHECK(env.has<int>());
-    REQUIRE_NE(env.get<int>(), nullptr);
-    CHECK_EQ(*env.get<int>(), 42);
+    env_of<const test::component<2>*, const test::component<3>*, const test::component<4>*> env{registry};
+
+    CHECK_NE(env.try_get<test::component<2>>(), nullptr);
+    CHECK_NE(env.try_get<test::component<3>>(), nullptr);
+    CHECK_EQ(env.try_get<test::component<4>>(), nullptr);
+
+    CHECK_EQ(env.try_get<test::component<2>>()->value, 2);
+    CHECK_EQ(env.try_get<test::component<3>>()->value, 3);
 }
 
-TEST_CASE_FIXTURE(fixture, "env::unset: removes component")
+TEST_CASE_FIXTURE(fixture, "env: write optional component")
 {
-    env.set<test::trivial>(test::trivial{7});
-    CHECK(env.has<test::trivial>());
-    env.unset<test::trivial>();
-    CHECK_FALSE(env.has<test::trivial>());
-    CHECK_EQ(env.get<test::trivial>(), nullptr);
-}
+    env_of<test::component<2>*, test::component<3>*, test::component<4>*> env{registry};
 
-TEST_CASE_FIXTURE(fixture, "env::unset: preserves other components")
-{
-    env.set<bool>(false);
-    env.set<int>(7);
+    CHECK_NE(env.try_get<test::component<2>>(), nullptr);
+    CHECK_NE(env.try_get<test::component<3>>(), nullptr);
+    CHECK_EQ(env.try_get<test::component<4>>(), nullptr);
 
-    // Unset the first-inserted; the second should remain valid
-    env.unset<bool>();
+    env.try_get<test::component<2>>()->value = 42;
+    env.try_get<test::component<3>>()->value = 24;
 
-    CHECK_FALSE(env.has<bool>());
-    CHECK(env.has<int>());
-    REQUIRE_NE(env.get<int>(), nullptr);
-    CHECK_EQ(*env.get<int>(), 7);
-}
-
-TEST_CASE_FIXTURE(fixture, "env::set: multiple types coexist")
-{
-    test::non_trivial n{};
-    n.value = 9;
-
-    env.set<bool>(true);
-    env.set<test::non_trivial>(n);
-
-    CHECK(env.has<bool>());
-    CHECK(env.has<test::non_trivial>());
-    REQUIRE_NE(env.get<test::non_trivial>(), nullptr);
-    CHECK_EQ(env.get<test::non_trivial>()->value, 9);
-}
-
-TEST_CASE_FIXTURE(fixture, "env::get: returns const pointer")
-{
-    env.set<int>(5);
-    const auto& cenv = env;
-    const int* ptr = cenv.get<int>();
-    REQUIRE_NE(ptr, nullptr);
-    CHECK_EQ(*ptr, 5);
-}
-
-TEST_CASE_FIXTURE(fixture, "env::unset: idempotent when not present")
-{
-    // Not set yet
-    env.unset<test::empty>();
-    CHECK_EQ(env.get<test::empty>(), nullptr);
-    CHECK_FALSE(env.has<test::empty>());
+    CHECK_EQ(registry.get<test::component<2>>()->value, 42);
+    CHECK_EQ(registry.get<test::component<3>>()->value, 24);
 }
 
 }} // namespace ant
