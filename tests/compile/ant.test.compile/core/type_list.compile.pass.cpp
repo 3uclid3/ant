@@ -15,6 +15,7 @@ static_assert(type_list_index_of_v<double, type_list<int, float, double>> == 2);
 // contains
 static_assert(type_list_contains_v<int, type_list<int, float, double>>);
 static_assert(!type_list_contains_v<short, type_list<int, float, double>>);
+static_assert(!type_list_contains_v<short, type_list<>>);
 
 // concat
 using concat_result = type_list_concat_t<type_list<int, float>, type_list<double, char>>;
