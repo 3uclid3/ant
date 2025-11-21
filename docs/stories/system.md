@@ -1,13 +1,13 @@
 # System API Documentation
 
-A system is a plain function that declares read access via a typed query, write operations via a typed changeset, and optional environment access via `env_var<T>` for values stored in `ant::env` (singleton-like). Its signature defines what it can access and mutate. See the [Query API](./query.md) and [Changeset API](./changeset.md).
+A system is a plain function that declares read access via a typed query, write operations via a typed changeset, and optional environment access via `env<T>` for values stored in `ant::env_registry` (singleton-like). Its signature defines what it can access and mutate. See the [Query API](./query.md) and [Changeset API](./changeset.md).
 
 ## Classes
 
 ```cpp
 // decorator
-template<typename... Envs>
-struct env_var
+template<typename... Components>
+struct env
 {
 };
 ```
@@ -17,20 +17,20 @@ struct env_var
 How to use a query and changeset within a system to process entities with `position` and optional `velocity` components, detach a `weapon` component based on some logic, and create a new entity with `position` and `velocity` components.
 
 ```cpp
-using query_signature = ant::query_signature<position, const velocity>;
+using query_signature = ant::query_signature<position, const velocity*>;
 using changeset_signature = ant::changeset_signature<
     ant::create_entity,
-    ant::attach<position, const velocity>,
+    ant::attach<position, velocity>,
     ant::detach<weapon>
 >;
 
-auto my_complex_system(ant::env_var<const clock> vars, ant::query<query_signature> query, ant::changeset<changeset_signature> changeset) -> void
+auto my_complex_system(ant::env<const clock> env, ant::query<query_signature> query, ant::changeset<changeset_signature> changeset) -> void
 {
-    const clock& clk = vars.get<clock>();
+    const clock& clk = env.get<clock>();
     for (auto& row : query)
     {
         const position& pos = row.get<position>();
-        const velocity* vel = row.get<velocity*>();
+        const velocity* vel = row.get<velocity>();
 
         // process entity based on position and velocity
         if (vel && (pos.x + vel->x > 10.0f * clk.delta_time))
