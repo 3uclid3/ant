@@ -6,10 +6,13 @@ A system is a plain function that declares read access via a typed query, write 
 
 ```cpp
 // decorator
-template<typename... Components>
+template<typename Signature>
 struct env
 {
 };
+
+template<typename... Components>
+using env_of = env<env_signature<Components...>>;
 ```
 
 ## Usage
@@ -24,7 +27,7 @@ using changeset_signature = ant::changeset_signature<
     ant::detach<weapon>
 >;
 
-auto my_complex_system(ant::env<const clock> env, ant::query<query_signature> query, ant::changeset<changeset_signature> changeset) -> void
+auto my_complex_system(ant::env_of<const clock> env, ant::query<query_signature> query, ant::changeset<changeset_signature> changeset) -> void
 {
     const clock& clk = env.get<clock>();
     for (auto& row : query)
