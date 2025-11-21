@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-<!-- Add new changes here under the appropriate section (Added/Internal/Docs/etc.) -->
+### Added
+- Typelist utilities in `ant/core/type_list.hpp` for compile-time operations like sizing, indexing, concatenation, uniqueness, and filtering.
 
 ## [0.1.0] - 2025-11-03
 
