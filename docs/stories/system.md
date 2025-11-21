@@ -1,6 +1,6 @@
 # System API Documentation
 
-A system is a plain function that declares read access via a typed query, write operations via a typed changeset, and optional environment access via `env<T>` for values stored in `ant::env_registry` (singleton-like). Its signature defines what it can access and mutate. See the [Query API](./query.md) and [Changeset API](./changeset.md).
+A system is a plain function that declares read access via a typed query, write operations via a typed changeset, and optional environment access via `env<T>` for values stored in the environment registry (singleton-like). Its signature defines what it can access and mutate. See the [Query API](./query.md) and [Changeset API](./changeset.md).
 
 ## Classes
 
