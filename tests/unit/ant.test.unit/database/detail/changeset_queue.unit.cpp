@@ -1,12 +1,11 @@
-#include <ant.test.shared/doctest.hpp>
-
 #include <ant/database/detail/changeset_queue.hpp>
+
+#include <ant.test.shared/doctest.hpp>
 
 #include <ant.test.shared/database/component.hpp>
 #include <ant.test.shared/database/schema.hpp>
 
-namespace ant::detail {
-namespace {
+namespace ant::detail { namespace {
 
 struct fixture : test::schema_fixture<16>
 {
