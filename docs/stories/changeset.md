@@ -6,8 +6,8 @@ A compact, type-safe interface to stage and apply entity/component mutations. By
 
 ```cpp
 // decorators
-struct create_entity { };
-struct destroy_entity { };
+struct create { };
+struct destroy { };
 
 template<typename... Components>
 struct attach { };
@@ -19,25 +19,23 @@ struct detach { };
 template<typename... Changes> 
 class changeset_signature;
 
-template<typename Entity, typename Signature> 
-class basic_changeset
+template<typename Signature> 
+class changeset
 {
 public:
-    using entity_type = Entity;
+    requires(in_signature<create, Signature>)
+    auto create() -> entity;
 
-    requires(in_signature<create_entity, Signature>)
-    auto create_entity() -> entity_type;
-
-    requires(in_signature<destroy_entity, Signature>)
-    auto destroy_entity(entity_type) -> void;
+    requires(in_signature<destroy, Signature>)
+    auto destroy(entity) -> void;
 
     template<typename Component, typename... Args>
     requires(in_signature<attach<Component>, Signature>)
-    auto attach(entity_type, Args&&...) -> void;
+    auto attach(entity, Args&&...) -> void;
 
     template<typename Component>
     requires(in_signature<detach<Component>, Signature>)
-    auto detach(entity_type) -> void;
+    auto detach(entity) -> void;
 };
 ```
 
@@ -53,7 +51,7 @@ using my_signature = ant::changeset_signature<
     ant::detach<weapon>
 >;
 
-ant::basic_changeset changeset = ant::make_changeset<my_signature>(database);
+ant::changeset changeset = ant::make_changeset<my_signature>(database);
 
 ant::entity a = /* existing entity */;
 ant::entity e = changeset.create_entity();
