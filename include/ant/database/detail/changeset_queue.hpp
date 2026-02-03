@@ -88,7 +88,8 @@ auto changeset_queue::consume_all(F&& f) -> void
     {
         std::visit(std::forward<F>(f), change);
     }
-    _changes.clear();
+
+    clear();
 }
 
 inline auto changeset_queue::empty() const noexcept -> bool
