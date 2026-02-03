@@ -20,7 +20,7 @@ public:
     changeset(detail::changeset_queue& queue, detail::entity_registry& entity_registry) noexcept;
 
     // clang-format off
-    auto create() -> entity requires(signature_traits::template contains_v<create>);
+    [[nodiscard]] auto create() -> entity requires(signature_traits::template contains_v<create>);
     auto destroy(entity e) -> void requires(signature_traits::template contains_v<destroy>);
     // clang-format on
 
