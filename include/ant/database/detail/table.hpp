@@ -4,7 +4,7 @@
 #include <span>
 #include <vector>
 
-#include <ant/core/dynamic_bitset.hpp>
+#include <ant/database/component_bitset.hpp>
 #include <ant/database/detail/entity_traits.hpp>
 #include <ant/database/detail/table_column.hpp>
 #include <ant/database/entity.hpp>
@@ -50,7 +50,7 @@ public:
     auto empty() const noexcept -> bool;
     auto size() const noexcept -> std::size_t;
 
-    auto components() const noexcept -> const dynamic_bitset&;
+    auto components() const noexcept -> const component_bitset&;
     auto entities() const noexcept -> std::span<const entity>;
 
 private:
@@ -58,7 +58,7 @@ private:
 
     auto ensure_sparse_capacity(std::size_t capacity) -> void;
 
-    dynamic_bitset _components;
+    component_bitset _components;
     std::pmr::vector<table_column> _columns;
     std::pmr::vector<entity> _rows;
     std::pmr::vector<entity_traits::index_type> _sparse;
@@ -94,7 +94,7 @@ inline auto table::size() const noexcept -> std::size_t
     return _rows.size();
 }
 
-inline auto table::components() const noexcept -> const dynamic_bitset&
+inline auto table::components() const noexcept -> const component_bitset&
 {
     return _components;
 }
