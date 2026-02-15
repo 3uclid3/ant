@@ -120,6 +120,11 @@ auto table::row_of(entity e) const noexcept -> std::size_t
     return index < _sparse.size() ? _sparse[index] : npos;
 }
 
+auto table::entity_at(std::size_t row_index) const noexcept -> entity
+{
+    return _rows[row_index];
+}
+
 auto table::erase_impl(entity e, bool erase_columns) -> bool
 {
     const auto index = entity_traits::to_index(e);

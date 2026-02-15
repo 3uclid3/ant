@@ -4,8 +4,9 @@
 #include <vector>
 
 #include <ant/core/assert.hpp>
-#include <ant/core/dynamic_bitset.hpp>
 #include <ant/core/type_info.hpp>
+#include <ant/core/type_list.hpp>
+#include <ant/database/component_bitset.hpp>
 #include <ant/database/detail/component_meta.hpp>
 
 namespace ant {
@@ -27,21 +28,29 @@ public:
     schema(schema&&) noexcept = default;
     schema& operator=(schema&&) noexcept = default;
 
+    template<typename TypeList>
+    requires(is_type_list_v<TypeList>)
+    [[nodiscard]] constexpr auto bitset_for() const noexcept -> component_bitset;
+
     template<typename... T>
-    constexpr auto bitset_for() const noexcept -> dynamic_bitset;
+    requires(... && !is_type_list_v<T>)
+    [[nodiscard]] constexpr auto bitset_for() const noexcept -> component_bitset;
 
     template<typename T>
-    constexpr auto index_of() const noexcept -> size_type;
+    [[nodiscard]] constexpr auto index_of() const noexcept -> size_type;
 
     template<typename T>
-    constexpr auto meta_of() const noexcept -> const component_meta_type&;
-    constexpr auto meta_of(size_type index) const noexcept -> const component_meta_type&;
+    [[nodiscard]] constexpr auto meta_of() const noexcept -> const component_meta_type&;
+    [[nodiscard]] constexpr auto meta_of(size_type index) const noexcept -> const component_meta_type&;
 
-    constexpr auto empty() const noexcept -> bool;
-    constexpr auto size() const noexcept -> size_type;
+    [[nodiscard]] constexpr auto empty() const noexcept -> bool;
+    [[nodiscard]] constexpr auto size() const noexcept -> size_type;
 
 private:
     constexpr schema(std::vector<component_meta_type> metas, std::vector<std::uint32_t> hashes) noexcept;
+
+    template<typename... T>
+    constexpr auto bitset_for(type_list<T...>) const noexcept -> component_bitset;
 
     std::vector<component_meta_type> _metas;
     std::vector<std::uint32_t> _hashes;
@@ -49,10 +58,18 @@ private:
     friend class schema_builder;
 };
 
-template<typename... T>
-constexpr auto schema::bitset_for() const noexcept -> dynamic_bitset
+template<typename TypeList>
+requires(is_type_list_v<TypeList>)
+constexpr auto schema::bitset_for() const noexcept -> component_bitset
 {
-    dynamic_bitset bitset;
+    return bitset_for(TypeList{});
+}
+
+template<typename... T>
+requires(... && !is_type_list_v<T>)
+constexpr auto schema::bitset_for() const noexcept -> component_bitset
+{
+    component_bitset bitset;
     bitset.resize(size());
     (bitset.set(index_of<T>()), ...);
     return bitset;
@@ -93,6 +110,12 @@ constexpr schema::schema(std::vector<component_meta_type> metas, std::vector<std
     , _hashes(std::move(hashes))
 {
     ANT_ASSERT(std::is_sorted(_hashes.begin(), _hashes.end()), "Component hashes must be sorted");
+}
+
+template<typename... T>
+constexpr auto schema::bitset_for(type_list<T...>) const noexcept -> component_bitset
+{
+    return bitset_for<T...>();
 }
 
 } // namespace ant

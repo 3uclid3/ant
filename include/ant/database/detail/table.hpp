@@ -39,6 +39,7 @@ public:
     auto column_of(std::uint32_t hash) const noexcept -> std::size_t;
 
     auto row_of(entity e) const noexcept -> std::size_t;
+    auto entity_at(std::size_t row_index) const noexcept -> entity;
 
     template<typename T>
     auto at(std::size_t column_index, std::size_t row_index) const noexcept -> const T&;
