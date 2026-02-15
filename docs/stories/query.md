@@ -9,28 +9,25 @@ A type-safe iterator over entities matching a component signature. Compile-time 
 template<typename... T>
 struct exclude {}; // exclude entity having any of the components T...
 
-// Select Query
-template<typename Entity, typename... Parameters>
-class basic_select_query
+// Query
+template<typename... Parameters>
+class query
 {
 public:
-    using entity_type = Entity;
-    using row_type = basic_select_query_row<Entity, Parameters...>;
+    using row_type = query_row<Parameters...>;
     using iterator = /* some iterator type over row_type */;
 
     auto begin() const -> iterator;
     auto end() const -> iterator;
 };
 
-// Select Query Row
-template<typename Entity, typename... Parameters>
-class basic_select_query_row
+// Query Row
+template<typename... Parameters>
+class query_row
 {
 public:
-    using entity_type = Entity;
-
     // entity associated with this row
-    auto entity() const -> entity_type;
+    auto entity() const -> ant::entity;
 
     // available only to required parameters
     template<typename T>
