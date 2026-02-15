@@ -1,9 +1,8 @@
-#include <ant.test.shared/doctest.hpp>
-
 #include <ant/database/detail/catalog.hpp>
 
 #include <ant.test.shared/database/component.hpp>
 #include <ant.test.shared/database/schema.hpp>
+#include <ant.test.shared/doctest.hpp>
 
 namespace ant::detail { namespace {
 

@@ -1,9 +1,8 @@
 #include <ant/database/detail/changeset_queue.hpp>
 
-#include <ant.test.shared/doctest.hpp>
-
 #include <ant.test.shared/database/component.hpp>
 #include <ant.test.shared/database/schema.hpp>
+#include <ant.test.shared/doctest.hpp>
 
 namespace ant::detail { namespace {
 
