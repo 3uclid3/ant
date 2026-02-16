@@ -6,10 +6,15 @@ namespace ant { namespace detail {
 
 auto query_cursor::advance() -> bool
 {
-    ++row_index;
-
-    if (table_index < query->_tables.size())
+    if (table_index >= query->_tables.size())
     {
+        return false;
+    }
+
+    do
+    {
+        ++row_index;
+
         if (row_index < query->_tables[table_index]->size())
         {
             return true;
@@ -17,9 +22,15 @@ auto query_cursor::advance() -> bool
 
         ++table_index;
         row_index = 0;
-    }
 
-    return false;
+        if (table_index >= query->_tables.size())
+        {
+            return false;
+        }
+
+    } while (row_index >= query->_tables[table_index]->size());
+
+    return true;
 }
 
 auto query_cursor::is_valid() const noexcept -> bool
