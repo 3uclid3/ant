@@ -5,13 +5,11 @@ on:
     branches: [ "main" ]
   push:
     paths-ignore:
-      - ".github/instructions/**"
       - ".github/workflows/build-images.yml"
       - ".github/workflows/build-test.yml"
-      - ".github/workflows/codacy.yml"
+      - ".github/workflows/codeql.yml"
       - ".github/workflows/nightly.yml"
       - ".github/workflows/sanitizers.yml"
-      - ".github/copilot-instructions.yml"
       - ".github/dependabot.yml"
       - ".gitignore"
       - "docs/**"
@@ -86,7 +84,7 @@ jobs:
           key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
       - name: Run unit tests
-        run: xmake test -g tests/unit
+        run: xmake test -g unit
 
       - name: Upload test results to Codecov
         if: always()

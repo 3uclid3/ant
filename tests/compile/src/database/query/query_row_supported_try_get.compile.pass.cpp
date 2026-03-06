@@ -1,0 +1,13 @@
+#include <ant/database/query.hpp>
+
+namespace ant { namespace {
+
+struct component
+{};
+
+[[maybe_unused]] auto func(query_of<component*>::row_type row) -> void
+{
+    [[maybe_unused]] component* v = row.try_get<component>();
+}
+
+}} // namespace ant

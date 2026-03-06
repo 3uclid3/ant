@@ -67,7 +67,7 @@ jobs:
           key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
       - name: Run benchmarks
-        run: xmake test -g tests/bench
+        run: xmake test -g bench
 
       - name: Prepare results for publishing
         id: prepare
@@ -87,7 +87,7 @@ jobs:
           printf 'matrix={"include":[%s]}\n' "$(IFS=,; echo "${items[*]}")" >>"$GITHUB_OUTPUT"
 
       - name: Upload benchmark artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: build/*.bench.json
@@ -107,7 +107,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download benchmark artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: benchmark-results
           path: benchmark-results
@@ -177,7 +177,7 @@ jobs:
 
       # Configure build
       - name: Configure
-        run: xmake f -m ${{ matrix.build_type }} --toolchain=clang-cl -y
+        run: xmake f -m ${{ matrix.build_type }} --toolchain=llvm -y
 
       # Save dependencies
       - name: Save cached xmake dependencies
@@ -188,7 +188,7 @@ jobs:
           key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
       - name: Run unit tests
-        run: xmake test -g tests/unit
+        run: xmake test -g unit
 
       - name: Run compile tests
-        run: xmake test -g tests/compile
+        run: xmake test -g compile
