@@ -8,6 +8,11 @@ set_warnings("allextra", "error")
 add_rules("mode.debug", "mode.release", "mode.coverage")
 add_rules("plugin.compile_commands.autoupdate", { outputdir = get_config("builddir") })
 
+add_requires("doctest")
+if has_config("benchmarks") then
+    add_requires("benchmark")
+end
+
 option("junit_report")
     set_default(false)
     set_showmenu(true)
@@ -27,11 +32,6 @@ target("ant")
 
     if is_mode("coverage") then
         add_defines("ANT_ASSERT_ENABLED=0", { public = true })
-    end
-    
-    -- TODO: review if this is necessary
-    if is_plat("windows") then
-        set_runtimes("MD", { public = true })
     end
 
     on_load(function(t)

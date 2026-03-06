@@ -1,0 +1,16 @@
+#include <ant.unit/doctest.hpp>
+#include <ant/core/assert.hpp>
+
+#if ANT_ASSERT_ENABLED
+
+namespace ant { namespace {
+
+TEST_CASE("assert")
+{
+    CHECK_NOASSERT(ANT_ASSERT(true));
+    CHECK_ASSERTS(ANT_ASSERT(false));
+}
+
+}} // namespace ant
+
+#endif // ANT_ASSERT_ENABLED

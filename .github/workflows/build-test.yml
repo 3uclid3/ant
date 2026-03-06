@@ -7,11 +7,10 @@ on:
     paths-ignore:
       - ".github/instructions/**"
       - ".github/workflows/build-images.yml"
-      - ".github/workflows/codacy.yml"
+      - ".github/workflows/codeql.yml"
       - ".github/workflows/coverage.yml"
       - ".github/workflows/nightly.yml"
-      - ".github/workflows/sanitizer.yml"
-      - ".github/copilot-instructions.yml"
+      - ".github/workflows/sanitizers.yml"
       - ".github/dependabot.yml"
       - ".gitignore"
       - "docs/**"
@@ -90,10 +89,10 @@ jobs:
           key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
       - name: Run unit tests
-        run: xmake test -g tests/unit
+        run: xmake test -g unit
 
       - name: Run compile tests
-        run: xmake test -g tests/compile
+        run: xmake test -g compile
 
       - name: Upload test results to Codecov
         if: always()
