@@ -1,22 +1,20 @@
-local function get_runargs(name)
-    return {
-        "--benchmark_format=json",
-        "--benchmark_out=" .. path.join(os.projectdir(), "build", string.format("%s.bench.json", name))
-    }
-end
-
 if has_config("benchmarks") then
-    add_requires("benchmark")
+    local function get_runargs(name)
+        return {
+            "--benchmark_format=json",
+            "--benchmark_out=" .. path.join(os.projectdir(), "build", string.format("%s.bench.json", name))
+        }
+    end
 
-    for _, testfile in ipairs(os.files("ant.test.bench/**.bench.cpp")) do
+    for _, testfile in ipairs(os.files("src/**.bench.cpp")) do
         local name = path.basename(testfile):gsub("%.bench$", "")
-        target("ant." .. name .. ".test.bench")
+        target("ant." .. name .. ".bench")
             set_kind("binary")
             set_default(false)
-            set_group("tests/bench")
+            set_group("bench")
             add_tests("bench", {runargs = get_runargs(name)})
 
-            add_deps("ant", "ant.test.shared")
+            add_deps("ant")
             add_packages("benchmark")
 
             if is_plat("windows") then

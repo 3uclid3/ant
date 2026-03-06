@@ -67,7 +67,7 @@ jobs:
           key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
       - name: Run benchmarks
-        run: xmake test -g tests/bench
+        run: xmake test -g bench
 
       - name: Prepare results for publishing
         id: prepare
@@ -188,7 +188,7 @@ jobs:
           key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
       - name: Run unit tests
-        run: xmake test -g tests/unit
+        run: xmake test -g unit
 
       - name: Run compile tests
-        run: xmake test -g tests/compile
+        run: xmake test -g compile

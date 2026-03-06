@@ -68,5 +68,5 @@ jobs:
           key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
       - name: Run unit tests
-        run: xmake test -g tests/unit
+        run: xmake test -g unit
 
