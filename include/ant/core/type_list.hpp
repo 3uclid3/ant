@@ -8,6 +8,18 @@ template<typename... Types>
 struct type_list
 {};
 
+// check if a type is a type_list
+template<typename T>
+struct is_type_list : std::false_type
+{};
+
+template<typename... Types>
+struct is_type_list<type_list<Types...>> : std::true_type
+{};
+
+template<typename T>
+inline constexpr bool is_type_list_v = is_type_list<T>::value;
+
 // get size of type_list
 template<typename TypeList>
 struct type_list_size;
@@ -130,5 +142,17 @@ struct type_list_filter<Pred, type_list<Head, Tail...>>
 
 template<template<typename> typename Pred, typename List>
 using type_list_filter_t = typename type_list_filter<Pred, List>::type;
+
+template<template<typename> typename Transformer, typename List>
+struct type_list_transform;
+
+template<template<typename> typename Transformer, typename... Types>
+struct type_list_transform<Transformer, type_list<Types...>>
+{
+    using type = type_list<typename Transformer<Types>::type...>;
+};
+
+template<template<typename> typename Transformer, typename List>
+using type_list_transform_t = typename type_list_transform<Transformer, List>::type;
 
 } // namespace ant
