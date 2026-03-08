@@ -6,6 +6,8 @@ namespace ant { namespace detail {
 
 auto query_cursor::advance() -> bool
 {
+    ANT_ASSERT(query != nullptr);
+
     if (table_index >= query->_tables.size())
     {
         return false;
@@ -40,14 +42,13 @@ auto query_cursor::is_valid() const noexcept -> bool
 
 auto query_cursor::table() const noexcept -> const detail::table&
 {
-    ANT_ASSERT(is_valid());
+    ANT_ASSERT(query != nullptr && table_index < query->_tables.size());
     return *query->_tables[table_index];
 }
 
 auto query_cursor::table() noexcept -> detail::table&
 {
-    ANT_ASSERT(is_valid());
-    return *query->_tables[table_index];
+    return const_cast<detail::table&>(std::as_const(*this).table());
 }
 
 auto query_cursor::entity() const noexcept -> ant::entity
