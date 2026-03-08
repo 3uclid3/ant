@@ -31,6 +31,9 @@ auto query_builder::build() -> query<Signature>
 {
     using signature_traits = typename query<Signature>::signature_traits;
 
+    _tables.clear();
+    _mapping.clear();
+
     component_bitset required = signature_traits::make_required_bitset(_schema);
     component_bitset excluded = signature_traits::make_excluded_bitset(_schema);
 
