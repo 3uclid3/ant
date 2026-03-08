@@ -114,6 +114,32 @@ TEST_CASE_FIXTURE(fixture, "query::iterator: postfix increment returns previous 
     CHECK_EQ(it, query.end());
 }
 
+TEST_CASE_FIXTURE(fixture, "query::begin: equals end when all matching tables are empty")
+{
+    // ensure_of creates the table but no entity is inserted, so it is empty
+    [[maybe_unused]] auto _ = catalog.ensure_of(schema.bitset_for<test::component<0>>());
+
+    using signature = query_signature<test::component<0>>;
+    query query = make_query<signature>();
+
+    CHECK_EQ(query.begin(), query.end());
+}
+
+TEST_CASE_FIXTURE(fixture, "query::begin: skips leading empty tables")
+{
+    // first table matching the query is empty
+    [[maybe_unused]] auto _ = catalog.ensure_of(schema.bitset_for<test::component<0>>());
+
+    // second table matching the query has one entity
+    insert_entity_with_components<0, 1>(entity{1});
+
+    using signature = query_signature<test::component<0>>;
+    query query = make_query<signature>();
+
+    REQUIRE_NE(query.begin(), query.end());
+    CHECK_EQ((*query.begin()).entity(), entity{1});
+}
+
 TEST_CASE_FIXTURE(fixture, "query_builder::build: supports sequential query construction")
 {
     insert_entity_with_components<0>(entity{1});

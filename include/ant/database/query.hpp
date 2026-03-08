@@ -1,5 +1,9 @@
 #pragma once
 
+#include <algorithm>
+#include <iterator>
+#include <optional>
+
 #include <ant/core/type_list.hpp>
 #include <ant/database/detail/base_query.hpp>
 #include <ant/database/detail/catalog.hpp>
@@ -156,7 +160,14 @@ auto query<Signature>::count_rows() const -> std::size_t
 template<typename Signature>
 auto query<Signature>::begin() -> iterator
 {
-    return iterator(make_cursor(0, 0));
+    std::size_t table_index = 0;
+
+    while (table_index < _tables.size() && _tables[table_index]->empty())
+    {
+        ++table_index;
+    }
+
+    return iterator(make_cursor(table_index, 0));
 }
 
 template<typename Signature>
