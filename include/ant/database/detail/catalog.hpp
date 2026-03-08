@@ -54,7 +54,7 @@ private:
 
     std::pmr::vector<table> _tables;
     std::pmr::unordered_map<component_bitset, std::size_t> _table_signatures;
-    std::pmr::vector<component_bitset> _component_tables; // indexed by component index, bits are table indices
+    std::pmr::vector<dynamic_bitset> _component_tables; // indexed by component index, bits are table indices
 
     const schema* _schema{nullptr};
 };
