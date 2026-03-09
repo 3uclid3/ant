@@ -26,8 +26,15 @@ option("benchmarks")
 target("ant")
     set_kind("static")
     set_default(true)
-    
+
+    -- version
+    set_configdir("$(builddir)/include/ant")
+    add_configfiles("include/ant/version.hpp.in", { filename = "version.hpp" })
     add_includedirs("include", { public = true })
+    add_headerfiles("$(builddir)/include/(**.hpp)")
+    
+    -- include
+    add_includedirs("$(builddir)/include", { public = true })
     add_headerfiles("include/(**.hpp)")
     add_files("src/**.cpp")
 
@@ -35,16 +42,14 @@ target("ant")
         add_defines("ANT_ASSERT_ENABLED=0", { public = true })
     end
 
-    on_load(function(t)
+    on_config(function(target)
         import("core.project.project")
         import("core.base.semver")
-
         local v = semver.new(project.version())
-
-        t:add("defines", string.format("ANT_VERSION_MAJOR=%d", v:major()), { public = true })
-        t:add("defines", string.format("ANT_VERSION_MINOR=%d", v:minor()), { public = true })
-        t:add("defines", string.format("ANT_VERSION_PATCH=%d", v:patch()), { public = true })
-        t:add("defines", string.format("ANT_VERSION_SEMVER=\"%s\"", tostring(v)), { public = true })
+        target:set("configvar", "VERSION", tostring(v))
+        target:set("configvar", "VERSION_MAJOR", v:major())
+        target:set("configvar", "VERSION_MINOR", v:minor())
+        target:set("configvar", "VERSION_PATCH", v:patch())
     end)
     
 includes("tests")
