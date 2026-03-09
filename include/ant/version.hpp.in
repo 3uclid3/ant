@@ -1,0 +1,15 @@
+#pragma once
+
+#include <string_view>
+
+namespace ant {
+
+struct version
+{
+    static constexpr std::string_view semver{"${VERSION}"};
+    static constexpr std::size_t major{${VERSION_MAJOR}};
+    static constexpr std::size_t minor{${VERSION_MINOR}};
+    static constexpr std::size_t patch{${VERSION_PATCH}};
+};
+
+} // namespace ant
