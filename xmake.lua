@@ -28,7 +28,7 @@ target("ant")
     set_default(true)
     
     add_includedirs("include", { public = true })
-    add_headerfiles("include/**.hpp")
+    add_headerfiles("include/(**.hpp)")
     add_files("src/**.cpp")
 
     if is_mode("coverage") then
@@ -47,9 +47,4 @@ target("ant")
         t:add("defines", string.format("ANT_VERSION_SEMVER=\"%s\"", tostring(v)), { public = true })
     end)
     
-    on_install(function(package)
-        import("package.tools.xmake").install(package, {})
-        os.cp("include/*", package:installdir("include"))
-    end)
-
 includes("tests")
