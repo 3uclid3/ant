@@ -18,11 +18,10 @@ This page keeps the essentials short and easy to scan. If you follow these bulle
 
 - Configure: `xmake f -m <debug|release|coverage> [--junit_report=y|n] [--benchmarks=y|n]`
 - Build all configured targets: `xmake build`
-- Run unit tests: `xmake test */unit`
-- Run compile tests: `xmake test */compile` (the only correct way)
-- Run benchmarks: `xmake test */bench` (requires `--benchmarks=y`)
+- Run unit tests: `xmake test -g unit`
+- Run compile tests: `xmake test -g compile` (the only correct way)
+- Run benchmarks: `xmake test -g bench` (requires `--benchmarks=y`)
 - Run all tests: `xmake test`
-- Show test/benchmark output (stdout/stderr): `xmake test -v */unit` or `xmake test -v */bench`
 
 ## Code style
 
@@ -43,7 +42,7 @@ This page keeps the essentials short and easy to scan. If you follow these bulle
 - Compile tests live in `tests/compile/`, isolated per feature.
 - Benchmarks in `tests/benchmark/` (enable with `--benchmarks=y`).
 - Run tests before pushing; note any gaps automation can’t cover.
-- Show test/benchmark output (stdout/stderr): use `xmake test -v ...`.
+- Show test/benchmark output (stdout/stderr): `xmake test -v -g unit` or `xmake test -v -g bench`
 
 ## Versioning and changelog
 
