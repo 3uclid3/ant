@@ -25,9 +25,10 @@ option("benchmarks")
    
 target("ant")
     set_kind("static")
+    set_default(true)
     
     add_includedirs("include", { public = true })
-    add_headerfiles("include/**.hpp")
+    add_headerfiles("include/(**.hpp)")
     add_files("src/**.cpp")
 
     if is_mode("coverage") then
@@ -45,5 +46,5 @@ target("ant")
         t:add("defines", string.format("ANT_VERSION_PATCH=%d", v:patch()), { public = true })
         t:add("defines", string.format("ANT_VERSION_SEMVER=\"%s\"", tostring(v)), { public = true })
     end)
-
+    
 includes("tests")
