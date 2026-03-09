@@ -25,6 +25,7 @@ option("benchmarks")
    
 target("ant")
     set_kind("static")
+    set_default(true)
     
     add_includedirs("include", { public = true })
     add_headerfiles("include/**.hpp")
@@ -44,6 +45,11 @@ target("ant")
         t:add("defines", string.format("ANT_VERSION_MINOR=%d", v:minor()), { public = true })
         t:add("defines", string.format("ANT_VERSION_PATCH=%d", v:patch()), { public = true })
         t:add("defines", string.format("ANT_VERSION_SEMVER=\"%s\"", tostring(v)), { public = true })
+    end)
+    
+    on_install(function(package)
+        import("package.tools.xmake").install(package, {})
+        os.cp("include/*", package:installdir("include"))
     end)
 
 includes("tests")
