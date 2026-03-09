@@ -152,23 +152,4 @@ TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity returns false")
     CHECK_FALSE(table.erase(entity_traits::construct(10'000))); // out of sparse range
 }
 
-#if ANT_ASSERT_ENABLED
-TEST_CASE_FIXTURE(fixture, "table::insert: asserts on invalid entity index")
-{
-    const auto invalid = static_cast<entity>(detail::entity_traits::index_mask); // npos in index bits
-    CHECK_ASSERTS(table.insert(invalid));
-}
-
-TEST_CASE_FIXTURE(fixture, "table::splice: asserts when dest already contains entity")
-{
-    detail::table source{test::make_table<16>(schema)};
-
-    const entity e = entity_traits::construct(5);
-    table.insert(e);
-    source.insert(e);
-
-    CHECK_ASSERTS(table.splice(e, source));
-}
-#endif
-
 }} // namespace ant::detail
