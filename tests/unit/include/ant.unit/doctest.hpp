@@ -5,6 +5,7 @@
 #include <format>
 #include <initializer_list>
 #include <iterator>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -84,10 +85,10 @@ auto equivalent(const std::vector<T>& lhs, const std::vector<T>& rhs) -> equival
 }
 
 template<typename T>
-static auto to_string(const std::vector<T>& in, std::ostringstream& stream) -> void
+auto to_string(const std::vector<T>& in, std::ostringstream& stream) -> void
 {
     stream << "[";
-    for (size_t i = 0; i < in.size(); ++i)
+    for (std::size_t i = 0; i < in.size(); ++i)
     {
         if (i != 0) { stream << ", "; }
         stream << in[i];
@@ -96,7 +97,7 @@ static auto to_string(const std::vector<T>& in, std::ostringstream& stream) -> v
 }
 
 template<typename T>
-static auto to_string(const std::vector<T>& in) -> std::string
+auto to_string(const std::vector<T>& in) -> std::string
 {
     std::ostringstream stream;
     to_string(in, stream);
@@ -104,7 +105,7 @@ static auto to_string(const std::vector<T>& in) -> std::string
 }
 
 template<typename T>
-static auto to_string(const equivalent_result<T>& in) -> std::string
+auto to_string(const equivalent_result<T>& in) -> std::string
 {
     std::ostringstream stream;
 
