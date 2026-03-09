@@ -1,4 +1,4 @@
-# ant 🐜 — tiny, fast ECS for Modern C++
+# ant
 
 [![Build and Test](https://github.com/3uclid3/ant/actions/workflows/build-test.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/build-test.yml)
 [![Nightly](https://github.com/3uclid3/ant/actions/workflows/nightly.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/nightly.yml)
@@ -25,14 +25,14 @@ xmake f -m debug        # or release | coverage
 xmake build
 
 # Run tests
-xmake test */unit            # unit tests
-xmake test */compile         # compile-time tests
-xmake test */bench           # benchmarks (requires --benchmarks=y)
+xmake test -g unit            # unit tests
+xmake test -g compile         # compile-time tests
+xmake test -g bench           # benchmarks (requires --benchmarks=y)
 xmake test                   # everything
 
 # See stdout/stderr from tests/benchmarks
-xmake test -v */unit
-xmake test -v */bench
+xmake test -v -g unit
+xmake test -v -g bench
 ```
 
 ## Documentation
