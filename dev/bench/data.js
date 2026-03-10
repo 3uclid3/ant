@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1773028194753,
+  "lastUpdate": 1773114484874,
   "repoUrl": "https://github.com/3uclid3/ant",
   "entries": {
     "ant benchmarks • dynamic_bitset": [
@@ -71040,6 +71040,496 @@ window.BENCHMARK_DATA = {
             "value": 957.838043737028,
             "unit": "ns/iter",
             "extra": "iterations: 727363\ncpu: 962.2657380059397 ns\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "3uclid3",
+            "username": "3uclid3",
+            "email": "3uclid3@nubwork.dev"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "605f97f5545d0b260e37c3fc697f71ce19552955",
+          "message": "refactor(tests): consolidate doctest utilities (#116)\n\nConsolidate generator and doctest helpers into a single ant.unit/doctest.hpp, remove the custom assert_error and its tests, and add a single DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN entry to simplify test setup and runner initialization.",
+          "timestamp": "2026-03-09T23:35:45Z",
+          "url": "https://github.com/3uclid3/ant/commit/605f97f5545d0b260e37c3fc697f71ce19552955"
+        },
+        "date": 1773114483597,
+        "tool": "googlecpp",
+        "benches": [
+          {
+            "name": "bm_set_sequential/64",
+            "value": 793.1641928539614,
+            "unit": "ns/iter",
+            "extra": "iterations: 879545\ncpu: 795.299818656289 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/128",
+            "value": 1291.8208478560966,
+            "unit": "ns/iter",
+            "extra": "iterations: 540948\ncpu: 1293.7883271590108 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/256",
+            "value": 2290.0005206920223,
+            "unit": "ns/iter",
+            "extra": "iterations: 305336\ncpu: 2291.928881625475 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/512",
+            "value": 3768.1807301645895,
+            "unit": "ns/iter",
+            "extra": "iterations: 185885\ncpu: 3769.818188664165 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/1024",
+            "value": 7265.9711529226415,
+            "unit": "ns/iter",
+            "extra": "iterations: 96405\ncpu: 7267.223899175474 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/2048",
+            "value": 14321.050721529376,
+            "unit": "ns/iter",
+            "extra": "iterations: 48855\ncpu: 14322.265111043385 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/4096",
+            "value": 28528.42551728144,
+            "unit": "ns/iter",
+            "extra": "iterations: 24650\ncpu: 28525.435456391027 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/8192",
+            "value": 57038.284839863416,
+            "unit": "ns/iter",
+            "extra": "iterations: 12249\ncpu: 57040.7163850123 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/16384",
+            "value": 114530.56720848837,
+            "unit": "ns/iter",
+            "extra": "iterations: 6093\ncpu: 114536.1234203367 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/32768",
+            "value": 229562.07902607883,
+            "unit": "ns/iter",
+            "extra": "iterations: 3037\ncpu: 229574.87619361715 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential/65536",
+            "value": 463814.51529405185,
+            "unit": "ns/iter",
+            "extra": "iterations: 1504\ncpu: 463821.1303191198 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential_BigO",
+            "value": null,
+            "unit": "ns/iter",
+            "extra": "iterations: undefined\ncpu: undefined ns\nthreads: 1"
+          },
+          {
+            "name": "bm_set_sequential_RMS",
+            "unit": "undefined/iter",
+            "extra": "iterations: undefined\ncpu: undefined undefined\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/64",
+            "value": 18.438717242628492,
+            "unit": "ns/iter",
+            "extra": "iterations: 38268562\ncpu: 18.438627456134906 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/128",
+            "value": 24.25729203864255,
+            "unit": "ns/iter",
+            "extra": "iterations: 28989424\ncpu: 24.25659930324937 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/256",
+            "value": 36.01226298946729,
+            "unit": "ns/iter",
+            "extra": "iterations: 19462057\ncpu: 36.012199429895816 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/512",
+            "value": 57.7886055167359,
+            "unit": "ns/iter",
+            "extra": "iterations: 12082619\ncpu: 57.778812110189094 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/1024",
+            "value": 102.0297165908633,
+            "unit": "ns/iter",
+            "extra": "iterations: 6837359\ncpu: 102.00542080648391 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/2048",
+            "value": 199.3650558156765,
+            "unit": "ns/iter",
+            "extra": "iterations: 3509677\ncpu: 199.31958838377432 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/4096",
+            "value": 355.4947526369947,
+            "unit": "ns/iter",
+            "extra": "iterations: 1912008\ncpu: 355.40941878904175 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/8192",
+            "value": 666.803110913404,
+            "unit": "ns/iter",
+            "extra": "iterations: 1063289\ncpu: 666.7604658752218 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/16384",
+            "value": 1253.4411731044597,
+            "unit": "ns/iter",
+            "extra": "iterations: 550471\ncpu: 1253.368800536268 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/32768",
+            "value": 2488.692623538037,
+            "unit": "ns/iter",
+            "extra": "iterations: 286167\ncpu: 2488.6442322140583 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set/65536",
+            "value": 4853.544250363821,
+            "unit": "ns/iter",
+            "extra": "iterations: 144270\ncpu: 4853.256505163928 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set_BigO",
+            "value": null,
+            "unit": "ns/iter",
+            "extra": "iterations: undefined\ncpu: undefined ns\nthreads: 1"
+          },
+          {
+            "name": "bm_count_all_set_RMS",
+            "unit": "undefined/iter",
+            "extra": "iterations: undefined\ncpu: undefined undefined\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/64",
+            "value": 319.70663667834475,
+            "unit": "ns/iter",
+            "extra": "iterations: 2187073\ncpu: 319.69409663051977 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/128",
+            "value": 633.4601220195459,
+            "unit": "ns/iter",
+            "extra": "iterations: 1100971\ncpu: 633.4214216359906 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/256",
+            "value": 1267.4195047908804,
+            "unit": "ns/iter",
+            "extra": "iterations: 558673\ncpu: 1267.4088867727626 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/512",
+            "value": 2502.623737517312,
+            "unit": "ns/iter",
+            "extra": "iterations: 281588\ncpu: 2502.4781027600593 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/1024",
+            "value": 4949.166099449552,
+            "unit": "ns/iter",
+            "extra": "iterations: 141921\ncpu: 4949.047427794339 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/2048",
+            "value": 9945.162160250324,
+            "unit": "ns/iter",
+            "extra": "iterations: 70677\ncpu: 9944.630770972155 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/4096",
+            "value": 19861.19220948618,
+            "unit": "ns/iter",
+            "extra": "iterations: 35248\ncpu: 19861.077961870124 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/8192",
+            "value": 39586.87319206134,
+            "unit": "ns/iter",
+            "extra": "iterations: 17838\ncpu: 39584.95660948537 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/16384",
+            "value": 79252.11462944487,
+            "unit": "ns/iter",
+            "extra": "iterations: 8811\ncpu: 79250.97037793671 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/32768",
+            "value": 156425.33191011395,
+            "unit": "ns/iter",
+            "extra": "iterations: 4450\ncpu: 156420.68202247197 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse/65536",
+            "value": 314816.70859445404,
+            "unit": "ns/iter",
+            "extra": "iterations: 2234\ncpu: 314810.96732318745 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse_BigO",
+            "value": null,
+            "unit": "ns/iter",
+            "extra": "iterations: undefined\ncpu: undefined ns\nthreads: 1"
+          },
+          {
+            "name": "bm_for_each_set_sparse_RMS",
+            "unit": "undefined/iter",
+            "extra": "iterations: undefined\ncpu: undefined undefined\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/64",
+            "value": 23.018892050325007,
+            "unit": "ns/iter",
+            "extra": "iterations: 30480175\ncpu: 23.018294087878406 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/128",
+            "value": 20.919167215888873,
+            "unit": "ns/iter",
+            "extra": "iterations: 33597519\ncpu: 20.918718641099762 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/256",
+            "value": 23.000673008182186,
+            "unit": "ns/iter",
+            "extra": "iterations: 30457282\ncpu: 22.999546282560587 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/512",
+            "value": 28.026383202754193,
+            "unit": "ns/iter",
+            "extra": "iterations: 24970092\ncpu: 28.02478609209781 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/1024",
+            "value": 37.310529810071834,
+            "unit": "ns/iter",
+            "extra": "iterations: 18784071\ncpu: 37.30962287142138 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/2048",
+            "value": 55.734809568805716,
+            "unit": "ns/iter",
+            "extra": "iterations: 12572520\ncpu: 55.73271834127128 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/4096",
+            "value": 95.35471715392637,
+            "unit": "ns/iter",
+            "extra": "iterations: 7337666\ncpu: 95.35356065539165 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/8192",
+            "value": 177.86138412573138,
+            "unit": "ns/iter",
+            "extra": "iterations: 3939960\ncpu: 177.8465438735409 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/16384",
+            "value": 359.4722481742696,
+            "unit": "ns/iter",
+            "extra": "iterations: 1950178\ncpu: 359.4617501581915 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/32768",
+            "value": 686.4468458092534,
+            "unit": "ns/iter",
+            "extra": "iterations: 1021086\ncpu: 686.4211848952984 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity/65536",
+            "value": 1338.550074372686,
+            "unit": "ns/iter",
+            "extra": "iterations: 523042\ncpu: 1338.542545340521 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity_BigO",
+            "value": null,
+            "unit": "ns/iter",
+            "extra": "iterations: undefined\ncpu: undefined ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_within_capacity_RMS",
+            "unit": "undefined/iter",
+            "extra": "iterations: undefined\ncpu: undefined undefined\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/64",
+            "value": 274.00724859532727,
+            "unit": "ns/iter",
+            "extra": "iterations: 2538971\ncpu: 275.3051819014291 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/128",
+            "value": 273.4173974408672,
+            "unit": "ns/iter",
+            "extra": "iterations: 2550526\ncpu: 274.66225986411274 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/256",
+            "value": 273.3873360417432,
+            "unit": "ns/iter",
+            "extra": "iterations: 2549564\ncpu: 274.6057114050856 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/512",
+            "value": 303.304521322973,
+            "unit": "ns/iter",
+            "extra": "iterations: 2284129\ncpu: 304.7567900038999 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/1024",
+            "value": 305.36914496869656,
+            "unit": "ns/iter",
+            "extra": "iterations: 2282369\ncpu: 306.8662341618016 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/2048",
+            "value": 305.33395694136954,
+            "unit": "ns/iter",
+            "extra": "iterations: 2279195\ncpu: 306.9737876739218 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/4096",
+            "value": 310.4992118381905,
+            "unit": "ns/iter",
+            "extra": "iterations: 2247036\ncpu: 312.2358938610211 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/8192",
+            "value": 316.2439423629314,
+            "unit": "ns/iter",
+            "extra": "iterations: 2198630\ncpu: 318.0038610408837 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/16384",
+            "value": 366.0936918829467,
+            "unit": "ns/iter",
+            "extra": "iterations: 1898243\ncpu: 368.67086616313645 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/32768",
+            "value": 371.83497900969536,
+            "unit": "ns/iter",
+            "extra": "iterations: 1872992\ncpu: 373.95157480535573 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc/65536",
+            "value": 379.4526609422486,
+            "unit": "ns/iter",
+            "extra": "iterations: 1837616\ncpu: 381.369326884125 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc_BigO",
+            "value": null,
+            "unit": "ns/iter",
+            "extra": "iterations: undefined\ncpu: undefined ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_grow_realloc_RMS",
+            "unit": "undefined/iter",
+            "extra": "iterations: undefined\ncpu: undefined undefined\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/64",
+            "value": 267.3977539835279,
+            "unit": "ns/iter",
+            "extra": "iterations: 2590825\ncpu: 269.74732836032564 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/128",
+            "value": 282.21502004104616,
+            "unit": "ns/iter",
+            "extra": "iterations: 2462859\ncpu: 284.92286403532626 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/256",
+            "value": 287.1448275947544,
+            "unit": "ns/iter",
+            "extra": "iterations: 2414878\ncpu: 289.8827849655398 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/512",
+            "value": 294.8771412312851,
+            "unit": "ns/iter",
+            "extra": "iterations: 2351570\ncpu: 297.5539333324719 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/1024",
+            "value": 312.6070731504983,
+            "unit": "ns/iter",
+            "extra": "iterations: 2217922\ncpu: 315.25145609274017 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/2048",
+            "value": 350.0223953124806,
+            "unit": "ns/iter",
+            "extra": "iterations: 1986756\ncpu: 352.65866567869307 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/4096",
+            "value": 422.2312190464337,
+            "unit": "ns/iter",
+            "extra": "iterations: 1619936\ncpu: 424.8626569166287 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/8192",
+            "value": 590.1706965071446,
+            "unit": "ns/iter",
+            "extra": "iterations: 1179415\ncpu: 592.6982427710199 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/16384",
+            "value": 890.945691673297,
+            "unit": "ns/iter",
+            "extra": "iterations: 783673\ncpu: 893.8125276773213 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/32768",
+            "value": 1464.671104549767,
+            "unit": "ns/iter",
+            "extra": "iterations: 477927\ncpu: 1467.264992360216 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free/65536",
+            "value": 2552.20304931597,
+            "unit": "ns/iter",
+            "extra": "iterations: 274943\ncpu: 2555.0185310912157 ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free_BigO",
+            "value": null,
+            "unit": "ns/iter",
+            "extra": "iterations: undefined\ncpu: undefined ns\nthreads: 1"
+          },
+          {
+            "name": "bm_resize_force_shrink_free_RMS",
+            "unit": "undefined/iter",
+            "extra": "iterations: undefined\ncpu: undefined undefined\nthreads: 1"
+          },
+          {
+            "name": "bm_migrate_sbo_to_heap",
+            "value": 310.21313464570045,
+            "unit": "ns/iter",
+            "extra": "iterations: 2236023\ncpu: 313.50366834702214 ns\nthreads: 1"
           }
         ]
       }
