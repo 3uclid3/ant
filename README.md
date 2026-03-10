@@ -1,4 +1,4 @@
-# ant
+# ant 🐜 entity component system
 
 [![Build and Test](https://github.com/3uclid3/ant/actions/workflows/build-test.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/build-test.yml)
 [![Nightly](https://github.com/3uclid3/ant/actions/workflows/nightly.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/nightly.yml)
@@ -25,9 +25,9 @@ xmake f -m debug        # or release | coverage
 xmake build
 
 # Run tests
-xmake test -g unit            # unit tests
-xmake test -g compile         # compile-time tests
-xmake test -g bench           # benchmarks (requires --benchmarks=y)
+xmake test -g unit           # unit tests
+xmake test -g compile        # compile-time tests
+xmake test -g bench          # benchmarks (requires --benchmarks=y)
 xmake test                   # everything
 
 # See stdout/stderr from tests/benchmarks
@@ -57,4 +57,4 @@ For contribution style, commit rules, and diagram updates, see **[AGENTS.md](AGE
 
 ---
 
-🐜 _Tiny engine. Big swarms._
+🐜 _tiny engine. big swarms._
