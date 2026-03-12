@@ -1,10 +1,10 @@
 #pragma once
 
 #include <ant/database/changeset_fwd.hpp>
-#include <ant/database/detail/changeset_queue.hpp>
-#include <ant/database/detail/changeset_signature_traits.hpp>
-#include <ant/database/detail/entity_registry.hpp>
-#include <ant/database/detail/table.hpp>
+#include <ant/database/detail/catalog/table.hpp>
+#include <ant/database/detail/changeset/change_queue.hpp>
+#include <ant/database/detail/changeset/changeset_signature_traits.hpp>
+#include <ant/database/detail/entity/entity_registry.hpp>
 #include <ant/database/entity.hpp>
 
 namespace ant {

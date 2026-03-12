@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include <ant/database/detail/component_meta.hpp>
+#include <ant/database/detail/schema/component_meta.hpp>
 
 namespace ant::test {
 

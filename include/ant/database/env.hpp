@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ant/database/detail/env_registry.hpp>
-#include <ant/database/detail/env_signature_traits.hpp>
+#include <ant/database/detail/env/env_registry.hpp>
+#include <ant/database/detail/env/env_signature_traits.hpp>
 #include <ant/database/env_fwd.hpp>
 
 namespace ant {
