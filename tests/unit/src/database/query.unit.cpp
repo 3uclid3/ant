@@ -3,7 +3,7 @@
 
 #include <ant.unit/database/component.hpp>
 #include <ant.unit/database/schema.hpp>
-#include <ant/database/detail/query_builder.hpp>
+#include <ant/database/detail/query/query_builder.hpp>
 
 namespace ant { namespace detail { namespace {
 

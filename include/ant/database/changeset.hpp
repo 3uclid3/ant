@@ -1,10 +1,10 @@
 #pragma once
 
 #include <ant/database/changeset_fwd.hpp>
-#include <ant/database/detail/changeset_queue.hpp>
-#include <ant/database/detail/changeset_signature_traits.hpp>
-#include <ant/database/detail/entity_registry.hpp>
-#include <ant/database/detail/table.hpp>
+#include <ant/database/detail/catalog/table.hpp>
+#include <ant/database/detail/changeset/change_queue.hpp>
+#include <ant/database/detail/changeset/changeset_signature_traits.hpp>
+#include <ant/database/detail/entity/entity_registry.hpp>
 #include <ant/database/entity.hpp>
 
 namespace ant {
@@ -17,7 +17,7 @@ public:
     using signature = Signature;
     using signature_traits = detail::changeset_signature_traits<Signature>;
 
-    changeset(detail::changeset_queue& queue, detail::entity_registry& entity_registry) noexcept;
+    changeset(detail::change_queue& queue, detail::entity_registry& entity_registry) noexcept;
 
     // clang-format off
     [[nodiscard]] auto create() -> entity requires(signature_traits::template contains_v<create>);
@@ -33,12 +33,12 @@ public:
     auto detach(entity e) -> void;
 
 private:
-    detail::changeset_queue* _queue{nullptr};
+    detail::change_queue* _queue{nullptr};
     detail::entity_registry* _entity_registry{nullptr};
 };
 
 template<typename Signature>
-changeset<Signature>::changeset(detail::changeset_queue& queue, detail::entity_registry& entity_registry) noexcept
+changeset<Signature>::changeset(detail::change_queue& queue, detail::entity_registry& entity_registry) noexcept
     : _queue{&queue}
     , _entity_registry{&entity_registry}
 {}

@@ -7,7 +7,7 @@
 #include <ant/core/type_info.hpp>
 #include <ant/core/type_list.hpp>
 #include <ant/database/component_bitset.hpp>
-#include <ant/database/detail/component_meta.hpp>
+#include <ant/database/detail/schema/component_meta.hpp>
 
 namespace ant {
 

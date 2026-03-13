@@ -5,7 +5,7 @@
 
 #include <ant.unit/database/schema.hpp>
 #include <ant/core/dynamic_bitset.hpp>
-#include <ant/database/detail/table.hpp>
+#include <ant/database/detail/catalog/table.hpp>
 #include <ant/database/schema.hpp>
 
 namespace ant::test {

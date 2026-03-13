@@ -5,11 +5,11 @@
 #include <optional>
 
 #include <ant/core/type_list.hpp>
-#include <ant/database/detail/base_query.hpp>
-#include <ant/database/detail/catalog.hpp>
-#include <ant/database/detail/query_cursor.hpp>
-#include <ant/database/detail/query_signature_traits.hpp>
-#include <ant/database/detail/table.hpp>
+#include <ant/database/detail/catalog/catalog.hpp>
+#include <ant/database/detail/catalog/table.hpp>
+#include <ant/database/detail/query/base_query.hpp>
+#include <ant/database/detail/query/query_cursor.hpp>
+#include <ant/database/detail/query/query_signature_traits.hpp>
 #include <ant/database/entity.hpp>
 #include <ant/database/query_fwd.hpp>
 
