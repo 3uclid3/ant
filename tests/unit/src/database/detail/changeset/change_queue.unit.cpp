@@ -8,16 +8,16 @@ namespace ant::detail { namespace {
 
 struct fixture : test::schema_fixture<16>
 {
-    changeset_queue queue{this->schema};
+    change_queue queue{this->schema};
 };
 
-TEST_CASE_FIXTURE(fixture, "changeset_queue::ctor(default): creates an empty queue")
+TEST_CASE_FIXTURE(fixture, "change_queue::ctor(default): creates an empty queue")
 {
     CHECK(queue.empty());
     CHECK_EQ(queue.size(), 0u);
 }
 
-TEST_CASE_FIXTURE(fixture, "changeset_queue::push_destroy: adds a destroy_change to the queue")
+TEST_CASE_FIXTURE(fixture, "change_queue::push_destroy: adds a destroy_change to the queue")
 {
     const auto e = entity{1};
 
@@ -30,7 +30,7 @@ TEST_CASE_FIXTURE(fixture, "changeset_queue::push_destroy: adds a destroy_change
     CHECK_EQ(change.entity, e);
 }
 
-TEST_CASE_FIXTURE(fixture, "changeset_queue::push_attach: adds an attach_change to the queue")
+TEST_CASE_FIXTURE(fixture, "change_queue::push_attach: adds an attach_change to the queue")
 {
     const auto e = entity{1};
 
@@ -49,7 +49,7 @@ TEST_CASE_FIXTURE(fixture, "changeset_queue::push_attach: adds an attach_change 
     CHECK_EQ(component->value, 42);
 }
 
-TEST_CASE_FIXTURE(fixture, "changeset_queue::push_detach: adds a detach_change to the queue")
+TEST_CASE_FIXTURE(fixture, "change_queue::push_detach: adds a detach_change to the queue")
 {
     const auto e = entity{1};
 
@@ -63,7 +63,7 @@ TEST_CASE_FIXTURE(fixture, "changeset_queue::push_detach: adds a detach_change t
     CHECK_EQ(change.meta, &schema.meta_of<test::component<0>>());
 }
 
-TEST_CASE_FIXTURE(fixture, "changeset_queue::consume_all: consumes all changes in the queue")
+TEST_CASE_FIXTURE(fixture, "change_queue::consume_all: consumes all changes in the queue")
 {
     const auto e1 = entity{1};
     const auto e2 = entity{2};

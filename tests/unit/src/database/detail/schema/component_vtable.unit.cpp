@@ -1,5 +1,5 @@
 #include <ant.unit/doctest.hpp>
-#include <ant/database/detail/component_vtable.hpp>
+#include <ant/database/detail/schema/component_vtable.hpp>
 
 #include <memory>
 #include <new>

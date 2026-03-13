@@ -8,7 +8,7 @@ namespace ant { namespace {
 
 struct fixture : test::schema_fixture<16>
 {
-    detail::changeset_queue queue{this->schema};
+    detail::change_queue queue{this->schema};
     detail::entity_registry entity_registry;
 };
 
