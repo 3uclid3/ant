@@ -1,5 +1,8 @@
 # ant
 
+[![Build](https://github.com/3uclid3/ant/actions/workflows/build.yml/badge.svg)](https://github.com/3uclid3/ant/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/3uclid3/ant/graph/badge.svg?token=PP05M010VK)](https://codecov.io/gh/3uclid3/ant)
+
 A database-oriented Entity Component System framework for C++.
 
 `ant` models your game or simulation world the way a database models data: entities are rows, components are columns, and the catalog is your schema-aware store. This makes queries, mutations, and change tracking feel natural rather than bolted on.
