@@ -30,8 +30,8 @@ jobs:
         run: |
           gcovr \
             --root "$GITHUB_WORKSPACE" \
-            --filter "$GITHUB_WORKSPACE/lib/include" \
-            --filter "$GITHUB_WORKSPACE/lib/src" \
+            --filter "$GITHUB_WORKSPACE/include" \
+            --filter "$GITHUB_WORKSPACE/src" \
             --object-directory build \
             --xml coverage.xml \
             --verbose \
