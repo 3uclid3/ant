@@ -6,6 +6,7 @@
 namespace ant {
 namespace detail {
 
+// GCOVR_EXCL_START
 auto default_assert_handler(std::string_view condition_str, std::string_view message, std::source_location location) -> void
 {
     std::string full_message = "Assertion failed: ";
@@ -44,5 +45,6 @@ auto unset_assert_handler() -> void
 {
     detail::get_current_assert_handler() = detail::default_assert_handler;
 }
+// GCOVR_EXCL_STOP
 
 } // namespace ant
