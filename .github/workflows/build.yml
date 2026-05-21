@@ -1,0 +1,36 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  linux:
+    strategy:
+      matrix:
+        compiler:
+          #  - clang
+          - gcc
+        build_type:
+          - debug
+          - release
+
+    runs-on: ubuntu-latest
+    container:
+      image: 3uclid3/ci-${{ matrix.compiler }}:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        run: |
+          cmake --preset ${{ matrix.build_type }}
+
+      - name: Compile
+        working-directory: build
+        run: |
+          cmake --build .
+
+      - name: Tests
+        working-directory: build
+        run: |
+          ctest --output-on-failure

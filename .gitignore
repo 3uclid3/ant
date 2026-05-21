@@ -1,0 +1,9 @@
+# IDE
+.idea/*
+.vs/*
+.vscode/*
+.zed/*
+
+# Builds
+.cache/*
+build/*

@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.30)
+project(ant VERSION 0.1.0 LANGUAGES CXX)
+
+# warning
+add_library(ant_warnings INTERFACE)
+target_compile_options(ant_warnings INTERFACE
+  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -Werror>
+  $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wall -Wextra -Wpedantic -Werror>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+)
+
+# ant
+add_library(ant STATIC)
+set_target_properties(ant PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(ant PUBLIC cxx_std_26)
+target_compile_options(ant PUBLIC -freflection) # experimental
+target_link_libraries(ant PRIVATE ant_warnings)
+target_sources(ant
+    PUBLIC
+        FILE_SET HEADERS
+        BASE_DIRS
+            include
+        FILES
+            include/ant/core/assert.hpp
+    PRIVATE
+      src/core/assert.cpp
+)
+
+# tests
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  option(ANT_BUILD_TESTS "Build ant tests" ON)
+else()
+  option(ANT_BUILD_TESTS "Build ant tests" OFF)
+endif()
+
+if(ANT_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests/compile)
+  add_subdirectory(tests/unit)
+endif()
