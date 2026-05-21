@@ -29,15 +29,19 @@ jobs:
       - name: Generate coverage report
         run: |
           gcovr \
-            --root . \
+            --root "$GITHUB_WORKSPACE" \
+            --filter "$GITHUB_WORKSPACE/lib/include" \
+            --filter "$GITHUB_WORKSPACE/lib/src" \
             --object-directory build \
-            --filter include/ \
-            --filter src/ \
             --xml coverage.xml \
+            --verbose \
             --print-summary
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v6
         with:
           files: coverage.xml
+          fail_ci_if_error: true
+          disable_search: true
+          plugins: noop
           token: ${{ secrets.CODECOV_TOKEN }}
