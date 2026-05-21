@@ -28,7 +28,7 @@
       "name": "coverage",
       "inherits": "debug",
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "--coverage -O0",
+        "CMAKE_CXX_FLAGS": "--coverage -O0 -DANT_ASSERT_ENABLED=0",
         "CMAKE_EXE_LINKER_FLAGS": "--coverage"
       }
     }
