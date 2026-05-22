@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include <ant/database/detail/component/component_meta.hpp>
+#include <doctest/doctest.h>
 
 #include "../../component.hpp"
 
@@ -17,4 +17,4 @@ TEST_CASE("component_meta_of: returns meta for component type")
     CHECK_EQ(meta.name, "ant::component<0>");
 }
 
-}} //
+}} // namespace ant::detail

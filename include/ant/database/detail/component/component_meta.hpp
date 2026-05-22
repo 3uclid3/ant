@@ -14,7 +14,7 @@ struct component_meta
     static constexpr std::size_t default_stride{((sizeof(T) + alignof(T) - 1) / alignof(T)) * alignof(T)};
 
     template<typename T>
-    static constexpr std::size_t default_stride_per_block{[](){
+    static constexpr std::size_t default_stride_per_block{[]() {
         if constexpr (sizeof(T) <= 64)
             return 64;
         else if constexpr (sizeof(T) <= 256)
