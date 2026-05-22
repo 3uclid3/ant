@@ -22,6 +22,7 @@ target_sources(ant
             include
         FILES
             include/ant/core/assert.hpp
+            include/ant/core/bitset.hpp
             include/ant/database/detail/component/component_index.hpp
             include/ant/database/detail/component/component_meta.hpp
             include/ant/database/detail/component/component_name.hpp
