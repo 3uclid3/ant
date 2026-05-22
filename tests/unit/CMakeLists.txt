@@ -9,8 +9,12 @@ FetchContent_MakeAvailable(doctest)
 
 # ant_unit
 add_executable(ant_unit
+  src/database/detail/component/component_meta_tests.cpp
+  src/database/detail/component/component_vtable_tests.cpp
   src/database/detail/entity/entity_registry_tests.cpp
   src/database/detail/entity/entity_traits_tests.cpp
+  src/database/component.cpp
+  src/database/schema_tests.cpp
   src/main.cpp
 )
 set_target_properties(ant PROPERTIES CXX_EXTENSIONS OFF)

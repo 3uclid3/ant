@@ -22,13 +22,19 @@ target_sources(ant
             include
         FILES
             include/ant/core/assert.hpp
-            include/ant/database/entity.hpp
+            include/ant/database/detail/component/component_index.hpp
+            include/ant/database/detail/component/component_meta.hpp
+            include/ant/database/detail/component/component_name.hpp
+            include/ant/database/detail/component/component_vtable.hpp
             include/ant/database/detail/entity/entity_location.hpp
             include/ant/database/detail/entity/entity_registry.hpp
             include/ant/database/detail/entity/entity_traits.hpp
+            include/ant/database/entity.hpp
     PRIVATE
       src/core/assert.cpp
+      src/database/detail/component/component_index.cpp
       src/database/detail/entity/entity_registry.cpp
+      src/database/schema.cpp
 )
 
 # tests
