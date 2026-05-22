@@ -30,11 +30,16 @@ target_sources(ant
             include/ant/database/detail/entity/entity_location.hpp
             include/ant/database/detail/entity/entity_registry.hpp
             include/ant/database/detail/entity/entity_traits.hpp
+            include/ant/database/detail/env/env_registry.hpp
+            include/ant/database/detail/env/env_signature_traits.hpp
             include/ant/database/entity.hpp
+            include/ant/database/env.hpp
+            include/ant/database/env_fwd.hpp
     PRIVATE
       src/core/assert.cpp
       src/database/detail/component/component_index.cpp
       src/database/detail/entity/entity_registry.cpp
+      src/database/detail/env/env_registry.cpp
       src/database/schema.cpp
 )
 

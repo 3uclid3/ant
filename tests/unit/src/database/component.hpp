@@ -30,6 +30,9 @@ struct component
     component(component&& other) noexcept;
     ~component() noexcept;
 
+    auto operator=(const component& other) noexcept -> component&;
+    auto operator=(component&& other) noexcept -> component&;
+
     auto get_index() const noexcept -> std::size_t;
 
     std::size_t value{index};
@@ -116,6 +119,22 @@ template<std::size_t Index>
 component<Index>::~component() noexcept
 {
     component_tracker::dtor<component<Index>>();
+}
+
+template<std::size_t Index>
+auto component<Index>::operator=(const component& other) noexcept -> component&
+{
+    value = other.value;
+    component_tracker::copy<component<Index>>();
+    return *this;
+}
+
+template<std::size_t Index>
+auto component<Index>::operator=(component&& other) noexcept -> component&
+{
+    value = std::exchange(other.value, 0);
+    component_tracker::move<component<Index>>();
+    return *this;
 }
 
 template<std::size_t Index>

@@ -14,7 +14,9 @@ add_executable(ant_unit
   src/database/detail/component/component_vtable_tests.cpp
   src/database/detail/entity/entity_registry_tests.cpp
   src/database/detail/entity/entity_traits_tests.cpp
+  src/database/detail/env/env_registry_tests.cpp
   src/database/component.cpp
+  src/database/env_tests.cpp
   src/database/schema_tests.cpp
   src/main.cpp
 )

@@ -7,7 +7,7 @@
 
 #include "component.hpp"
 
-namespace ant::test {
+namespace ant {
 
 // make a schema with component<I> where I is from 0 to Size - 1
 template<std::size_t Size>
@@ -18,7 +18,7 @@ struct schema_fixture : component_fixture
 {
     schema_fixture();
 
-    schema schema;
+    ant::schema schema;
 };
 
 template<std::size_t Size>
@@ -41,4 +41,4 @@ constexpr auto make_schema() -> schema
     return make_schema(std::make_index_sequence<Size>{});
 }
 
-} // namespace ant::test
+} // namespace ant

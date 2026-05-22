@@ -1,10 +1,13 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 
 namespace ant::detail {
 
 using component_index = std::uint32_t;
+
+inline constexpr component_index component_npos = std::numeric_limits<component_index>::max();
 
 [[nodiscard]] auto next_component_index() noexcept -> component_index;
 
