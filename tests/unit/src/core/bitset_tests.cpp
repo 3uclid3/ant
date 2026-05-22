@@ -481,6 +481,22 @@ TEST_CASE("basic_bitset::set(range): size 0 is no-op")
     CHECK_EQ(bs, odd_bitset(24));
 }
 
+TEST_CASE("basic_bitset::set(range): spans a block boundary")
+{
+    static constexpr std::size_t range_start = bitset::bits_per_block - 4;
+    static constexpr std::size_t range_size = 8;
+
+    bitset bs{GENERATE(full_only_blocks_size, full_and_tail_blocks_size)};
+    bs.set(range_start, range_size);
+
+    CHECK_EQ(bs.count(), range_size);
+
+    for (std::size_t i = range_start; i < range_start + range_size; ++i)
+    {
+        CHECK(bs.test(i));
+    }
+}
+
 TEST_CASE("basic_bitset::reset(all): empty is no-op")
 {
     bitset bs;
@@ -536,6 +552,23 @@ TEST_CASE("basic_bitset::reset(range): size 0 is no-op")
     bs.reset(10, 0);
 
     CHECK_EQ(bs, odd_bitset(24));
+}
+
+TEST_CASE("basic_bitset::reset(range): spans a block boundary")
+{
+    static constexpr std::size_t range_start = bitset::bits_per_block - 4;
+    static constexpr std::size_t range_size = 8;
+
+    bitset bs{GENERATE(full_only_blocks_size, full_and_tail_blocks_size)};
+    bs.set();
+    bs.reset(range_start, range_size);
+
+    CHECK_EQ(bs.count(), bs.size() - range_size);
+
+    for (std::size_t i = range_start; i < range_start + range_size; ++i)
+    {
+        CHECK_FALSE(bs.test(i));
+    }
 }
 
 TEST_CASE("basic_bitset::flip(all): empty ")
@@ -609,6 +642,16 @@ TEST_CASE("basic_bitset::flip(range): size 0 is no-op")
     CHECK_EQ(bs, odd_bitset(24));
 }
 
+TEST_CASE("basic_bitset::for_each_set: empty visits nothing")
+{
+    bitset bs;
+
+    std::size_t count = 0;
+    bs.for_each_set([&](std::size_t) { ++count; });
+
+    CHECK_EQ(count, 0);
+}
+
 TEST_CASE("basic_bitset::for_each_set: visits every set bit")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
@@ -628,6 +671,16 @@ TEST_CASE("basic_bitset::for_each_set: visits interrupt on return false")
     bs.for_each_set([&count, expected_count](std::size_t idx [[maybe_unused]]) { return ++count < expected_count; });
 
     CHECK_EQ(count, expected_count);
+}
+
+TEST_CASE("basic_bitset::for_each_unset: empty visits nothing")
+{
+    bitset bs;
+
+    std::size_t count = 0;
+    bs.for_each_unset([&](std::size_t) { ++count; });
+
+    CHECK_EQ(count, 0);
 }
 
 TEST_CASE("basic_bitset::for_each_unset: visits every unset bit")
