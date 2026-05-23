@@ -7,8 +7,8 @@
 
 namespace ant {
 
-template<typename Allocator>
-auto operator<<(std::ostream& os, const basic_bitset<Allocator>& bs) -> std::ostream&
+template<std::size_t C, typename Allocator>
+auto operator<<(std::ostream& os, const basic_bitset<C, Allocator>& bs) -> std::ostream&
 {
     for (auto block : bs.blocks_view())
     {
@@ -55,6 +55,8 @@ auto odd_bitset(std::size_t size) -> bitset
 const auto tail_only_blocks_size = bitset::bits_per_block / 2;
 const auto full_only_blocks_size = bitset::bits_per_block * 4;
 const auto full_and_tail_blocks_size = full_only_blocks_size + tail_only_blocks_size;
+
+using small_bitset = basic_bitset<64, std::allocator<std::uint64_t>>;
 
 TEST_CASE("basic_bitset::ctor: default")
 {
@@ -127,6 +129,56 @@ TEST_CASE("basic_bitset::ctor: move from heap")
 
     CHECK(to.is_heap());
     CHECK_EQ(to, expected);
+}
+
+TEST_CASE("basic_bitset::ctor: cross-capacity copy: large-inplace to small-inplace")
+{
+    // size(64) fits in small's inplace (64), is inplace in large (256) too
+    bitset from{odd_bitset(64)};
+    CHECK_FALSE(from.is_heap());
+
+    small_bitset to{from};
+
+    CHECK_FALSE(to.is_heap());
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_bitset::ctor: cross-capacity copy: large-inplace to small-heap")
+{
+    // size(128) is inplace in large (256) but exceeds small's inplace (64)
+    bitset from{odd_bitset(128)};
+    CHECK_FALSE(from.is_heap());
+
+    small_bitset to{from};
+
+    CHECK(to.is_heap());
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_bitset::ctor: cross-capacity copy: small-heap to large-inplace")
+{
+    // size(128) forces heap in small (64) but fits in large's inplace (256)
+    small_bitset from{128};
+    for (std::size_t i = 1; i < from.size(); i += 2)
+        from.set(i);
+    CHECK(from.is_heap());
+
+    bitset to{from};
+
+    CHECK_FALSE(to.is_heap());
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_bitset::ctor: cross-capacity copy: both heap")
+{
+    // size > 256, forces heap in both
+    bitset from{odd_bitset(bitset::inplace_capacity + 1)};
+    CHECK(from.is_heap());
+
+    small_bitset to{from};
+
+    CHECK(to.is_heap());
+    CHECK_EQ(to, from);
 }
 
 TEST_CASE("basic_bitset::operator=: copy from self is no-op")
@@ -249,6 +301,60 @@ TEST_CASE("basic_bitset::operator=: move from heap to self heap ")
     CHECK(to.is_heap());
     CHECK_EQ(to, expected);
     CHECK_GE(to.capacity(), expected.size());
+}
+
+TEST_CASE("basic_bitset::operator=: cross-capacity copy: large-inplace to small-inplace")
+{
+    bitset from{odd_bitset(64)};
+    small_bitset to{32};
+
+    to = from;
+
+    CHECK_FALSE(to.is_heap());
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_bitset::operator=: cross-capacity copy: large-inplace to small-heap")
+{
+    // size(128) is inplace in large but must go to heap in small
+    bitset from{odd_bitset(128)};
+    CHECK_FALSE(from.is_heap());
+
+    small_bitset to{32};
+
+    to = from;
+
+    CHECK(to.is_heap());
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_bitset::operator=: cross-capacity copy: small-heap to large-inplace")
+{
+    small_bitset from{128};
+    for (std::size_t i = 1; i < from.size(); i += 2)
+        from.set(i);
+    CHECK(from.is_heap());
+
+    bitset to{odd_bitset(64)};
+
+    to = from;
+
+    CHECK_FALSE(to.is_heap());
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_bitset::operator=: cross-capacity copy: both heap")
+{
+    bitset from{odd_bitset(bitset::inplace_capacity + 1)};
+    CHECK(from.is_heap());
+
+    small_bitset to{128};
+    CHECK(to.is_heap());
+
+    to = from;
+
+    CHECK(to.is_heap());
+    CHECK_EQ(to, from);
 }
 
 TEST_CASE("basic_bitset::operator&=: from self is no-op")
