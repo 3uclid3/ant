@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory_resource>
 #include <optional>
 #include <vector>
 
@@ -23,7 +24,7 @@ public:
     class builder
     {
     public:
-        builder() noexcept = default;
+        explicit builder(std::pmr::memory_resource* resource = std::pmr::get_default_resource()) noexcept;
 
         builder(builder&&) noexcept = default;
         builder(const builder&) = delete;
@@ -39,11 +40,12 @@ public:
     private:
         auto define_impl(const component_options& options, meta_type&& meta) -> void;
 
-        std::vector<meta_type> _metas;
+        std::pmr::vector<meta_type> _metas;
+        std::pmr::memory_resource* _resource;
     };
 
 public:
-    schema() = default;
+    schema() noexcept = default;
 
     schema(const schema&) = delete;
     schema& operator=(const schema&) = delete;
@@ -64,8 +66,10 @@ public:
     [[nodiscard]] auto range() const noexcept -> size_type;
 
 private:
-    std::vector<meta_type> _dense;
-    std::vector<meta_type*> _sparse;
+    explicit schema(std::pmr::memory_resource* resource) noexcept;
+
+    std::pmr::vector<meta_type> _dense;
+    std::pmr::vector<meta_type*> _sparse;
 };
 
 template<typename T>
