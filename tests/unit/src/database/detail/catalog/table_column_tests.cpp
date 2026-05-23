@@ -46,6 +46,92 @@ TEST_CASE_FIXTURE(fixture, "table_column::ctor: is empty with correct meta")
     CHECK_EQ(&column.meta(), &meta);
 }
 
+TEST_CASE_FIXTURE(fixture, "table_column::ctor_move: transfers elements without constructing or destroying")
+{
+    const std::size_t size = GENERATE(0, 1, 2, 10);
+    emplace_indexed(size);
+
+    table_column moved(std::move(column));
+
+    CHECK_EQ(moved.size(), size);
+    CHECK(column.empty());
+    CHECK_EQ(track(), component_track{});
+
+    for (std::size_t i = 0; i < size; ++i)
+    {
+        CHECK_EQ(moved.template at<component_t>(i).value, i);
+    }
+}
+
+TEST_CASE_FIXTURE(fixture, "table_column::move_assign: destroys existing elements then transfers source")
+{
+    constexpr std::size_t dest_size = 5;
+    constexpr std::size_t src_size = 10;
+
+    table_column source(meta);
+    emplace_indexed(dest_size);
+    emplace_indexed(src_size, source);
+
+    column = std::move(source);
+
+    CHECK_EQ(column.size(), src_size);
+    CHECK(source.empty());
+    CHECK_EQ(track(), component_track{.dtor = dest_size});
+
+    for (std::size_t i = 0; i < src_size; ++i)
+    {
+        CHECK_EQ(column.template at<component_t>(i).value, i);
+    }
+}
+
+TEST_CASE_FIXTURE(fixture, "table_column::move_assign: from empty source destroys existing elements")
+{
+    constexpr std::size_t size = 5;
+    emplace_indexed(size);
+
+    table_column empty_source(meta);
+    column = std::move(empty_source);
+
+    CHECK(column.empty());
+    CHECK_EQ(track(), component_track{.dtor = size});
+}
+
+TEST_CASE_FIXTURE(fixture, "table_column::move_assign: to empty dest transfers without destroying")
+{
+    constexpr std::size_t size = 5;
+
+    table_column source(meta);
+    emplace_indexed(size, source);
+
+    column = std::move(source);
+
+    CHECK_EQ(column.size(), size);
+    CHECK(source.empty());
+    CHECK_EQ(track(), component_track{});
+
+    for (std::size_t i = 0; i < size; ++i)
+    {
+        CHECK_EQ(column.template at<component_t>(i).value, i);
+    }
+}
+
+TEST_CASE_FIXTURE(fixture, "table_column::move_assign: self-assignment is a no-op")
+{
+    constexpr std::size_t size = 5;
+    emplace_indexed(size);
+
+    table_column* self = &column;
+    column = std::move(*self);
+
+    CHECK_EQ(column.size(), size);
+    CHECK_EQ(track(), component_track{});
+
+    for (std::size_t i = 0; i < size; ++i)
+    {
+        CHECK_EQ(column.template at<component_t>(i).value, i);
+    }
+}
+
 TEST_CASE_FIXTURE(fixture, "table_column::emplace_back: construct component")
 {
     const std::size_t size = GENERATE(0, 1, 2, 5, 10);
