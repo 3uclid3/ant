@@ -61,7 +61,7 @@ auto my_system(
     for (auto& row : query)
     {
         const position& pos = row.get<position>();
-        const velocity* vel = row.try_get<velocity>(); // optional component
+        const velocity* vel = row.get<velocity>(); // optional component
 
         if (vel && (pos.x + vel->x > 10.0f * clk.delta_time))
         {
