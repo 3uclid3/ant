@@ -9,12 +9,6 @@ A database-oriented Entity Component System framework for C++.
 
 > **API is unstable and actively evolving.**
 
-## Features
-
-- Database-inspired vocabulary: `catalog`, `schema`, `entity`, `changeset`
-- PMR-backed flush-time allocations, no heap pressure during updates
-- C++26, zero dependencies
-
 ## Requirements
 
 - GCC 16+ (or any C++26-conformant compiler)
