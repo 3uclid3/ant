@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory_resource>
 
 #include <ant/database/detail/entity/entity_location.hpp>
 #include <ant/database/detail/entity/entity_traits.hpp>
@@ -16,7 +17,7 @@ public:
     using version_type = entity_traits::version_type;
 
 public:
-    entity_registry() noexcept = default;
+    entity_registry(std::pmr::memory_resource* resource = std::pmr::get_default_resource()) noexcept;
 
     entity_registry(entity_registry&&) = default;
     auto operator=(entity_registry&&) -> entity_registry& = default;
@@ -46,8 +47,8 @@ private:
     };
 
 private:
-    std::vector<entry> _entries;
-    std::vector<index_type> _free;
+    std::pmr::vector<entry> _entries;
+    std::pmr::vector<index_type> _free;
 };
 
 } // namespace ant::detail
