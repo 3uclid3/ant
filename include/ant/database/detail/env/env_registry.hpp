@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory_resource>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,8 @@ public:
     using size_type = schema::size_type;
 
 public:
-    explicit env_registry(const schema& schema);
+    explicit env_registry(const schema& schema, std::pmr::memory_resource* resource = std::pmr::get_default_resource());
+    ~env_registry();
 
     env_registry(const env_registry&) = delete;
     auto operator=(const env_registry&) -> env_registry& = delete;
@@ -37,29 +39,24 @@ public:
 
     template<typename T>
     auto unset() -> void;
+    auto unset(const component_meta& meta) -> void;
 
 private:
-    using var_unique_ptr = std::unique_ptr<void, void (*)(void*)>;
-
     struct var
     {
-        var_unique_ptr ptr;
-        size_type index;
+        void* ptr{nullptr};
+        const component_meta* meta{nullptr};
     };
 
 private:
-    template<typename T, typename... Args>
-    auto make_var(Args&&... args) -> var_unique_ptr;
-
     auto at_raw(size_type index) const noexcept -> const void*;
     auto at_raw(size_type index) noexcept -> void*;
 
-    auto unset_at(size_type index) -> void;
-
 private:
     std::reference_wrapper<const schema> _schema;
-    std::vector<var> _dense;
-    std::vector<size_type> _sparse; // component idx to dense idx
+    std::pmr::vector<var> _dense;
+    std::pmr::vector<size_type> _sparse; // component idx to dense idx
+    std::pmr::memory_resource* _resource{nullptr};
 };
 
 template<typename T>
@@ -83,33 +80,33 @@ auto env_registry::get() noexcept -> T*
 template<typename T, typename... Args>
 auto env_registry::set(Args&&... args) -> T&
 {
-    ANT_ASSERT(_schema.get().is_defined<T>());
+    const component_meta& meta = _schema.get().meta_of(detail::component_index_of<T>());
 
-    const component_index index = detail::component_index_of<T>();
+    T* result{nullptr};
 
-    if (_sparse[index] == component_npos)
+    if (_sparse[meta.index] == component_npos)
     {
-        _sparse[index] = _dense.size();
-        _dense.emplace_back(make_var<T>(std::forward<Args>(args)...), index);
+        _sparse[meta.index] = _dense.size();
+
+        void* ptr = _resource->allocate(sizeof(T), alignof(T));
+        result = new (ptr) T(std::forward<Args>(args)...);
+
+        _dense.emplace_back(ptr, &meta);
     }
     else
     {
-        *static_cast<T*>(_dense[_sparse[index]].ptr.get()) = T(std::forward<Args>(args)...);
+        result = static_cast<T*>(_dense[_sparse[meta.index]].ptr);
+        *result = T(std::forward<Args>(args)...);
     }
-    return *static_cast<T*>(_dense[_sparse[index]].ptr.get());
+
+    ANT_ASSERT(result != nullptr);
+    return *result;
 }
 
 template<typename T>
 auto env_registry::unset() -> void
 {
-    ANT_ASSERT(_schema.get().is_defined<T>());
-    unset_at(detail::component_index_of<T>());
-}
-
-template<typename T, typename... Args>
-auto env_registry::make_var(Args&&... args) -> var_unique_ptr
-{
-    return var_unique_ptr(new T(std::forward<Args>(args)...), [](void* p) { delete static_cast<T*>(p); });
+    unset(_schema.get().meta_of(detail::component_index_of<T>()));
 }
 
 } // namespace ant::detail
