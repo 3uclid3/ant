@@ -36,6 +36,14 @@ TEST_CASE("schema::builder::define: override component options")
     const auto& meta = built_schema.meta_of<T>();
 
     CHECK_EQ(meta.stride_per_block, 8);
+    CHECK_EQ(meta.name, detail::component_name_of<T>());
+}
+
+TEST_CASE("schema::builder::build: empty ")
+{
+    schema::builder builder;
+    schema built_schema = builder.build();
+    CHECK(built_schema.empty());
 }
 
 }} // namespace ant
