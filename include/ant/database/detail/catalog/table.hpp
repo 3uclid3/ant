@@ -4,7 +4,7 @@
 #include <span>
 #include <vector>
 
-#include <ant/database/component_bitset.hpp>
+#include <ant/database/detail/component/component_bitset.hpp>
 #include <ant/database/detail/catalog/table_column.hpp>
 #include <ant/database/detail/entity/entity_traits.hpp>
 #include <ant/database/entity.hpp>
@@ -21,7 +21,7 @@ public:
     static constexpr auto npos = entity_traits::index_npos;
 
     table() noexcept = default;
-    table(dynamic_bitset components, const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
+    table(component_bitset components, const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
 
     table(const table&) = delete;
     table& operator=(const table&) = delete;
@@ -36,7 +36,7 @@ public:
 
     template<typename T>
     auto column_of() const noexcept -> std::size_t;
-    auto column_of(std::uint32_t hash) const noexcept -> std::size_t;
+    auto column_of(component_index index) const noexcept -> std::size_t;
 
     auto row_of(entity e) const noexcept -> std::size_t;
     auto entity_at(std::size_t row_index) const noexcept -> entity;
@@ -60,14 +60,15 @@ private:
 
     component_bitset _components;
     std::pmr::vector<table_column> _columns;
+    std::pmr::vector<std::size_t> _sparse_columns;
     std::pmr::vector<entity> _rows;
-    std::pmr::vector<entity_traits::index_type> _sparse;
+    std::pmr::vector<entity_traits::index_type> _sparse_rows;
 };
 
 template<typename T>
 auto table::column_of() const noexcept -> std::size_t
 {
-    return column_of(type_hash<T>::value());
+    return column_of(component_index_of<T>());
 }
 
 template<typename T>

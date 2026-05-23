@@ -106,4 +106,5 @@ inline auto schema::range() const noexcept -> size_type
     return empty() ? 0 : _dense.back().index + 1;
 }
 
+
 } // namespace ant
