@@ -3,18 +3,17 @@
 #include <cstddef>
 #include <utility>
 
+#include <ant.mock/database/schema.hpp>
 #include <ant/core/bitset.hpp>
 #include <ant/database/detail/catalog/table.hpp>
 #include <ant/database/schema.hpp>
-
-#include "schema.hpp"
 
 namespace ant::detail {
 
 template<std::size_t... Ids>
 constexpr auto make_table(const schema& schema, std::index_sequence<Ids...>) -> table
 {
-    return table{component_bitset_of<component<Ids>...>(schema.range()), schema};
+    return table{component_bitset_of<component<Ids>...>(), schema};
 }
 
 template<std::size_t Size>

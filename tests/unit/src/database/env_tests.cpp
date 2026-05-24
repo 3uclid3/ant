@@ -2,8 +2,8 @@
 #include <ant/database/env.hpp>
 #include <doctest/doctest.h>
 
-#include "component.hpp"
-#include "schema.hpp"
+#include <ant.mock/component.hpp>
+#include <ant.mock/database/schema.hpp>
 
 namespace ant { namespace {
 

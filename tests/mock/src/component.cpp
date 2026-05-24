@@ -1,4 +1,4 @@
-#include "component.hpp"
+#include <ant.mock/component.hpp>
 
 namespace ant {
 

@@ -9,7 +9,7 @@
 #include <ant/database/entity.hpp>
 #include <ant/database/schema.hpp>
 
-#include "../../table.hpp"
+#include <ant.mock/database/detail/table.hpp>
 
 namespace ant::detail { namespace {
 

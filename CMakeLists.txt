@@ -16,37 +16,38 @@ target_compile_features(ant PUBLIC cxx_std_26)
 target_compile_options(ant PUBLIC -freflection) # experimental
 target_link_libraries(ant PRIVATE ant_warnings)
 target_sources(ant
-    PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS
-            include
-        FILES
-            include/ant/core/assert.hpp
-            include/ant/core/bitset.hpp
-            include/ant/database/detail/catalog/catalog.hpp
-            include/ant/database/detail/catalog/table.hpp
-            include/ant/database/detail/catalog/table_column.hpp
-            include/ant/database/detail/component/component_index.hpp
-            include/ant/database/detail/component/component_meta.hpp
-            include/ant/database/detail/component/component_name.hpp
-            include/ant/database/detail/component/component_vtable.hpp
-            include/ant/database/detail/entity/entity_location.hpp
-            include/ant/database/detail/entity/entity_registry.hpp
-            include/ant/database/detail/entity/entity_traits.hpp
-            include/ant/database/detail/env/env_registry.hpp
-            include/ant/database/detail/env/env_signature_traits.hpp
-            include/ant/database/entity.hpp
-            include/ant/database/env.hpp
-            include/ant/database/env_fwd.hpp
-    PRIVATE
-      src/core/assert.cpp
-      src/database/detail/catalog/catalog.cpp
-      src/database/detail/catalog/table.cpp
-      src/database/detail/catalog/table_column.cpp
-      src/database/detail/component/component_index.cpp
-      src/database/detail/entity/entity_registry.cpp
-      src/database/detail/env/env_registry.cpp
-      src/database/schema.cpp
+  PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS
+      include
+    FILES
+      include/ant/core/assert.hpp
+      include/ant/core/bitset.hpp
+      include/ant/database/detail/catalog/catalog.hpp
+      include/ant/database/detail/catalog/table.hpp
+      include/ant/database/detail/catalog/table_column.hpp
+      include/ant/database/detail/component/component_index.hpp
+      include/ant/database/detail/component/component_meta.hpp
+      include/ant/database/detail/component/component_name.hpp
+      include/ant/database/detail/component/component_vtable.hpp
+      include/ant/database/detail/entity/entity_location.hpp
+      include/ant/database/detail/entity/entity_registry.hpp
+      include/ant/database/detail/entity/entity_traits.hpp
+      include/ant/database/detail/env/env_registry.hpp
+      include/ant/database/detail/env/env_signature_traits.hpp
+      include/ant/database/detail/signature_traits.hpp
+      include/ant/database/entity.hpp
+      include/ant/database/env.hpp
+      include/ant/database/env_fwd.hpp
+  PRIVATE
+    src/core/assert.cpp
+    src/database/detail/catalog/catalog.cpp
+    src/database/detail/catalog/table.cpp
+    src/database/detail/catalog/table_column.cpp
+    src/database/detail/component/component_index.cpp
+    src/database/detail/entity/entity_registry.cpp
+    src/database/detail/env/env_registry.cpp
+    src/database/schema.cpp
 )
 
 # tests
@@ -58,6 +59,7 @@ endif()
 
 if(ANT_BUILD_TESTS)
   enable_testing()
+  add_subdirectory(tests/mock)
   add_subdirectory(tests/compile)
   add_subdirectory(tests/unit)
 endif()

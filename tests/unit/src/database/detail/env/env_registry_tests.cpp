@@ -4,7 +4,7 @@
 
 #include <ant/database/schema.hpp>
 
-#include "../../schema.hpp"
+#include <ant.mock/database/schema.hpp>
 
 namespace ant::detail { namespace {
 

@@ -1,7 +1,7 @@
 #include <ant/database/detail/component/component_meta.hpp>
 #include <doctest/doctest.h>
 
-#include "../../component.hpp"
+#include <ant.mock/component.hpp>
 
 namespace ant::detail { namespace {
 

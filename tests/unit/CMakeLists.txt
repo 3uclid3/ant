@@ -18,7 +18,6 @@ add_executable(ant_unit
   src/database/detail/entity/entity_registry_tests.cpp
   src/database/detail/entity/entity_traits_tests.cpp
   src/database/detail/env/env_registry_tests.cpp
-  src/database/component.cpp
   src/database/env_tests.cpp
   src/database/schema_tests.cpp
   src/main.cpp
@@ -29,6 +28,7 @@ target_compile_definitions(ant_unit PRIVATE DOCTEST_CONFIG_USE_STD_HEADERS)
 target_link_libraries(ant_unit
     PRIVATE
         ant
+        ant_mock
         ant_warnings
         doctest::doctest
 )
