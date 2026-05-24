@@ -1,3 +1,5 @@
 CompileFlags:
+  Add:
+    - -DANT_COMPONENT_NAME_ENABLED=0
   Remove:
     - -freflection

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string_view>
-
 #include <ant/detail/schema/component_index.hpp>
 #include <ant/detail/schema/component_name.hpp>
 #include <ant/detail/schema/component_vtable.hpp>
@@ -29,7 +27,9 @@ struct component_meta
     std::size_t alignment{0};
     std::size_t stride{0};
     std::size_t stride_per_block{0};
+#if ANT_COMPONENT_NAME_ENABLED
     std::string_view name{};
+#endif
 };
 
 template<typename T>
@@ -42,7 +42,9 @@ template<typename T>
         .alignment = alignof(T),
         .stride = component_meta::default_stride<T>,
         .stride_per_block = component_meta::default_stride_per_block<T>,
+#if ANT_COMPONENT_NAME_ENABLED
         .name = component_name_of<T>(),
+#endif
     };
 }
 
