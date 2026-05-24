@@ -94,6 +94,9 @@ public:
     constexpr auto flip(size_type bit_idx) -> basic_bitset&;
     constexpr auto flip(size_type bit_idx, size_type size) -> basic_bitset&;
 
+    // resize if bit_idx is out of bounds, then set the bit
+    constexpr auto push(size_type bit_idx) -> basic_bitset&;
+
     template<typename F>
     requires std::is_invocable_v<F, size_type>
     constexpr auto for_each_set(F&& func) const -> void;
@@ -496,6 +499,17 @@ constexpr auto basic_bitset<InplaceCapacity, Allocator>::flip(size_type bit_idx,
         [](block_type& block, block_type mask) {
             block ^= mask;
         });
+}
+
+template<std::size_t InplaceCapacity, typename Allocator>
+constexpr auto basic_bitset<InplaceCapacity, Allocator>::push(size_type bit_idx) -> basic_bitset&
+{
+    if (bit_idx >= _size)
+    {
+        resize(bit_idx + 1);
+    }
+    set(bit_idx);
+    return *this;
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
