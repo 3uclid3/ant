@@ -22,7 +22,6 @@ add_executable(ant_unit
   src/env_tests.cpp
   src/main.cpp
 )
-set_target_properties(ant PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_definitions(ant_unit PRIVATE DOCTEST_CONFIG_USE_STD_HEADERS)
 
 target_link_libraries(ant_unit

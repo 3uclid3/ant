@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.30)
 project(ant VERSION 0.1.0 LANGUAGES CXX)
 
+#
+set(CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+
 # warning
 add_library(ant_warnings INTERFACE)
 target_compile_options(ant_warnings INTERFACE
@@ -11,10 +15,9 @@ target_compile_options(ant_warnings INTERFACE
 
 # ant
 add_library(ant STATIC)
-set_target_properties(ant PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(ant PRIVATE ant_warnings)
 target_compile_features(ant PUBLIC cxx_std_26)
 target_compile_options(ant PUBLIC -freflection) # experimental
-target_link_libraries(ant PRIVATE ant_warnings)
 target_sources(ant
   PUBLIC
     FILE_SET HEADERS
