@@ -63,7 +63,7 @@ public:
 
     [[nodiscard]] auto empty() const noexcept -> bool;
     [[nodiscard]] auto count() const noexcept -> size_type;
-    [[nodiscard]] auto range() const noexcept -> size_type;
+    [[nodiscard]] auto range() const noexcept -> size_type; // max component_index + 1
 
 private:
     explicit schema(std::pmr::memory_resource* resource) noexcept;
@@ -103,7 +103,7 @@ inline auto schema::count() const noexcept -> size_type
 
 inline auto schema::range() const noexcept -> size_type
 {
-    return empty() ? 0 : _dense.back().index + 1;
+    return _dense.empty() ? 0 : _dense.back().index + 1;
 }
 
 
