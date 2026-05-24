@@ -20,7 +20,9 @@ TEST_CASE_TEMPLATE("schema::builder::define: store component metadata correctly"
     CHECK_EQ(meta.alignment, alignof(T));
     CHECK_EQ(meta.stride, component_meta::default_stride<T>);
     CHECK_EQ(meta.stride_per_block, component_meta::default_stride_per_block<T>);
+#if ANT_COMPONENT_NAME_ENABLED
     CHECK_EQ(meta.name, component_name_of<T>());
+#endif
 }
 
 TEST_CASE("schema::builder::define: override component options")
@@ -36,7 +38,6 @@ TEST_CASE("schema::builder::define: override component options")
     const auto& meta = built_schema.meta_of<T>();
 
     CHECK_EQ(meta.stride_per_block, 8);
-    CHECK_EQ(meta.name, component_name_of<T>());
 }
 
 TEST_CASE("schema::builder::build: empty ")

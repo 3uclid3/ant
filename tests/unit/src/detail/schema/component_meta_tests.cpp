@@ -14,7 +14,9 @@ TEST_CASE("component_meta_of: returns meta for component type")
     CHECK_EQ(meta.alignment, alignof(component<0>));
     CHECK_EQ(meta.stride, component_meta::default_stride<component<0>>);
     CHECK_EQ(meta.stride_per_block, component_meta::default_stride_per_block<component<0>>);
+#if ANT_COMPONENT_NAME_ENABLED
     CHECK_EQ(meta.name, "ant::component<0>");
+#endif
 }
 
 }} // namespace ant::detail
