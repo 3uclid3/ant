@@ -18,7 +18,7 @@ coverage:
         threshold: 100%
 
 comment:
-  layout: "condensed_header, components, tree, condensed_footer"
+  layout: "condensed_header, tree, condensed_footer"
   show_critical_paths: true
 
 component_management:
@@ -26,14 +26,3 @@ component_management:
     statuses:
       - type: project
         target: auto
-  individual_components:
-    - component_id: ant_core
-      name: core
-      paths:
-        - include/ant/core/**
-        - src/core/**
-    - component_id: ant_database
-      name: database
-      paths:
-        - include/ant/database/**
-        - src/database/**

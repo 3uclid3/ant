@@ -4,7 +4,7 @@
 #include <format>
 #include <string>
 
-#include <ant/core/assert.hpp>
+#include <ant/assert.hpp>
 
 auto main(int argc, char** argv) -> int
 {

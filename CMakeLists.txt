@@ -21,33 +21,37 @@ target_sources(ant
     BASE_DIRS
       include
     FILES
-      include/ant/core/assert.hpp
-      include/ant/core/bitset.hpp
-      include/ant/database/detail/catalog/catalog.hpp
-      include/ant/database/detail/catalog/table.hpp
-      include/ant/database/detail/catalog/table_column.hpp
-      include/ant/database/detail/component/component_index.hpp
-      include/ant/database/detail/component/component_meta.hpp
-      include/ant/database/detail/component/component_name.hpp
-      include/ant/database/detail/component/component_vtable.hpp
-      include/ant/database/detail/entity/entity_location.hpp
-      include/ant/database/detail/entity/entity_registry.hpp
-      include/ant/database/detail/entity/entity_traits.hpp
-      include/ant/database/detail/env/env_registry.hpp
-      include/ant/database/detail/env/env_signature_traits.hpp
-      include/ant/database/detail/signature_traits.hpp
-      include/ant/database/entity.hpp
-      include/ant/database/env.hpp
-      include/ant/database/env_fwd.hpp
+      include/ant/detail/catalog/catalog.hpp
+      include/ant/detail/catalog/table.hpp
+      include/ant/detail/catalog/table_column.hpp
+      include/ant/detail/component/component_bitset.hpp
+      include/ant/detail/component/component_index.hpp
+      include/ant/detail/component/component_meta.hpp
+      include/ant/detail/component/component_name.hpp
+      include/ant/detail/component/component_vtable.hpp
+      include/ant/detail/entity/entity_location.hpp
+      include/ant/detail/entity/entity_registry.hpp
+      include/ant/detail/entity/entity_traits.hpp
+      include/ant/detail/env/env_registry.hpp
+      include/ant/detail/env/env_signature_traits.hpp
+      include/ant/detail/assert.hpp
+      include/ant/detail/bitset.hpp
+      include/ant/detail/schema.hpp
+      include/ant/detail/signature_traits.hpp
+      include/ant/detail/type_list.hpp
+      include/ant/assert.hpp
+      include/ant/entity.hpp
+      include/ant/env.hpp
+      include/ant/env_fwd.hpp
   PRIVATE
-    src/core/assert.cpp
-    src/database/detail/catalog/catalog.cpp
-    src/database/detail/catalog/table.cpp
-    src/database/detail/catalog/table_column.cpp
-    src/database/detail/component/component_index.cpp
-    src/database/detail/entity/entity_registry.cpp
-    src/database/detail/env/env_registry.cpp
-    src/database/schema.cpp
+    src/detail/catalog/catalog.cpp
+    src/detail/catalog/table.cpp
+    src/detail/catalog/table_column.cpp
+    src/detail/component/component_index.cpp
+    src/detail/entity/entity_registry.cpp
+    src/detail/env/env_registry.cpp
+    src/detail/assert.cpp
+    src/detail/schema.cpp
 )
 
 # tests

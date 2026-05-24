@@ -9,17 +9,17 @@ FetchContent_MakeAvailable(doctest)
 
 # ant_unit
 add_executable(ant_unit
-  src/core/bitset_tests.cpp
-  src/database/detail/catalog/catalog_tests.cpp
-  src/database/detail/catalog/table_tests.cpp
-  src/database/detail/catalog/table_column_tests.cpp
-  src/database/detail/component/component_meta_tests.cpp
-  src/database/detail/component/component_vtable_tests.cpp
-  src/database/detail/entity/entity_registry_tests.cpp
-  src/database/detail/entity/entity_traits_tests.cpp
-  src/database/detail/env/env_registry_tests.cpp
-  src/database/env_tests.cpp
-  src/database/schema_tests.cpp
+  src/detail/catalog/catalog_tests.cpp
+  src/detail/catalog/table_tests.cpp
+  src/detail/catalog/table_column_tests.cpp
+  src/detail/component/component_meta_tests.cpp
+  src/detail/component/component_vtable_tests.cpp
+  src/detail/entity/entity_registry_tests.cpp
+  src/detail/entity/entity_traits_tests.cpp
+  src/detail/env/env_registry_tests.cpp
+  src/detail/bitset_tests.cpp
+  src/detail/schema_tests.cpp
+  src/env_tests.cpp
   src/main.cpp
 )
 set_target_properties(ant PROPERTIES CXX_EXTENSIONS OFF)
