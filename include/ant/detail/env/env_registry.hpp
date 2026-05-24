@@ -74,7 +74,7 @@ auto env_registry::get() const noexcept -> const T*
 template<typename T>
 auto env_registry::get() noexcept -> T*
 {
-    return const_cast<T*>(std::as_const(*this).template get<T>());
+    return static_cast<T*>(at_raw(detail::component_index_of<T>()));
 }
 
 template<typename T, typename... Args>
