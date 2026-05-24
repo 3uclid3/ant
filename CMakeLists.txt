@@ -37,6 +37,10 @@ target_sources(ant
       include/ant/detail/entity/entity_traits.hpp
       include/ant/detail/env/env_registry.hpp
       include/ant/detail/env/env_signature_traits.hpp
+      include/ant/detail/query/base_query.hpp
+      include/ant/detail/query/query_builder.hpp
+      include/ant/detail/query/query_cursor.hpp
+      include/ant/detail/query/query_signature_traits.hpp
       include/ant/detail/assert.hpp
       include/ant/detail/bitset.hpp
       include/ant/detail/schema.hpp
@@ -53,6 +57,8 @@ target_sources(ant
     src/detail/component/component_index.cpp
     src/detail/entity/entity_registry.cpp
     src/detail/env/env_registry.cpp
+    src/detail/query/query_builder.cpp
+    src/detail/query/query_cursor.cpp
     src/detail/assert.cpp
     src/detail/schema.cpp
 )

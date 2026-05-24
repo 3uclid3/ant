@@ -17,7 +17,15 @@ struct is_required<T*> : std::false_type
 {};
 
 template<typename T>
-struct is_optional : std::bool_constant<!is_required<T>::value>
+struct is_optional : std::false_type
+{};
+
+template<typename T>
+struct is_optional<const T*> : std::true_type
+{};
+
+template<typename T>
+struct is_optional<T*> : std::true_type
 {};
 
 } // namespace ant::detail

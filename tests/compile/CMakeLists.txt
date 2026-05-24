@@ -25,18 +25,17 @@ function(ant_compile_fail_test name path)
   set_tests_properties(${name} PROPERTIES WILL_FAIL TRUE)
 endfunction()
 
-## core
+# core
 
-# typelist
+## typelist
 ant_compile_test(type_list detail/type_list)
 ant_compile_fail_test(type_list_index_of_not_found detail/type_list)
 
-## database
+# database
 
-# env
+## env
 ant_compile_test(env_has env)
 ant_compile_test(env_get env)
-
 ant_compile_fail_test(env_has_unsupported_required env)
 ant_compile_fail_test(env_has_unsupported_type env)
 ant_compile_fail_test(env_get_optional_unsupported_access env)
@@ -45,3 +44,20 @@ ant_compile_fail_test(env_get_optional_unsupported_type env)
 ant_compile_fail_test(env_get_unsupported_access env)
 ant_compile_fail_test(env_get_unsupported_required env)
 ant_compile_fail_test(env_get_unsupported_type env)
+
+## query signature
+ant_compile_test(query_signature_traits detail/query)
+ant_compile_fail_test(query_signature_traits_duplicate_parameter detail/query)
+ant_compile_fail_test(query_signature_traits_duplicate_type detail/query)
+
+## query row
+ant_compile_test(query_row_has query)
+ant_compile_test(query_row_get query)
+ant_compile_fail_test(query_row_has_unsupported_required query)
+ant_compile_fail_test(query_row_has_unsupported_type query)
+ant_compile_fail_test(query_row_get_optional_unsupported_access query)
+ant_compile_fail_test(query_row_get_optional_unsupported_optional query)
+ant_compile_fail_test(query_row_get_optional_unsupported_type query)
+ant_compile_fail_test(query_row_get_unsupported_access query)
+ant_compile_fail_test(query_row_get_unsupported_required query)
+ant_compile_fail_test(query_row_get_unsupported_type query)

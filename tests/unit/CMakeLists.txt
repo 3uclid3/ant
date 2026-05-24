@@ -17,9 +17,12 @@ add_executable(ant_unit
   src/detail/entity/entity_registry_tests.cpp
   src/detail/entity/entity_traits_tests.cpp
   src/detail/env/env_registry_tests.cpp
+  src/detail/query/query_cursor_tests.cpp
   src/detail/bitset_tests.cpp
   src/detail/schema_tests.cpp
   src/env_tests.cpp
+  src/query_tests.cpp
+
   src/main.cpp
 )
 target_compile_definitions(ant_unit PRIVATE DOCTEST_CONFIG_USE_STD_HEADERS)
