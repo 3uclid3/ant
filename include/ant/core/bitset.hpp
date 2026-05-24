@@ -353,7 +353,7 @@ constexpr auto basic_bitset<InplaceCapacity, Allocator>::operator^=(const basic_
 template<std::size_t InplaceCapacity, typename Allocator>
 constexpr auto basic_bitset<InplaceCapacity, Allocator>::test(size_type bit_idx) const noexcept -> bool
 {
-    return (block_for(bit_idx) & mask_for(bit_idx)) != 0;
+    return bit_idx < _size && (block_for(bit_idx) & mask_for(bit_idx)) != 0;
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
