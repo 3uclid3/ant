@@ -22,7 +22,8 @@ namespace {
 
 // Pattern for more robust testing
 
-auto set_even(bitset& bs) -> void
+template<std::size_t InplaceCapacity, typename Allocator>
+auto set_even(basic_bitset<InplaceCapacity, Allocator>& bs) -> void
 {
     for (std::size_t i = 0; i < bs.size(); i += 2)
     {
@@ -30,12 +31,20 @@ auto set_even(bitset& bs) -> void
     }
 }
 
-auto set_odd(bitset& bs) -> void
+template<std::size_t InplaceCapacity, typename Allocator>
+auto set_odd(basic_bitset<InplaceCapacity, Allocator>& bs) -> void
 {
     for (std::size_t i = 1; i < bs.size(); i += 2)
     {
         bs.set(i);
     }
+}
+
+auto all_bitset(std::size_t size) -> bitset
+{
+    bitset bs{size};
+    bs.set();
+    return bs;
 }
 
 auto even_bitset(std::size_t size) -> bitset
@@ -429,6 +438,191 @@ TEST_CASE("basic_bitset::operator^=: XOR bits")
     to ^= from;
 
     CHECK_EQ(to, expected);
+}
+
+TEST_CASE("basic_bitset::operator&=: when different sizes result in self larger truncates to other size")
+{
+    const std::size_t self_size = GENERATE(128u, full_only_blocks_size);
+    const std::size_t other_size = self_size / 2;
+
+    bitset to{all_bitset(self_size)};
+    bitset from{even_bitset(other_size)};
+
+    to &= from;
+
+    CHECK_EQ(to, even_bitset(other_size));
+}
+
+TEST_CASE("basic_bitset::operator&=: when different sizes result in self smaller keeps self size")
+{
+    const std::size_t self_size = 64u;
+    const std::size_t other_size = 128u;
+
+    bitset to{all_bitset(self_size)};
+    bitset from{even_bitset(other_size)};
+
+    to &= from;
+
+    CHECK_EQ(to, even_bitset(self_size));
+}
+
+TEST_CASE("basic_bitset::operator&=: when different sbo and sizes result in self larger truncates")
+{
+    bitset to{all_bitset(128)};
+    small_bitset from{even_bitset(64)};
+
+    to &= from;
+
+    CHECK_EQ(to, from);
+}
+
+TEST_CASE("basic_bitset::operator&=: when different sbo and sizes result in self smaller keeps size")
+{
+    small_bitset to{all_bitset(64)};
+    bitset from{even_bitset(128)};
+
+    to &= from;
+
+    CHECK_EQ(to, even_bitset(to.size()));
+}
+
+TEST_CASE("basic_bitset::operator|=: when different sizes result in self larger keeps size and unchanged extra bits")
+{
+    bitset to{all_bitset(128)};
+    bitset from{even_bitset(64)};
+
+    to |= from;
+
+    CHECK_EQ(to.size(), 128u);
+    CHECK(to.all()); // self was all set, OR doesn't reduce count
+}
+
+TEST_CASE("basic_bitset::operator|=: when different sizes result in self smaller grows to other size")
+{
+    bitset to{odd_bitset(64)};
+    bitset from{even_bitset(128)};
+
+    to |= from;
+
+    CHECK_EQ(to.size(), 128u);
+    for (std::size_t i = 0; i < 64; ++i)
+    {
+        // odd | even = all set in overlap
+        CHECK(to.test(i));
+    }
+    for (std::size_t i = 64; i < 128; ++i)
+    {
+        // from's even bits beyond original self}
+        CHECK_EQ(to.test(i), i % 2 == 0);
+    }
+}
+
+TEST_CASE("basic_bitset::operator|=: when different sbo and sizes result in self larger keeps extra bits")
+{
+    bitset to{all_bitset(128)};
+    small_bitset from{even_bitset(64)};
+
+    to |= from;
+
+    CHECK_EQ(to.size(), 128u);
+    CHECK_EQ(to.count(), 128u);
+}
+
+TEST_CASE("basic_bitset::operator|=: when different sbo and sizes result in self smaller grows")
+{
+    small_bitset to{odd_bitset(64)};
+    bitset from{even_bitset(128)};
+
+    to |= from;
+
+    REQUIRE_EQ(to.size(), 128u);
+    for (std::size_t i = 0; i < 64; ++i)
+    {
+        CHECK(to.test(i)); // odd | even = all in overlap
+    }
+    for (std::size_t i = 64; i < 128; ++i)
+    {
+        CHECK_EQ(to.test(i), i % 2 == 0);
+    }
+}
+
+TEST_CASE("basic_bitset::operator^=: when different sizes result in self larger XORs overlap only")
+{
+    bitset to{all_bitset(128)};
+    bitset from{all_bitset(64)};
+
+    to ^= from;
+
+    CHECK_EQ(to.size(), 128u);
+    for (std::size_t i = 0; i < 64; ++i)
+    {
+        // all ^ all = 0
+        CHECK_FALSE(to.test(i));
+    }
+
+    for (std::size_t i = 64; i < 128; ++i)
+    {
+        // unchanged
+        CHECK(to.test(i));
+    }
+}
+
+TEST_CASE("basic_bitset::operator^=: when different sizes result in self smaller grows")
+{
+    bitset to{all_bitset(64)};
+    bitset from{all_bitset(128)};
+
+    to ^= from;
+
+    CHECK_EQ(to.size(), 128u);
+    for (std::size_t i = 0; i < 64; ++i)
+    {
+        // all ^ all = 0
+        CHECK_FALSE(to.test(i));
+    }
+
+    for (std::size_t i = 64; i < 128; ++i)
+    {
+        // 0 (from resize) ^ all = all
+        CHECK(to.test(i));
+    }
+}
+
+TEST_CASE("basic_bitset::operator^=: when different sbo and sizes result in self larger XORs overlap only")
+{
+    bitset to{all_bitset(128)};
+    small_bitset from{all_bitset(64)};
+
+    to ^= from;
+
+    CHECK_EQ(to.size(), 128u);
+    for (std::size_t i = 0; i < 64; ++i)
+    {
+        CHECK_FALSE(to.test(i));
+    }
+    for (std::size_t i = 64; i < 128; ++i)
+    {
+        CHECK(to.test(i));
+    }
+}
+
+TEST_CASE("basic_bitset::operator^=: when different sbo and sizes result in self smaller grows")
+{
+    small_bitset to{all_bitset(64)};
+    bitset from{all_bitset(128)};
+
+    to ^= from;
+
+    CHECK_EQ(to.size(), 128u);
+    for (std::size_t i = 0; i < 64; ++i)
+    {
+        CHECK_FALSE(to.test(i));
+    }
+
+    for (std::size_t i = 64; i < 128; ++i)
+    {
+        CHECK(to.test(i));
+    }
 }
 
 TEST_CASE("basic_bitset::all: none")

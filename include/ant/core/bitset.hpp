@@ -131,7 +131,7 @@ private:
     using heap_storage = block_type*;
 
     template<std::size_t C, typename U, typename F>
-    constexpr auto for_each_other_blocks(const basic_bitset<C, U>& other, F&& func) -> basic_bitset&;
+    constexpr auto for_each_other_blocks(const basic_bitset<C, U>& other, std::size_t size, F&& func) -> basic_bitset&;
 
     template<typename F>
     constexpr auto for_each_blocks(F&& func) -> basic_bitset&;
@@ -310,21 +310,41 @@ template<std::size_t InplaceCapacity, typename Allocator>
 template<std::size_t C, typename U>
 constexpr auto basic_bitset<InplaceCapacity, Allocator>::operator&=(const basic_bitset<C, U>& other) -> basic_bitset&
 {
-    return for_each_other_blocks(other, [](block_type& self, block_type other) { self &= other; });
+    const std::size_t size_bits = std::min(_size, other.size());
+    if (_size > size_bits)
+    {
+        resize(size_bits);
+    }
+
+    return for_each_other_blocks(other, size_bits, [](block_type& self, block_type other) { self &= other; });
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
 template<std::size_t C, typename U>
 constexpr auto basic_bitset<InplaceCapacity, Allocator>::operator|=(const basic_bitset<C, U>& other) -> basic_bitset&
 {
-    return for_each_other_blocks(other, [](block_type& self, block_type other) { self |= other; });
+    const std::size_t size_bits = std::max(_size, other.size());
+
+    if (_size < size_bits)
+    {
+        resize(size_bits);
+    }
+
+    return for_each_other_blocks(other, other.size(), [](block_type& self, block_type other) { self |= other; });
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
 template<std::size_t C, typename U>
 constexpr auto basic_bitset<InplaceCapacity, Allocator>::operator^=(const basic_bitset<C, U>& other) -> basic_bitset&
 {
-    return for_each_other_blocks(other, [](block_type& self, block_type other) { self ^= other; });
+    const std::size_t size_bits = std::max(_size, other.size());
+
+    if (_size < size_bits)
+    {
+        resize(size_bits);
+    }
+
+    return for_each_other_blocks(other, other.size(), [](block_type& self, block_type other) { self ^= other; });
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
@@ -797,9 +817,10 @@ constexpr auto basic_bitset<InplaceCapacity, Allocator>::get_allocator() const n
 
 template<std::size_t InplaceCapacity, typename Allocator>
 template<std::size_t C, typename U, typename F>
-constexpr auto basic_bitset<InplaceCapacity, Allocator>::for_each_other_blocks(const basic_bitset<C, U>& other, F&& func) -> basic_bitset&
+constexpr auto basic_bitset<InplaceCapacity, Allocator>::for_each_other_blocks(const basic_bitset<C, U>& other, std::size_t size, F&& func) -> basic_bitset&
 {
-    ANT_ASSERT(_size == other.size());
+    ANT_ASSERT(size <= _size);
+    ANT_ASSERT(size <= other.size());
 
     using callback_result = std::invoke_result_t<F, block_type&, block_type>;
     constexpr bool is_interruptible = std::is_same_v<std::remove_cvref_t<callback_result>, bool>;
@@ -807,7 +828,7 @@ constexpr auto basic_bitset<InplaceCapacity, Allocator>::for_each_other_blocks(c
     const block_type* other_ptr = other.data();
     block_type* ptr = data();
 
-    for (size_type i = 0, size = compute_blocks_size(_size); i < size; ++i)
+    for (size_type i = 0, block_size = compute_blocks_size(size); i < block_size; ++i)
     {
         if constexpr (is_interruptible)
         {
