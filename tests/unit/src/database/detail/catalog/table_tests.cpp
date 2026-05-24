@@ -57,7 +57,7 @@ TEST_CASE_FIXTURE(fixture, "table::insert: maintains order and sizes")
     CHECK_EQ(table.size(), n);
 }
 
-TEST_CASE_FIXTURE(fixture, "table::insert: duplicate returns existing index; no growth")
+TEST_CASE_FIXTURE(fixture, "table::insert: duplicate returns existing index without growth")
 {
     const entity e = entity_traits::construct(42);
 
