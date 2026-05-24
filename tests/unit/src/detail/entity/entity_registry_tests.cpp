@@ -18,6 +18,7 @@ TEST_CASE("entity_registry::create: registers handle and updates size")
     CHECK_FALSE(registry.empty());
     CHECK_EQ(registry.size(), 1u);
     CHECK(registry.contains(e));
+    CHECK_EQ(registry.version(e), 0);
     CHECK_EQ(entity_traits::to_version(e), 0);
 
     const entity_location loc = registry.locate(e); // default location
