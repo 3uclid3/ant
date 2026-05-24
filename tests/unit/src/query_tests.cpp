@@ -96,7 +96,7 @@ TEST_CASE_FIXTURE(fixture, "query::iterator: postfix increment returns previous 
     CHECK_EQ(it, query.end());
 }
 
-TEST_CASE_FIXTURE(fixture, "query_row: has and try_get stay consistent")
+TEST_CASE_FIXTURE(fixture, "query_row: has and get optional stay consistent")
 {
     insert_entity_with_components<0>(entity{1});
     insert_entity_with_components<0, 3>(entity{2});
@@ -114,7 +114,7 @@ TEST_CASE_FIXTURE(fixture, "query_row: has and try_get stay consistent")
     REQUIRE(row02.has_value());
 
     REQUIRE(row02->has<component<3>>());
-    CHECK_EQ(row02->get<component<3>>()->value, 3);
+    CHECK_EQ(std::as_const(row02)->get<component<3>>()->value, 3);
 }
 
 TEST_CASE_FIXTURE(fixture, "query_row::get: mutable access writes through")
@@ -131,18 +131,6 @@ TEST_CASE_FIXTURE(fixture, "query_row::get: mutable access writes through")
     auto updated_row = query.row(entity{1});
     REQUIRE(updated_row.has_value());
     CHECK_EQ(updated_row->get<component<0>>().value, 42);
-}
-
-TEST_CASE_FIXTURE(fixture, "query_row::operator bool: true for valid row")
-{
-    insert_entity_with_components<0>(entity{1});
-
-    using signature = query_signature<component<0>>;
-    query query = make_query<signature>();
-
-    auto row = query.row(entity{1});
-    REQUIRE(row.has_value());
-    CHECK(bool(*row));
 }
 
 TEST_CASE_FIXTURE(fixture, "query_row::get optional mutable: writes through pointer")
@@ -166,6 +154,18 @@ TEST_CASE_FIXTURE(fixture, "query_row::get optional mutable: writes through poin
     REQUIRE(row2.has_value());
     CHECK_FALSE(row2->has<component<1>>());
     CHECK_EQ(row2->get<component<1>>(), nullptr);
+}
+
+TEST_CASE_FIXTURE(fixture, "query_row::operator bool: true for valid row")
+{
+    insert_entity_with_components<0>(entity{1});
+
+    using signature = query_signature<component<0>>;
+    query query = make_query<signature>();
+
+    auto row = query.row(entity{1});
+    REQUIRE(row.has_value());
+    CHECK(bool(*row));
 }
 
 }}} // namespace ant::detail
