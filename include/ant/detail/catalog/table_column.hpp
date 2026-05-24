@@ -5,7 +5,7 @@
 #include <vector>
 
 #include <ant/detail/assert.hpp>
-#include <ant/detail/component/component_meta.hpp>
+#include <ant/detail/schema/component_meta.hpp>
 
 namespace ant::detail {
 

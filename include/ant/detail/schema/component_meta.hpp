@@ -2,9 +2,9 @@
 
 #include <string_view>
 
-#include <ant/detail/component/component_index.hpp>
-#include <ant/detail/component/component_name.hpp>
-#include <ant/detail/component/component_vtable.hpp>
+#include <ant/detail/schema/component_index.hpp>
+#include <ant/detail/schema/component_name.hpp>
+#include <ant/detail/schema/component_vtable.hpp>
 
 namespace ant::detail {
 

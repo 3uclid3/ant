@@ -5,8 +5,8 @@
 #include <vector>
 
 #include <ant/detail/catalog/table_column.hpp>
-#include <ant/detail/component/component_bitset.hpp>
 #include <ant/detail/entity/entity_traits.hpp>
+#include <ant/detail/schema/component_bitset.hpp>
 #include <ant/entity.hpp>
 
 namespace ant::detail {

@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include <ant/detail/assert.hpp>
-#include <ant/detail/schema.hpp>
+#include <ant/detail/schema/schema.hpp>
 
 namespace ant::detail {
 

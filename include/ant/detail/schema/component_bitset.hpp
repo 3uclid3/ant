@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ant/detail/bitset.hpp>
-#include <ant/detail/component/component_index.hpp>
+#include <ant/detail/schema/component_index.hpp>
 #include <ant/detail/type_list.hpp>
 
 namespace ant::detail {

@@ -10,16 +10,16 @@ FetchContent_MakeAvailable(doctest)
 # ant_unit
 add_executable(ant_unit
   src/detail/catalog/catalog_tests.cpp
-  src/detail/catalog/table_tests.cpp
   src/detail/catalog/table_column_tests.cpp
-  src/detail/component/component_meta_tests.cpp
-  src/detail/component/component_vtable_tests.cpp
+  src/detail/catalog/table_tests.cpp
   src/detail/entity/entity_registry_tests.cpp
   src/detail/entity/entity_traits_tests.cpp
   src/detail/env/env_registry_tests.cpp
   src/detail/query/query_cursor_tests.cpp
+  src/detail/schema/component_meta_tests.cpp
+  src/detail/schema/component_vtable_tests.cpp
+  src/detail/schema/schema_tests.cpp
   src/detail/bitset_tests.cpp
-  src/detail/schema_tests.cpp
   src/env_tests.cpp
   src/query_tests.cpp
 

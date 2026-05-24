@@ -1,4 +1,4 @@
-#include <ant/detail/component/component_index.hpp>
+#include <ant/detail/schema/component_index.hpp>
 
 #include <atomic>
 

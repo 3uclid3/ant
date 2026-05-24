@@ -3,7 +3,6 @@
 #include <doctest/doctest.h>
 
 #include <ant.mock/detail/schema.hpp>
-#include <ant/detail/schema.hpp>
 
 namespace ant::detail { namespace {
 

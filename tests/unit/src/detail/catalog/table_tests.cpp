@@ -5,9 +5,9 @@
 #include <vector>
 
 #include <ant.mock/detail/table.hpp>
-#include <ant/detail/component/component_meta.hpp>
 #include <ant/detail/entity/entity_traits.hpp>
-#include <ant/detail/schema.hpp>
+#include <ant/detail/schema/component_meta.hpp>
+#include <ant/detail/schema/schema.hpp>
 #include <ant/entity.hpp>
 
 namespace ant::detail { namespace {

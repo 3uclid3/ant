@@ -2,8 +2,8 @@
 
 #include <type_traits>
 
-#include <ant/detail/component/component_bitset.hpp>
-#include <ant/detail/schema.hpp>
+#include <ant/detail/schema/component_bitset.hpp>
+#include <ant/detail/schema/schema.hpp>
 #include <ant/detail/signature_traits.hpp>
 #include <ant/detail/type_list.hpp>
 #include <ant/query_fwd.hpp>

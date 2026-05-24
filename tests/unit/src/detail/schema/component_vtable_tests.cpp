@@ -1,4 +1,4 @@
-#include <ant/detail/component/component_vtable.hpp>
+#include <ant/detail/schema/component_vtable.hpp>
 #include <doctest/doctest.h>
 
 #include <ant.mock/component.hpp>

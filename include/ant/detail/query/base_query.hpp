@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <ant/detail/catalog/table.hpp>
-#include <ant/detail/schema.hpp>
+#include <ant/detail/schema/schema.hpp>
 
 namespace ant { namespace detail {
 

@@ -1,6 +1,6 @@
 #include <ant/detail/env/env_registry.hpp>
 
-#include <ant/detail/component/component_index.hpp>
+#include <ant/detail/schema/component_index.hpp>
 
 namespace ant::detail {
 

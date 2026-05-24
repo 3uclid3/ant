@@ -9,8 +9,8 @@
 #include <vector>
 
 #include <ant/detail/catalog/table.hpp>
-#include <ant/detail/component/component_bitset.hpp>
-#include <ant/detail/schema.hpp>
+#include <ant/detail/schema/component_bitset.hpp>
+#include <ant/detail/schema/schema.hpp>
 
 namespace ant::detail {
 

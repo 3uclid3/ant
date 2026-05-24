@@ -27,11 +27,6 @@ target_sources(ant
       include/ant/detail/catalog/catalog.hpp
       include/ant/detail/catalog/table.hpp
       include/ant/detail/catalog/table_column.hpp
-      include/ant/detail/component/component_bitset.hpp
-      include/ant/detail/component/component_index.hpp
-      include/ant/detail/component/component_meta.hpp
-      include/ant/detail/component/component_name.hpp
-      include/ant/detail/component/component_vtable.hpp
       include/ant/detail/entity/entity_location.hpp
       include/ant/detail/entity/entity_registry.hpp
       include/ant/detail/entity/entity_traits.hpp
@@ -41,9 +36,14 @@ target_sources(ant
       include/ant/detail/query/query_builder.hpp
       include/ant/detail/query/query_cursor.hpp
       include/ant/detail/query/query_signature_traits.hpp
+      include/ant/detail/schema/component_bitset.hpp
+      include/ant/detail/schema/component_index.hpp
+      include/ant/detail/schema/component_meta.hpp
+      include/ant/detail/schema/component_name.hpp
+      include/ant/detail/schema/component_vtable.hpp
+      include/ant/detail/schema/schema.hpp
       include/ant/detail/assert.hpp
       include/ant/detail/bitset.hpp
-      include/ant/detail/schema.hpp
       include/ant/detail/signature_traits.hpp
       include/ant/detail/type_list.hpp
       include/ant/assert.hpp
@@ -54,13 +54,13 @@ target_sources(ant
     src/detail/catalog/catalog.cpp
     src/detail/catalog/table.cpp
     src/detail/catalog/table_column.cpp
-    src/detail/component/component_index.cpp
     src/detail/entity/entity_registry.cpp
     src/detail/env/env_registry.cpp
     src/detail/query/query_builder.cpp
     src/detail/query/query_cursor.cpp
+    src/detail/schema/component_index.cpp
+    src/detail/schema/schema.cpp
     src/detail/assert.cpp
-    src/detail/schema.cpp
 )
 
 # tests

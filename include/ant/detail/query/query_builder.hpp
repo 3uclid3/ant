@@ -1,8 +1,8 @@
 #pragma once
 
 #include <ant/detail/catalog/catalog.hpp>
-#include <ant/detail/component/component_bitset.hpp>
-#include <ant/detail/schema.hpp>
+#include <ant/detail/schema/component_bitset.hpp>
+#include <ant/detail/schema/schema.hpp>
 #include <ant/detail/type_list.hpp>
 #include <ant/query.hpp>
 

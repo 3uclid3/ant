@@ -4,7 +4,7 @@
 #include <utility>
 
 #include <ant.mock/component.hpp>
-#include <ant/detail/schema.hpp>
+#include <ant/detail/schema/schema.hpp>
 
 namespace ant::detail {
 

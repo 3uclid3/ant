@@ -1,4 +1,4 @@
-#include <ant/detail/schema.hpp>
+#include <ant/detail/schema/schema.hpp>
 #include <doctest/doctest.h>
 
 #include <ant.mock/component.hpp>
