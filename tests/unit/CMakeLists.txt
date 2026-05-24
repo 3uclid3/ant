@@ -10,6 +10,7 @@ FetchContent_MakeAvailable(doctest)
 # ant_unit
 add_executable(ant_unit
   src/core/bitset_tests.cpp
+  src/database/detail/catalog/catalog_tests.cpp
   src/database/detail/catalog/table_tests.cpp
   src/database/detail/catalog/table_column_tests.cpp
   src/database/detail/component/component_meta_tests.cpp

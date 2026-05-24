@@ -23,6 +23,7 @@ target_sources(ant
         FILES
             include/ant/core/assert.hpp
             include/ant/core/bitset.hpp
+            include/ant/database/detail/catalog/catalog.hpp
             include/ant/database/detail/catalog/table.hpp
             include/ant/database/detail/catalog/table_column.hpp
             include/ant/database/detail/component/component_index.hpp
@@ -39,6 +40,7 @@ target_sources(ant
             include/ant/database/env_fwd.hpp
     PRIVATE
       src/core/assert.cpp
+      src/database/detail/catalog/catalog.cpp
       src/database/detail/catalog/table.cpp
       src/database/detail/catalog/table_column.cpp
       src/database/detail/component/component_index.cpp
