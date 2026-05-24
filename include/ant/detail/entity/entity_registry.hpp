@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <memory_resource>
+#include <vector>
 
 #include <ant/detail/entity/entity_location.hpp>
 #include <ant/detail/entity/entity_traits.hpp>

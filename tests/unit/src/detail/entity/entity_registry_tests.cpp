@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include <ant/detail/entity/entity_registry.hpp>
+#include <doctest/doctest.h>
 
 namespace ant::detail { namespace {
 
