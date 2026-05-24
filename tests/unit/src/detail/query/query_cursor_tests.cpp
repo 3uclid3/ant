@@ -68,4 +68,78 @@ TEST_CASE_FIXTURE(fixture, "query_cursor::advance: returns true when not empty")
     CHECK(cursor.advance());
 }
 
+TEST_CASE_FIXTURE(fixture, "query_cursor::advance: cursor moves within same table")
+{
+    table0().insert(entity{0});
+    table0().insert(entity{1});
+
+    base_query query{&schema, {&table0()}, {0}};
+    query_cursor cursor{&query, 0, 0};
+
+    REQUIRE(cursor.advance());
+    CHECK_EQ(cursor.table_index, 0);
+    CHECK_EQ(cursor.row_index, 1);
+}
+
+TEST_CASE_FIXTURE(fixture, "query_cursor::advance: cursor moves to next table")
+{
+    table0().insert(entity{0});
+    table1().insert(entity{1});
+
+    base_query query{&schema, {&table0(), &table1()}, {0, 0}};
+    query_cursor cursor{&query, 0, 0};
+
+    REQUIRE(cursor.advance());
+    CHECK_EQ(cursor.table_index, 1);
+    CHECK_EQ(cursor.row_index, 0);
+}
+
+TEST_CASE_FIXTURE(fixture, "query_cursor::advance: returns false and cursor at end after last row")
+{
+    table0().insert(entity{0});
+
+    base_query query{&schema, {&table0()}, {0}};
+    query_cursor cursor{&query, 0, 0};
+
+    CHECK_FALSE(cursor.advance());
+    CHECK_EQ(cursor.table_index, 1);
+    CHECK_EQ(cursor.row_index, 0);
+    CHECK_FALSE(cursor.is_valid());
+}
+
+TEST_CASE_FIXTURE(fixture, "query_cursor::advance: skips empty intermediate table")
+{
+    table0().insert(entity{0});
+    // table1 is empty
+    table& table2 = catalog.at(catalog.ensure_of(component_bitset_of<component<2>>()));
+    table2.insert(entity{2});
+
+    base_query query{&schema, {&table0(), &table1(), &table2}, {0, 0, 0}};
+    query_cursor cursor{&query, 0, 0};
+
+    REQUIRE(cursor.advance());
+    CHECK_EQ(cursor.table_index, 2);
+    CHECK_EQ(cursor.row_index, 0);
+}
+
+TEST_CASE_FIXTURE(fixture, "query_cursor::entity: returns entity at current row")
+{
+    table0().insert(entity{42});
+
+    base_query query{&schema, {&table0()}, {0}};
+    query_cursor cursor{&query, 0, 0};
+
+    CHECK_EQ(cursor.entity(), entity{42});
+}
+
+TEST_CASE_FIXTURE(fixture, "query_cursor::table: returns table at current row")
+{
+    table0().insert(entity{1});
+
+    base_query query{&schema, {&table0()}, {0}};
+    query_cursor cursor{&query, 0, 0};
+
+    CHECK_EQ(&cursor.table(), &table0());
+}
+
 }} // namespace ant::detail

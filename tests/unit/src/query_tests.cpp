@@ -141,6 +141,41 @@ TEST_CASE_FIXTURE(fixture, "query::begin: skips leading empty tables")
     CHECK_EQ((*query.begin()).entity(), entity{1});
 }
 
+TEST_CASE_FIXTURE(fixture, "query_row::operator bool: true for valid row")
+{
+    insert_entity_with_components<0>(entity{1});
+
+    using signature = query_signature<component<0>>;
+    query query = make_query<signature>();
+
+    auto row = query.row(entity{1});
+    REQUIRE(row.has_value());
+    CHECK(bool(*row));
+}
+
+TEST_CASE_FIXTURE(fixture, "query_row::get optional mutable: writes through pointer")
+{
+    insert_entity_with_components<0, 1>(entity{1});
+    insert_entity_with_components<0>(entity{2});
+
+    using signature = query_signature<component<0>, component<1>*>;
+    query query = make_query<signature>();
+
+    auto row = query.row(entity{1});
+    REQUIRE(row.has_value());
+    REQUIRE(row->has<component<1>>());
+    row->get<component<1>>()->value = 99;
+
+    auto updated = query.row(entity{1});
+    REQUIRE(updated.has_value());
+    CHECK_EQ(updated->get<component<1>>()->value, 99);
+
+    auto row2 = query.row(entity{2});
+    REQUIRE(row2.has_value());
+    CHECK_FALSE(row2->has<component<1>>());
+    CHECK_EQ(row2->get<component<1>>(), nullptr);
+}
+
 TEST_CASE_FIXTURE(fixture, "query_builder::build: supports sequential query construction")
 {
     insert_entity_with_components<0>(entity{1});
