@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstddef>
+#include <deque>
 #include <limits>
 #include <memory_resource>
 #include <unordered_map>
@@ -54,7 +55,7 @@ private:
 
     std::pmr::memory_resource* _memory_resource{std::pmr::get_default_resource()};
 
-    std::pmr::vector<table> _tables;
+    std::pmr::deque<table> _tables;
     std::pmr::unordered_map<component_bitset, std::size_t> _table_signatures; // component_bitset -> table index
     std::pmr::vector<table_bitset> _component_tables;                         // component_index -> associated tables where bits are table indexes
 
