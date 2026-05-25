@@ -29,7 +29,9 @@ public:
 
     auto contains(entity e) const noexcept -> bool;
     auto insert(entity e) -> std::size_t;
+    auto insert(entity e, std::span<component_construct> ctors) -> std::size_t; // ctors are invalid after this call
     auto splice(entity e, table& source) -> std::size_t;
+    auto splice(entity e, table& source, std::span<component_construct> ctors) -> std::size_t; // ctors are invalid after this call
     auto erase(entity e) -> bool;
 
     template<typename T>

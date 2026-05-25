@@ -44,4 +44,4 @@ target_compile_options(ant_unit
 
 # discover tests
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
-doctest_discover_tests(ant_unit)
+doctest_discover_tests(ant_unit PROPERTIES LABELS unit)

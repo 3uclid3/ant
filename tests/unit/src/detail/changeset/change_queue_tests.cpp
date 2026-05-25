@@ -42,11 +42,7 @@ TEST_CASE_FIXTURE(fixture, "change_queue::push_attach: adds an attach_change to 
     const auto& change = std::get<attach_change>(queue.front());
     CHECK_EQ(change.entity, e);
 
-    REQUIRE_NE(change.component, nullptr);
-    REQUIRE_EQ(change.meta, &schema.meta_of<component<0>>());
-
-    const auto* c = static_cast<component<0>*>(change.component);
-    CHECK_EQ(c->value, 42);
+    CHECK_EQ(&change.construct.meta.get(), &schema.meta_of<component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_queue::push_detach: adds a detach_change to the queue")
@@ -60,7 +56,7 @@ TEST_CASE_FIXTURE(fixture, "change_queue::push_detach: adds a detach_change to t
 
     const auto& change = std::get<detach_change>(queue.front());
     CHECK_EQ(change.entity, e);
-    CHECK_EQ(change.meta, &schema.meta_of<component<0>>());
+    CHECK_EQ(&change.meta.get(), &schema.meta_of<component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_queue::push_set_env: adds an set_env_change to the queue")
@@ -71,11 +67,7 @@ TEST_CASE_FIXTURE(fixture, "change_queue::push_set_env: adds an set_env_change t
     REQUIRE(std::holds_alternative<set_env_change>(queue.front()));
 
     const auto& change = std::get<set_env_change>(queue.front());
-    REQUIRE_NE(change.component, nullptr);
-    REQUIRE_EQ(change.meta, &schema.meta_of<component<0>>());
-
-    const auto* c = static_cast<component<0>*>(change.component);
-    CHECK_EQ(c->value, 42);
+    REQUIRE_EQ(&change.construct.meta.get(), &schema.meta_of<component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_queue::push_unset_env: adds a unset_env_change to the queue")
@@ -86,7 +78,7 @@ TEST_CASE_FIXTURE(fixture, "change_queue::push_unset_env: adds a unset_env_chang
     REQUIRE(std::holds_alternative<unset_env_change>(queue.front()));
 
     const auto& change = std::get<unset_env_change>(queue.front());
-    CHECK_EQ(change.meta, &schema.meta_of<component<0>>());
+    CHECK_EQ(&change.meta.get(), &schema.meta_of<component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_queue::consume_all: consumes all changes in the queue")

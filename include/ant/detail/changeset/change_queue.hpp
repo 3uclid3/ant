@@ -4,6 +4,7 @@
 #include <variant>
 #include <vector>
 
+#include <ant/detail/schema/component_construct.hpp>
 #include <ant/detail/schema/component_meta.hpp>
 #include <ant/detail/schema/schema.hpp>
 #include <ant/entity.hpp>
@@ -18,25 +19,23 @@ struct destroy_change
 struct attach_change
 {
     ant::entity entity;
-    void* component{nullptr};
-    const component_meta* meta{nullptr};
+    component_construct construct;
 };
 
 struct detach_change
 {
     ant::entity entity;
-    const component_meta* meta{nullptr};
+    std::reference_wrapper<const component_meta> meta;
 };
 
 struct set_env_change
 {
-    void* component{nullptr};
-    const component_meta* meta{nullptr};
+    component_construct construct;
 };
 
 struct unset_env_change
 {
-    const component_meta* meta{nullptr};
+    std::reference_wrapper<const component_meta> meta;
 };
 
 class change_queue
@@ -45,13 +44,12 @@ public:
     using change_type = std::variant<destroy_change, attach_change, detach_change, set_env_change, unset_env_change>;
 
     change_queue(const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
-    ~change_queue();
 
     change_queue(const change_queue&) = delete;
     change_queue& operator=(const change_queue&) = delete;
 
     change_queue(change_queue&&) noexcept = default;
-    change_queue& operator=(change_queue&& other) noexcept;
+    change_queue& operator=(change_queue&& other) noexcept = default;
 
     auto push_destroy(entity e) -> void;
 
@@ -79,38 +77,44 @@ public:
 
 private:
     const schema* _schema;
-    std::pmr::memory_resource* _memory_resource;
     std::pmr::vector<change_type> _changes;
 };
 
 template<typename Component, typename... Args>
 auto change_queue::push_attach(entity e, Args&&... args) -> void
 {
-    Component* component = static_cast<Component*>(_memory_resource->allocate(sizeof(Component), alignof(Component)));
-    ::new (component) Component(std::forward<Args>(args)...);
-
-    _changes.emplace_back(attach_change{e, component, &_schema->meta_of<Component>()});
+    _changes.emplace_back(
+        attach_change{
+            .entity = e,
+            .construct = {
+                .fn = [tuple = std::make_tuple(std::forward<Args>(args)...)](void* ptr) {
+                    std::apply([ptr](auto&&... arg) { std::construct_at(static_cast<Component*>(ptr), std::move(arg)...); }, tuple);
+                },
+                .meta = _schema->meta_of<Component>()}});
 }
 
 template<typename Component>
 auto change_queue::push_detach(entity e) -> void
 {
-    _changes.emplace_back(detach_change{e, &_schema->meta_of<Component>()});
+    _changes.emplace_back(detach_change{e, _schema->meta_of<Component>()});
 }
 
 template<typename Component, typename... Args>
 auto change_queue::push_set_env(Args&&... args) -> void
 {
-    Component* component = static_cast<Component*>(_memory_resource->allocate(sizeof(Component), alignof(Component)));
-    ::new (component) Component(std::forward<Args>(args)...);
-
-    _changes.emplace_back(set_env_change{component, &_schema->meta_of<Component>()});
+    _changes.emplace_back(
+        set_env_change{
+            .construct = {
+                .fn = [tuple = std::make_tuple(std::forward<Args>(args)...)](void* ptr) {
+                    std::apply([ptr](auto&&... arg) { std::construct_at(static_cast<Component*>(ptr), std::move(arg)...); }, tuple);
+                },
+                .meta = _schema->meta_of<Component>()}});
 }
 
 template<typename Component>
 auto change_queue::push_unset_env() -> void
 {
-    _changes.emplace_back(unset_env_change{&_schema->meta_of<Component>()});
+    _changes.emplace_back(unset_env_change{_schema->meta_of<Component>()});
 }
 
 template<typename F>

@@ -9,6 +9,7 @@ function(ant_compile_test name path)
   target_link_libraries(${target} PRIVATE ant ant_mock ant_warnings)
   set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
   add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target})
+  set_tests_properties(${name} PROPERTIES LABELS compile)
 endfunction()
 
 function(ant_compile_fail_test name path)
@@ -22,7 +23,11 @@ function(ant_compile_fail_test name path)
   target_link_libraries(${target} PRIVATE ant ant_mock ant_warnings)
   set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
   add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target})
-  set_tests_properties(${name} PROPERTIES WILL_FAIL TRUE)
+  set_tests_properties(${name}
+    PROPERTIES
+      WILL_FAIL TRUE
+      LABELS compile
+  )
 endfunction()
 
 # core

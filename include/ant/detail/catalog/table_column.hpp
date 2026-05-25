@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <ant/detail/assert.hpp>
+#include <ant/detail/schema/component_construct.hpp>
 #include <ant/detail/schema/component_meta.hpp>
 
 namespace ant::detail {
@@ -22,6 +23,7 @@ public:
     auto operator=(table_column&& other) noexcept -> table_column&;
 
     auto emplace_back() -> std::size_t;
+    auto emplace_back(component_construct ctor) -> std::size_t;
     auto splice_back(table_column& source, std::size_t source_index) -> std::size_t;
     auto swap_and_pop(std::size_t index) noexcept -> void;
 

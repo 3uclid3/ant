@@ -31,6 +31,23 @@ auto table::contains(entity e) const noexcept -> bool
 
 auto table::insert(entity e) -> std::size_t
 {
+    std::array<std::byte,  sizeof(component_construct) * 256> buffer{};
+    std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+    std::pmr::vector<component_construct> ctors(&mbr);
+    ctors.reserve(_columns.size());
+
+    for (std::size_t i = 0; i < _columns.size(); ++i)
+    {
+        ctors.emplace_back(component_construct{nullptr, _columns[i].meta()});
+    }
+
+    return insert(e, ctors);
+}
+
+auto table::insert(entity e, std::span<component_construct> ctors) -> std::size_t
+{
+    ANT_ASSERT(ctors.size() == _columns.size(), "ctors count mismatch");
+
     const auto index = entity_traits::to_index(e);
     ANT_ASSERT(index != npos, "invalid entity");
 
@@ -44,8 +61,10 @@ auto table::insert(entity e) -> std::size_t
     _sparse_rows[index] = _rows.size();
     _rows.push_back(e);
 
-    for (auto& column : _columns)
-        column.emplace_back();
+    for (std::size_t c = 0; c < _columns.size(); ++c)
+    {
+        _columns[c].emplace_back(std::move(ctors[c]));
+    }
 
     ANT_ASSERT(std::ranges::all_of(_columns, [this](const table_column& c) { return c.size() == _rows.size(); }), "column size mismatch after adding row");
 
@@ -54,21 +73,38 @@ auto table::insert(entity e) -> std::size_t
 
 auto table::splice(entity e, table& source) -> std::size_t
 {
-    ANT_ASSERT(source.contains(e));
+    std::array<std::byte,  sizeof(component_construct) * 256> buffer{};
+    std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+    std::pmr::vector<component_construct> ctors(&mbr);
+    ctors.reserve(_columns.size());
+
+    for (std::size_t i = 0; i < _columns.size(); ++i)
+    {
+        ctors.emplace_back(component_construct{nullptr, _columns[i].meta()});
+    }
+
+    return splice(e, source, ctors);
+}
+
+auto table::splice(entity e, table& source, std::span<component_construct> ctors) -> std::size_t
+{
+    ANT_ASSERT(ctors.size() == _columns.size(), "ctors count mismatch");
+    ANT_ASSERT(source.contains(e), "entity not found in source");
 
     const auto index = entity_traits::to_index(e);
+
     ANT_ASSERT(index != npos, "invalid entity");
 
     ensure_sparse_capacity(index + 1);
 
-    // TODO support existing row
     ANT_ASSERT(_sparse_rows[index] == npos, "insertion from source does not support existing rows yet");
 
     _sparse_rows[index] = _rows.size();
     _rows.push_back(e);
 
-    for (table_column& column : _columns)
+    for (std::size_t c = 0; c < _columns.size(); ++c)
     {
+        table_column& column = _columns[c];
         const auto src_col_idx = source.column_of(column.meta().index);
         if (src_col_idx != npos)
         {
@@ -76,14 +112,16 @@ auto table::splice(entity e, table& source) -> std::size_t
         }
         else
         {
-            column.emplace_back();
+            column.emplace_back(std::move(ctors[c]));
         }
     }
 
     for (table_column& src_column : source._columns)
     {
         if (!_components.test(src_column.meta().index))
+        {
             src_column.swap_and_pop(source._sparse_rows[index]);
+        }
     }
 
     constexpr bool erase_columns = false;
