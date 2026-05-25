@@ -2,9 +2,11 @@
 
 namespace ant::detail {
 
-query_builder::query_builder(const schema& schema, catalog& catalog)
+query_builder::query_builder(const schema& schema, catalog& catalog, std::pmr::memory_resource* memory_resource)
     : _schema(schema)
     , _catalog(catalog)
+    , _tables(memory_resource)
+    , _mapping(memory_resource)
 {
 }
 

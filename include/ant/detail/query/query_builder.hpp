@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory_resource>
+
 #include <ant/detail/catalog/catalog.hpp>
 #include <ant/detail/schema/component_bitset.hpp>
 #include <ant/detail/schema/schema.hpp>
@@ -11,7 +13,7 @@ namespace ant { namespace detail {
 class query_builder
 {
 public:
-    query_builder(const schema& schema, catalog& catalog);
+    query_builder(const schema& schema, catalog& catalog, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
 
     template<typename Signature>
     auto build() -> query<Signature>;
