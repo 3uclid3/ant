@@ -44,13 +44,13 @@ auto catalog::ensure_of(const component_bitset& components) -> std::size_t
     return it->second;
 }
 
-auto catalog::at(std::size_t idx) const -> const table&
+auto catalog::at(std::size_t idx) const noexcept -> const table&
 {
     ANT_ASSERT(idx < size(), "table index out of range");
     return _tables[idx];
 }
 
-auto catalog::at(std::size_t idx) -> table&
+auto catalog::at(std::size_t idx) noexcept -> table&
 {
     return const_cast<table&>(std::as_const(*this).at(idx));
 }

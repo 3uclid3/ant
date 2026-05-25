@@ -11,7 +11,7 @@ struct query_cursor
     auto operator==(const query_cursor& other) const noexcept -> bool = default;
     auto operator!=(const query_cursor& other) const noexcept -> bool = default;
 
-    auto advance() -> bool;
+    auto advance() noexcept -> bool;
 
     auto is_valid() const noexcept -> bool;
 

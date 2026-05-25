@@ -34,9 +34,9 @@ public:
         auto operator==(const iterator& other) const noexcept -> bool = default;
         auto operator!=(const iterator& other) const noexcept -> bool = default;
 
-        auto operator++() -> iterator&;
-        auto operator++(int) -> iterator;
-        auto operator*() const -> row_type;
+        auto operator++() noexcept -> iterator&;
+        auto operator++(int) noexcept -> iterator;
+        auto operator*() const noexcept -> row_type;
 
     private:
         iterator(detail::query_cursor cursor) noexcept;
@@ -108,7 +108,7 @@ query<Signature>::iterator::iterator(detail::query_cursor cursor) noexcept
 }
 
 template<typename Signature>
-auto query<Signature>::iterator::operator++() -> iterator&
+auto query<Signature>::iterator::operator++() noexcept-> iterator&
 {
     _cursor.advance();
 
@@ -116,7 +116,7 @@ auto query<Signature>::iterator::operator++() -> iterator&
 }
 
 template<typename Signature>
-auto query<Signature>::iterator::operator++(int) -> iterator
+auto query<Signature>::iterator::operator++(int) noexcept-> iterator
 {
     iterator temp = *this;
     ++(*this);
@@ -124,7 +124,7 @@ auto query<Signature>::iterator::operator++(int) -> iterator
 }
 
 template<typename Signature>
-auto query<Signature>::iterator::operator*() const -> row_type
+auto query<Signature>::iterator::operator*() const noexcept-> row_type
 {
     return row_type(_cursor);
 }

@@ -37,11 +37,11 @@ public:
     [[nodiscard]] auto ensure_of(const component_bitset& components) -> std::size_t;
 
     // assert if index is npos or out of bounds
-    [[nodiscard]] auto at(std::size_t index) const -> const table&;
-    [[nodiscard]] auto at(std::size_t index) -> table&;
+    [[nodiscard]] auto at(std::size_t index) const noexcept -> const table&;
+    [[nodiscard]] auto at(std::size_t index) noexcept -> table&;
 
     template<typename F>
-    auto for_each(const component_bitset& components, F&& f) noexcept -> void;
+    auto for_each(const component_bitset& components, F&& f) noexcept(noexcept(f(std::size_t{}, std::declval<table&>()))) -> void;
 
 private:
     using table_bitset = bitset;
@@ -63,7 +63,7 @@ private:
 };
 
 template<typename F>
-auto catalog::for_each(const component_bitset& components, F&& f) noexcept -> void
+auto catalog::for_each(const component_bitset& components, F&& f) noexcept(noexcept(f(std::size_t{}, std::declval<table&>()))) -> void
 {
     // early out: no required components means all tables match
     if (components.none())

@@ -4,7 +4,7 @@
 
 namespace ant { namespace detail {
 
-auto query_cursor::advance() -> bool
+auto query_cursor::advance() noexcept -> bool
 {
     ANT_ASSERT(query != nullptr);
 
