@@ -73,23 +73,23 @@ public:
     auto entity() const noexcept -> ant::entity;
 
     template<typename T>
-    requires(signature_traits::template is_required_v<T> || signature_traits::template is_required_v<const T>)
+    requires(signature_traits::template is_required<T> || signature_traits::template is_required<const T>)
     auto get() const noexcept -> const T&;
 
     template<typename T>
-    requires(signature_traits::template is_required_v<T>)
+    requires(signature_traits::template is_required<T>)
     auto get() noexcept -> T&;
 
     template<typename T>
-    requires(signature_traits::template is_optional_v<T> || signature_traits::template is_optional_v<const T>)
+    requires(signature_traits::template is_optional<T> || signature_traits::template is_optional<const T>)
     auto get() const noexcept -> const T*;
 
     template<typename T>
-    requires(signature_traits::template is_optional_v<T>)
+    requires(signature_traits::template is_optional<T>)
     auto get() noexcept -> T*;
 
     template<typename T>
-    requires(signature_traits::template is_optional_v<T> || signature_traits::template is_optional_v<const T>)
+    requires(signature_traits::template is_optional<T> || signature_traits::template is_optional<const T>)
     auto has() const noexcept -> bool;
 
 private:
@@ -201,7 +201,7 @@ auto query_row<Signature>::entity() const noexcept -> ant::entity
 
 template<typename Signature>
 template<typename T>
-requires(query_row<Signature>::signature_traits::template is_required_v<T> || query_row<Signature>::signature_traits::template is_required_v<const T>)
+requires(query_row<Signature>::signature_traits::template is_required<T> || query_row<Signature>::signature_traits::template is_required<const T>)
 auto query_row<Signature>::get() const noexcept -> const T&
 {
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
@@ -214,7 +214,7 @@ auto query_row<Signature>::get() const noexcept -> const T&
 
 template<typename Signature>
 template<typename T>
-requires(query_row<Signature>::signature_traits::template is_required_v<T>)
+requires(query_row<Signature>::signature_traits::template is_required<T>)
 auto query_row<Signature>::get() noexcept -> T&
 {
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
@@ -227,7 +227,7 @@ auto query_row<Signature>::get() noexcept -> T&
 
 template<typename Signature>
 template<typename T>
-requires(query_row<Signature>::signature_traits::template is_optional_v<T> || query_row<Signature>::signature_traits::template is_optional_v<const T>)
+requires(query_row<Signature>::signature_traits::template is_optional<T> || query_row<Signature>::signature_traits::template is_optional<const T>)
 auto query_row<Signature>::get() const noexcept -> const T*
 {
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
@@ -240,7 +240,7 @@ auto query_row<Signature>::get() const noexcept -> const T*
 
 template<typename Signature>
 template<typename T>
-requires(query_row<Signature>::signature_traits::template is_optional_v<T>)
+requires(query_row<Signature>::signature_traits::template is_optional<T>)
 auto query_row<Signature>::get() noexcept -> T*
 {
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
@@ -253,7 +253,7 @@ auto query_row<Signature>::get() noexcept -> T*
 
 template<typename Signature>
 template<typename T>
-requires(query_row<Signature>::signature_traits::template is_optional_v<T> || query_row<Signature>::signature_traits::template is_optional_v<const T>)
+requires(query_row<Signature>::signature_traits::template is_optional<T> || query_row<Signature>::signature_traits::template is_optional<const T>)
 auto query_row<Signature>::has() const noexcept -> bool
 {
     constexpr std::size_t type_index = signature_traits::template index_of<T>;

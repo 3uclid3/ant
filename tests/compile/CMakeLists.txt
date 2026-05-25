@@ -33,6 +33,10 @@ ant_compile_fail_test(type_list_index_of_not_found detail/type_list)
 
 # database
 
+## env signature
+ant_compile_test(env_signature_traits detail/env)
+ant_compile_fail_test(env_signature_traits_duplicate_type detail/env)
+
 ## env
 ant_compile_test(env_has env)
 ant_compile_test(env_get env)

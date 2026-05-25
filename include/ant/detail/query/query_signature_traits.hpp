@@ -81,13 +81,13 @@ struct query_signature_traits<query_signature<Parameters...>>
     using included = type_list_concat_t<required, optional>;
 
     template<typename T>
-    static constexpr bool is_required_v = type_list_contains_v<T, required>;
+    static constexpr bool is_required = type_list_contains_v<T, required>;
 
     template<typename T>
-    static constexpr bool is_optional_v = type_list_contains_v<T, optional>;
+    static constexpr bool is_optional = type_list_contains_v<T, optional>;
 
     template<typename T>
-    static constexpr bool is_excluded_v = type_list_contains_v<T, excluded>;
+    static constexpr bool is_excluded = type_list_contains_v<T, excluded>;
 
     template<typename T>
     static constexpr std::size_t index_of = type_list_index_of_v<T, type_list_transform_t<std::remove_const, included>>;

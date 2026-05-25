@@ -7,7 +7,7 @@
 namespace ant {
 
 template<typename Signature>
-class env
+class env final
 {
 public:
     using signature = Signature;
@@ -25,39 +25,39 @@ public:
     auto operator=(env&&) noexcept -> env& = default;
 
     template<typename T>
-    requires(signature_traits::template is_required_v<T> || signature_traits::template is_required_v<const T>)
+    requires(signature_traits::template is_required<T> || signature_traits::template is_required<const T>)
     auto get() const noexcept -> const T&
     {
-        const auto ptr = _env->template get<T>();
+        const T* ptr = _env->template get<T>();
         ANT_ASSERT(ptr != nullptr, "Component not set in env");
         return *ptr;
     }
 
     template<typename T>
-    requires(signature_traits::template is_required_v<T>)
+    requires(signature_traits::template is_required<T>)
     auto get() noexcept -> T&
     {
-        auto ptr = _env->template get<T>();
+        T* ptr = _env->template get<T>();
         ANT_ASSERT(ptr != nullptr, "Component not set in env");
         return *ptr;
     }
 
     template<typename T>
-    requires(signature_traits::template is_optional_v<T> || signature_traits::template is_optional_v<const T>)
+    requires(signature_traits::template is_optional<T> || signature_traits::template is_optional<const T>)
     auto get() const noexcept -> const T*
     {
         return _env->template get<T>();
     }
 
     template<typename T>
-    requires(signature_traits::template is_optional_v<T>)
+    requires(signature_traits::template is_optional<T>)
     auto get() noexcept -> T*
     {
         return _env->template get<T>();
     }
 
     template<typename T>
-    requires(signature_traits::template is_optional_v<T> || signature_traits::template is_optional_v<const T>)
+    requires(signature_traits::template is_optional<T> || signature_traits::template is_optional<const T>)
     auto has() const noexcept -> bool
     {
         return _env->template has<T>();
