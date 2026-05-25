@@ -33,6 +33,19 @@ ant_compile_fail_test(type_list_index_of_not_found detail/type_list)
 
 # database
 
+## changeset
+ant_compile_test(changeset changeset)
+ant_compile_fail_test(changeset_unsupported_create changeset)
+ant_compile_fail_test(changeset_unsupported_destroy changeset)
+ant_compile_fail_test(changeset_unsupported_attach changeset)
+ant_compile_fail_test(changeset_unsupported_attach_type changeset)
+ant_compile_fail_test(changeset_unsupported_detach changeset)
+ant_compile_fail_test(changeset_unsupported_detach_type changeset)
+ant_compile_fail_test(changeset_unsupported_set_env changeset)
+ant_compile_fail_test(changeset_unsupported_set_env_type changeset)
+ant_compile_fail_test(changeset_unsupported_unset_env changeset)
+ant_compile_fail_test(changeset_unsupported_unset_env_type changeset)
+
 ## env signature
 ant_compile_test(env_signature_traits detail/env)
 ant_compile_fail_test(env_signature_traits_duplicate_type detail/env)

@@ -12,6 +12,7 @@ add_executable(ant_unit
   src/detail/catalog/catalog_tests.cpp
   src/detail/catalog/table_column_tests.cpp
   src/detail/catalog/table_tests.cpp
+  src/detail/changeset/change_queue_tests.cpp
   src/detail/entity/entity_registry_tests.cpp
   src/detail/entity/entity_traits_tests.cpp
   src/detail/env/env_registry_tests.cpp

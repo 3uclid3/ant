@@ -27,6 +27,8 @@ target_sources(ant
       include/ant/detail/catalog/catalog.hpp
       include/ant/detail/catalog/table.hpp
       include/ant/detail/catalog/table_column.hpp
+      include/ant/detail/changeset/change_queue.hpp
+      include/ant/detail/changeset/changeset_signature_traits.hpp
       include/ant/detail/entity/entity_location.hpp
       include/ant/detail/entity/entity_registry.hpp
       include/ant/detail/entity/entity_traits.hpp
@@ -47,6 +49,7 @@ target_sources(ant
       include/ant/detail/signature_traits.hpp
       include/ant/detail/type_list.hpp
       include/ant/assert.hpp
+      include/ant/changeset_fwd.hpp
       include/ant/entity.hpp
       include/ant/env.hpp
       include/ant/env_fwd.hpp
@@ -54,6 +57,7 @@ target_sources(ant
     src/detail/catalog/catalog.cpp
     src/detail/catalog/table.cpp
     src/detail/catalog/table_column.cpp
+    src/detail/changeset/change_queue.cpp
     src/detail/entity/entity_registry.cpp
     src/detail/env/env_registry.cpp
     src/detail/query/query_builder.cpp
