@@ -4,8 +4,8 @@
 #include <utility>
 
 #include <ant.mock/detail/schema.hpp>
-#include <ant/detail/bitset.hpp>
 #include <ant/detail/catalog/table.hpp>
+#include <ant/detail/dynamic_bitset.hpp>
 
 namespace ant::detail {
 

@@ -93,11 +93,6 @@ struct query_signature_traits<query_signature<Parameters...>>
     static constexpr std::size_t index_of = type_list_index_of_v<T, type_list_transform_t<std::remove_const, included>>;
     static constexpr std::size_t size = type_list_size_v<included>;
 
-    static inline const auto required_bitset = component_bitset_of<type_list_transform_t<std::remove_const, required>>();
-    static inline const auto optional_bitset = component_bitset_of<type_list_transform_t<std::remove_const, optional>>();
-    static inline const auto excluded_bitset = component_bitset_of<type_list_transform_t<std::remove_const, excluded>>();
-    static inline const auto included_bitset = component_bitset_of<type_list_transform_t<std::remove_const, included>>();
-
     static_assert(std::is_same_v<flatten, type_list_unique_t<flatten>>, "query_signature_traits: duplicate parameter(s) in signature");
     static_assert(std::is_same_v<type_list_transform_t<std::remove_const, included>,
                                  type_list_unique_t<type_list_transform_t<std::remove_const, included>>>,

@@ -21,7 +21,7 @@ add_executable(ant_unit
   src/detail/schema/component_meta_tests.cpp
   src/detail/schema/component_vtable_tests.cpp
   src/detail/schema/schema_tests.cpp
-  src/detail/bitset_tests.cpp
+  src/detail/dynamic_bitset_tests.cpp
   src/env_tests.cpp
   src/query_tests.cpp
 

@@ -1,4 +1,4 @@
-#include <ant/detail/bitset.hpp>
+#include <ant/detail/dynamic_bitset.hpp>
 #include <doctest/doctest.h>
 
 #include <bitset>
@@ -7,8 +7,12 @@
 
 namespace ant::detail {
 
+using bitset = basic_dynamic_bitset<256, std::allocator<std::uint64_t>>;
+using small_bitset = basic_dynamic_bitset<64, std::allocator<std::uint64_t>>;
+using new_allocator_bitset = basic_dynamic_bitset<64, std::pmr::polymorphic_allocator<std::uint64_t>>;
+
 template<std::size_t C, typename Allocator>
-auto operator<<(std::ostream& os, const basic_bitset<C, Allocator>& bs) -> std::ostream&
+auto operator<<(std::ostream& os, const basic_dynamic_bitset<C, Allocator>& bs) -> std::ostream&
 {
     for (auto block : bs.blocks_view())
     {
@@ -23,7 +27,7 @@ namespace {
 // Pattern for more robust testing
 
 template<std::size_t InplaceCapacity, typename Allocator>
-auto set_even(basic_bitset<InplaceCapacity, Allocator>& bs) -> void
+auto set_even(basic_dynamic_bitset<InplaceCapacity, Allocator>& bs) -> void
 {
     for (std::size_t i = 0; i < bs.size(); i += 2)
     {
@@ -32,7 +36,7 @@ auto set_even(basic_bitset<InplaceCapacity, Allocator>& bs) -> void
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
-auto set_odd(basic_bitset<InplaceCapacity, Allocator>& bs) -> void
+auto set_odd(basic_dynamic_bitset<InplaceCapacity, Allocator>& bs) -> void
 {
     for (std::size_t i = 1; i < bs.size(); i += 2)
     {
@@ -65,9 +69,7 @@ const auto tail_only_blocks_size = bitset::bits_per_block / 2;
 const auto full_only_blocks_size = bitset::bits_per_block * 4;
 const auto full_and_tail_blocks_size = full_only_blocks_size + tail_only_blocks_size;
 
-using small_bitset = basic_bitset<64, std::allocator<std::uint64_t>>;
-
-TEST_CASE("basic_bitset::ctor: default")
+TEST_CASE("dynamic_bitset::ctor: default")
 {
     bitset bs;
 
@@ -76,7 +78,7 @@ TEST_CASE("basic_bitset::ctor: default")
     CHECK_EQ(bs.capacity(), bitset::inplace_capacity);
 }
 
-TEST_CASE("basic_bitset::ctor: with size smaller or equal to inplace_capacity")
+TEST_CASE("dynamic_bitset::ctor: with size smaller or equal to inplace_capacity")
 {
     const std::size_t size = GENERATE(bitset::inplace_capacity - 1, bitset::inplace_capacity);
 
@@ -87,7 +89,7 @@ TEST_CASE("basic_bitset::ctor: with size smaller or equal to inplace_capacity")
     CHECK_EQ(bs.capacity(), bitset::inplace_capacity);
 }
 
-TEST_CASE("basic_bitset::ctor: with size larger than inplace_capacity")
+TEST_CASE("dynamic_bitset::ctor: with size larger than inplace_capacity")
 {
     constexpr auto size = bitset::inplace_capacity + 1;
 
@@ -98,7 +100,7 @@ TEST_CASE("basic_bitset::ctor: with size larger than inplace_capacity")
     CHECK_GE(bs.capacity(), size); // rounded up
 }
 
-TEST_CASE("basic_bitset::ctor: copy from inplace")
+TEST_CASE("dynamic_bitset::ctor: copy from inplace")
 {
     bitset from{odd_bitset(bitset::inplace_capacity)};
 
@@ -108,7 +110,7 @@ TEST_CASE("basic_bitset::ctor: copy from inplace")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::ctor: copy from heap")
+TEST_CASE("dynamic_bitset::ctor: copy from heap")
 {
     bitset from{odd_bitset(bitset::inplace_capacity + 1)};
 
@@ -118,7 +120,7 @@ TEST_CASE("basic_bitset::ctor: copy from heap")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::ctor: move from inplace")
+TEST_CASE("dynamic_bitset::ctor: move from inplace")
 {
     bitset expected{odd_bitset(bitset::inplace_capacity)};
     bitset from{expected};
@@ -129,7 +131,7 @@ TEST_CASE("basic_bitset::ctor: move from inplace")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::ctor: move from heap")
+TEST_CASE("dynamic_bitset::ctor: move from heap")
 {
     bitset expected{odd_bitset(bitset::inplace_capacity + 1)};
     bitset from{expected};
@@ -140,7 +142,7 @@ TEST_CASE("basic_bitset::ctor: move from heap")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::ctor: cross-capacity copy: large-inplace to small-inplace")
+TEST_CASE("dynamic_bitset::ctor: cross-capacity copy: large-inplace to small-inplace")
 {
     // size(64) fits in small's inplace (64), is inplace in large (256) too
     bitset from{odd_bitset(64)};
@@ -152,7 +154,7 @@ TEST_CASE("basic_bitset::ctor: cross-capacity copy: large-inplace to small-inpla
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::ctor: cross-capacity copy: large-inplace to small-heap")
+TEST_CASE("dynamic_bitset::ctor: cross-capacity copy: large-inplace to small-heap")
 {
     // size(128) is inplace in large (256) but exceeds small's inplace (64)
     bitset from{odd_bitset(128)};
@@ -164,7 +166,7 @@ TEST_CASE("basic_bitset::ctor: cross-capacity copy: large-inplace to small-heap"
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::ctor: cross-capacity copy: small-heap to large-inplace")
+TEST_CASE("dynamic_bitset::ctor: cross-capacity copy: small-heap to large-inplace")
 {
     // size(128) forces heap in small (64) but fits in large's inplace (256)
     small_bitset from{128};
@@ -178,7 +180,7 @@ TEST_CASE("basic_bitset::ctor: cross-capacity copy: small-heap to large-inplace"
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::ctor: cross-capacity copy: both heap")
+TEST_CASE("dynamic_bitset::ctor: cross-capacity copy: both heap")
 {
     // size > 256, forces heap in both
     bitset from{odd_bitset(bitset::inplace_capacity + 1)};
@@ -190,7 +192,7 @@ TEST_CASE("basic_bitset::ctor: cross-capacity copy: both heap")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator=: copy from self is no-op")
+TEST_CASE("dynamic_bitset::operator=: copy from self is no-op")
 {
     bitset expected{odd_bitset(bitset::inplace_capacity)};
 
@@ -201,7 +203,7 @@ TEST_CASE("basic_bitset::operator=: copy from self is no-op")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator=: copy from inplace to self inplace")
+TEST_CASE("dynamic_bitset::operator=: copy from inplace to self inplace")
 {
     bitset from{odd_bitset(bitset::inplace_capacity)};
     bitset to{even_bitset(bitset::inplace_capacity)};
@@ -212,7 +214,7 @@ TEST_CASE("basic_bitset::operator=: copy from inplace to self inplace")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator=: copy from heap to self inplace")
+TEST_CASE("dynamic_bitset::operator=: copy from heap to self inplace")
 {
     bitset from{odd_bitset(bitset::inplace_capacity + 1)};
     bitset to{even_bitset(bitset::inplace_capacity)};
@@ -223,7 +225,7 @@ TEST_CASE("basic_bitset::operator=: copy from heap to self inplace")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator=: copy from inplace to self heap")
+TEST_CASE("dynamic_bitset::operator=: copy from inplace to self heap")
 {
     bitset from{odd_bitset(bitset::inplace_capacity)};
     bitset to{even_bitset(bitset::inplace_capacity + 1)};
@@ -234,7 +236,7 @@ TEST_CASE("basic_bitset::operator=: copy from inplace to self heap")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator=: copy from heap to self heap")
+TEST_CASE("dynamic_bitset::operator=: copy from heap to self heap")
 {
     constexpr std::size_t to_size = (bitset::inplace_capacity + 1) * 3;
     const std::size_t from_size = GENERATE(to_size - 1, to_size, to_size + 1, to_size + bitset::inplace_capacity);
@@ -249,7 +251,7 @@ TEST_CASE("basic_bitset::operator=: copy from heap to self heap")
     CHECK_GE(to.capacity(), to_size);
 }
 
-TEST_CASE("basic_bitset::operator=: move from self is no-op")
+TEST_CASE("dynamic_bitset::operator=: move from self is no-op")
 {
     bitset expected{odd_bitset(bitset::inplace_capacity + 1)};
     bitset to{expected};
@@ -260,7 +262,7 @@ TEST_CASE("basic_bitset::operator=: move from self is no-op")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator=: move from inplace to self inplace")
+TEST_CASE("dynamic_bitset::operator=: move from inplace to self inplace")
 {
     bitset expected{odd_bitset(bitset::inplace_capacity)};
     bitset from{expected};
@@ -272,7 +274,7 @@ TEST_CASE("basic_bitset::operator=: move from inplace to self inplace")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator=: move from heap to self inplace")
+TEST_CASE("dynamic_bitset::operator=: move from heap to self inplace")
 {
     bitset expected{odd_bitset(bitset::inplace_capacity + 1)};
     bitset from{expected};
@@ -284,7 +286,7 @@ TEST_CASE("basic_bitset::operator=: move from heap to self inplace")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator=: move from inplace to self heap")
+TEST_CASE("dynamic_bitset::operator=: move from inplace to self heap")
 {
     bitset expected{odd_bitset(bitset::inplace_capacity)};
     bitset from{expected};
@@ -296,7 +298,7 @@ TEST_CASE("basic_bitset::operator=: move from inplace to self heap")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator=: move from heap to self heap ")
+TEST_CASE("dynamic_bitset::operator=: move from heap to self heap ")
 {
     constexpr std::size_t to_size = (bitset::inplace_capacity + 1) * 3;
     const std::size_t from_size = GENERATE(to_size - 1, to_size, to_size + 1);
@@ -312,7 +314,7 @@ TEST_CASE("basic_bitset::operator=: move from heap to self heap ")
     CHECK_GE(to.capacity(), expected.size());
 }
 
-TEST_CASE("basic_bitset::operator=: cross-capacity copy: large-inplace to small-inplace")
+TEST_CASE("dynamic_bitset::operator=: cross-capacity copy: large-inplace to small-inplace")
 {
     bitset from{odd_bitset(64)};
     small_bitset to{32};
@@ -323,7 +325,7 @@ TEST_CASE("basic_bitset::operator=: cross-capacity copy: large-inplace to small-
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator=: cross-capacity copy: large-inplace to small-heap")
+TEST_CASE("dynamic_bitset::operator=: cross-capacity copy: large-inplace to small-heap")
 {
     // size(128) is inplace in large but must go to heap in small
     bitset from{odd_bitset(128)};
@@ -337,7 +339,7 @@ TEST_CASE("basic_bitset::operator=: cross-capacity copy: large-inplace to small-
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator=: cross-capacity copy: small-heap to large-inplace")
+TEST_CASE("dynamic_bitset::operator=: cross-capacity copy: small-heap to large-inplace")
 {
     small_bitset from{128};
     for (std::size_t i = 1; i < from.size(); i += 2)
@@ -352,7 +354,7 @@ TEST_CASE("basic_bitset::operator=: cross-capacity copy: small-heap to large-inp
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator=: cross-capacity copy: both heap")
+TEST_CASE("dynamic_bitset::operator=: cross-capacity copy: both heap")
 {
     bitset from{odd_bitset(bitset::inplace_capacity + 1)};
     CHECK(from.is_heap());
@@ -366,7 +368,7 @@ TEST_CASE("basic_bitset::operator=: cross-capacity copy: both heap")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator&=: from self is no-op")
+TEST_CASE("dynamic_bitset::operator&=: from self is no-op")
 {
     bitset expected{odd_bitset(64)};
     bitset to{expected};
@@ -377,7 +379,7 @@ TEST_CASE("basic_bitset::operator&=: from self is no-op")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator&=: empty")
+TEST_CASE("dynamic_bitset::operator&=: empty")
 {
     bitset to;
 
@@ -386,7 +388,7 @@ TEST_CASE("basic_bitset::operator&=: empty")
     CHECK_EQ(to, bitset());
 }
 
-TEST_CASE("basic_bitset::operator&=: AND bits")
+TEST_CASE("dynamic_bitset::operator&=: AND bits")
 {
     bitset expected{even_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
     bitset from{expected};
@@ -398,7 +400,7 @@ TEST_CASE("basic_bitset::operator&=: AND bits")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator|=: empty")
+TEST_CASE("dynamic_bitset::operator|=: empty")
 {
     bitset to;
 
@@ -407,7 +409,7 @@ TEST_CASE("basic_bitset::operator|=: empty")
     CHECK_EQ(to, bitset());
 }
 
-TEST_CASE("basic_bitset::operator|=: OR bits")
+TEST_CASE("dynamic_bitset::operator|=: OR bits")
 {
     bitset expected{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
     expected.set();
@@ -419,7 +421,7 @@ TEST_CASE("basic_bitset::operator|=: OR bits")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator^=: empty")
+TEST_CASE("dynamic_bitset::operator^=: empty")
 {
     bitset to;
 
@@ -428,7 +430,7 @@ TEST_CASE("basic_bitset::operator^=: empty")
     CHECK_EQ(to, bitset());
 }
 
-TEST_CASE("basic_bitset::operator^=: XOR bits")
+TEST_CASE("dynamic_bitset::operator^=: XOR bits")
 {
     bitset expected{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
     bitset from{expected.size()};
@@ -440,7 +442,7 @@ TEST_CASE("basic_bitset::operator^=: XOR bits")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::operator&=: when different sizes result in self larger truncates to other size")
+TEST_CASE("dynamic_bitset::operator&=: when different sizes result in self larger truncates to other size")
 {
     const std::size_t self_size = GENERATE(128u, full_only_blocks_size);
     const std::size_t other_size = self_size / 2;
@@ -453,7 +455,7 @@ TEST_CASE("basic_bitset::operator&=: when different sizes result in self larger 
     CHECK_EQ(to, even_bitset(other_size));
 }
 
-TEST_CASE("basic_bitset::operator&=: when different sizes result in self smaller keeps self size")
+TEST_CASE("dynamic_bitset::operator&=: when different sizes result in self smaller keeps self size")
 {
     const std::size_t self_size = 64u;
     const std::size_t other_size = 128u;
@@ -466,7 +468,7 @@ TEST_CASE("basic_bitset::operator&=: when different sizes result in self smaller
     CHECK_EQ(to, even_bitset(self_size));
 }
 
-TEST_CASE("basic_bitset::operator&=: when different sbo and sizes result in self larger truncates")
+TEST_CASE("dynamic_bitset::operator&=: when different sbo and sizes result in self larger truncates")
 {
     bitset to{all_bitset(128)};
     small_bitset from{even_bitset(64)};
@@ -476,7 +478,7 @@ TEST_CASE("basic_bitset::operator&=: when different sbo and sizes result in self
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator&=: when different sbo and sizes result in self smaller keeps size")
+TEST_CASE("dynamic_bitset::operator&=: when different sbo and sizes result in self smaller keeps size")
 {
     small_bitset to{all_bitset(64)};
     bitset from{even_bitset(128)};
@@ -486,7 +488,7 @@ TEST_CASE("basic_bitset::operator&=: when different sbo and sizes result in self
     CHECK_EQ(to, even_bitset(to.size()));
 }
 
-TEST_CASE("basic_bitset::operator|=: when different sizes result in self larger keeps size and unchanged extra bits")
+TEST_CASE("dynamic_bitset::operator|=: when different sizes result in self larger keeps size and unchanged extra bits")
 {
     bitset to{all_bitset(128)};
     bitset from{even_bitset(64)};
@@ -497,7 +499,7 @@ TEST_CASE("basic_bitset::operator|=: when different sizes result in self larger 
     CHECK(to.all()); // self was all set, OR doesn't reduce count
 }
 
-TEST_CASE("basic_bitset::operator|=: when different sizes result in self smaller grows to other size")
+TEST_CASE("dynamic_bitset::operator|=: when different sizes result in self smaller grows to other size")
 {
     bitset to{odd_bitset(64)};
     bitset from{even_bitset(128)};
@@ -517,7 +519,7 @@ TEST_CASE("basic_bitset::operator|=: when different sizes result in self smaller
     }
 }
 
-TEST_CASE("basic_bitset::operator|=: when different sbo and sizes result in self larger keeps extra bits")
+TEST_CASE("dynamic_bitset::operator|=: when different sbo and sizes result in self larger keeps extra bits")
 {
     bitset to{all_bitset(128)};
     small_bitset from{even_bitset(64)};
@@ -528,7 +530,7 @@ TEST_CASE("basic_bitset::operator|=: when different sbo and sizes result in self
     CHECK_EQ(to.count(), 128u);
 }
 
-TEST_CASE("basic_bitset::operator|=: when different sbo and sizes result in self smaller grows")
+TEST_CASE("dynamic_bitset::operator|=: when different sbo and sizes result in self smaller grows")
 {
     small_bitset to{odd_bitset(64)};
     bitset from{even_bitset(128)};
@@ -546,7 +548,7 @@ TEST_CASE("basic_bitset::operator|=: when different sbo and sizes result in self
     }
 }
 
-TEST_CASE("basic_bitset::operator^=: when different sizes result in self larger XORs overlap only")
+TEST_CASE("dynamic_bitset::operator^=: when different sizes result in self larger XORs overlap only")
 {
     bitset to{all_bitset(128)};
     bitset from{all_bitset(64)};
@@ -567,7 +569,7 @@ TEST_CASE("basic_bitset::operator^=: when different sizes result in self larger 
     }
 }
 
-TEST_CASE("basic_bitset::operator^=: when different sizes result in self smaller grows")
+TEST_CASE("dynamic_bitset::operator^=: when different sizes result in self smaller grows")
 {
     bitset to{all_bitset(64)};
     bitset from{all_bitset(128)};
@@ -588,7 +590,7 @@ TEST_CASE("basic_bitset::operator^=: when different sizes result in self smaller
     }
 }
 
-TEST_CASE("basic_bitset::operator^=: when different sbo and sizes result in self larger XORs overlap only")
+TEST_CASE("dynamic_bitset::operator^=: when different sbo and sizes result in self larger XORs overlap only")
 {
     bitset to{all_bitset(128)};
     small_bitset from{all_bitset(64)};
@@ -606,7 +608,7 @@ TEST_CASE("basic_bitset::operator^=: when different sbo and sizes result in self
     }
 }
 
-TEST_CASE("basic_bitset::operator^=: when different sbo and sizes result in self smaller grows")
+TEST_CASE("dynamic_bitset::operator^=: when different sbo and sizes result in self smaller grows")
 {
     small_bitset to{all_bitset(64)};
     bitset from{all_bitset(128)};
@@ -625,21 +627,21 @@ TEST_CASE("basic_bitset::operator^=: when different sbo and sizes result in self
     }
 }
 
-TEST_CASE("basic_bitset::all: none")
+TEST_CASE("dynamic_bitset::all: none")
 {
     bitset bs{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
 
     CHECK_FALSE(bs.all());
 }
 
-TEST_CASE("basic_bitset::all: partial")
+TEST_CASE("dynamic_bitset::all: partial")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
 
     CHECK_FALSE(bs.all());
 }
 
-TEST_CASE("basic_bitset::all: all")
+TEST_CASE("dynamic_bitset::all: all")
 {
     bitset bs{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
     bs.set();
@@ -647,21 +649,21 @@ TEST_CASE("basic_bitset::all: all")
     CHECK(bs.all());
 }
 
-TEST_CASE("basic_bitset::any: none")
+TEST_CASE("dynamic_bitset::any: none")
 {
     bitset bs{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
 
     CHECK_FALSE(bs.any());
 }
 
-TEST_CASE("basic_bitset::any: partial")
+TEST_CASE("dynamic_bitset::any: partial")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
 
     CHECK(bs.any());
 }
 
-TEST_CASE("basic_bitset::any: all")
+TEST_CASE("dynamic_bitset::any: all")
 {
     bitset bs{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
     bs.set();
@@ -669,21 +671,21 @@ TEST_CASE("basic_bitset::any: all")
     CHECK(bs.any());
 }
 
-TEST_CASE("basic_bitset::none: none")
+TEST_CASE("dynamic_bitset::none: none")
 {
     bitset bs{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
 
     CHECK(bs.none());
 }
 
-TEST_CASE("basic_bitset::none: partial")
+TEST_CASE("dynamic_bitset::none: partial")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
 
     CHECK_FALSE(bs.none());
 }
 
-TEST_CASE("basic_bitset::none: all")
+TEST_CASE("dynamic_bitset::none: all")
 {
     bitset bs{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
     bs.set();
@@ -691,21 +693,21 @@ TEST_CASE("basic_bitset::none: all")
     CHECK_FALSE(bs.none());
 }
 
-TEST_CASE("basic_bitset::count: none")
+TEST_CASE("dynamic_bitset::count: none")
 {
     bitset bs{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
 
     CHECK_EQ(bs.count(), 0);
 }
 
-TEST_CASE("basic_bitset::count: partial")
+TEST_CASE("dynamic_bitset::count: partial")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
 
     CHECK_EQ(bs.count(), bs.size() / 2);
 }
 
-TEST_CASE("basic_bitset::count: all")
+TEST_CASE("dynamic_bitset::count: all")
 {
     bitset bs{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
     bs.set();
@@ -713,7 +715,7 @@ TEST_CASE("basic_bitset::count: all")
     CHECK_EQ(bs.count(), bs.size());
 }
 
-TEST_CASE("basic_bitset::set(all): empty ")
+TEST_CASE("dynamic_bitset::set(all): empty ")
 {
     bitset bs;
 
@@ -723,7 +725,7 @@ TEST_CASE("basic_bitset::set(all): empty ")
     CHECK_EQ(bs.count(), 0);
 }
 
-TEST_CASE("basic_bitset::set(all): sets all bits")
+TEST_CASE("dynamic_bitset::set(all): sets all bits")
 {
     bitset bs{64};
 
@@ -732,7 +734,7 @@ TEST_CASE("basic_bitset::set(all): sets all bits")
     CHECK(bs.all());
 }
 
-TEST_CASE("basic_bitset::set(all): unused bits are masked out")
+TEST_CASE("dynamic_bitset::set(all): unused bits are masked out")
 {
     bitset bs{bitset::bits_per_block + 5};
 
@@ -746,7 +748,7 @@ TEST_CASE("basic_bitset::set(all): unused bits are masked out")
     CHECK_EQ(blocks.back() & ~mask, 0);
 }
 
-TEST_CASE("basic_bitset::set(bit_idx): sets a bit")
+TEST_CASE("dynamic_bitset::set(bit_idx): sets a bit")
 {
     bitset bs{64};
 
@@ -756,7 +758,7 @@ TEST_CASE("basic_bitset::set(bit_idx): sets a bit")
     CHECK(bs.test(3));
 }
 
-TEST_CASE("basic_bitset::set(range): sets a range")
+TEST_CASE("dynamic_bitset::set(range): sets a range")
 {
     static constexpr std::size_t range_start = 2;
     static constexpr std::size_t range_size = 6;
@@ -772,7 +774,7 @@ TEST_CASE("basic_bitset::set(range): sets a range")
     }
 }
 
-TEST_CASE("basic_bitset::set(range): size 0 is no-op")
+TEST_CASE("dynamic_bitset::set(range): size 0 is no-op")
 {
     bitset bs{odd_bitset(24)};
 
@@ -781,7 +783,7 @@ TEST_CASE("basic_bitset::set(range): size 0 is no-op")
     CHECK_EQ(bs, odd_bitset(24));
 }
 
-TEST_CASE("basic_bitset::set(range): spans a block boundary")
+TEST_CASE("dynamic_bitset::set(range): spans a block boundary")
 {
     static constexpr std::size_t range_start = bitset::bits_per_block - 4;
     static constexpr std::size_t range_size = 8;
@@ -797,7 +799,7 @@ TEST_CASE("basic_bitset::set(range): spans a block boundary")
     }
 }
 
-TEST_CASE("basic_bitset::reset(all): empty is no-op")
+TEST_CASE("dynamic_bitset::reset(all): empty is no-op")
 {
     bitset bs;
 
@@ -806,7 +808,7 @@ TEST_CASE("basic_bitset::reset(all): empty is no-op")
     CHECK(bs.empty());
 }
 
-TEST_CASE("basic_bitset::reset(all): resets all bits")
+TEST_CASE("dynamic_bitset::reset(all): resets all bits")
 {
     bitset bs{odd_bitset(64)};
 
@@ -815,7 +817,7 @@ TEST_CASE("basic_bitset::reset(all): resets all bits")
     CHECK(bs.none());
 }
 
-TEST_CASE("basic_bitset::reset(bit_idx): resets a bit")
+TEST_CASE("dynamic_bitset::reset(bit_idx): resets a bit")
 {
     bitset bs{64};
     bs.set();
@@ -826,7 +828,7 @@ TEST_CASE("basic_bitset::reset(bit_idx): resets a bit")
     CHECK_FALSE(bs.test(3));
 }
 
-TEST_CASE("basic_bitset::reset(range): resets a range")
+TEST_CASE("dynamic_bitset::reset(range): resets a range")
 {
     static constexpr std::size_t range_start = 2;
 
@@ -845,7 +847,7 @@ TEST_CASE("basic_bitset::reset(range): resets a range")
     }
 }
 
-TEST_CASE("basic_bitset::reset(range): size 0 is no-op")
+TEST_CASE("dynamic_bitset::reset(range): size 0 is no-op")
 {
     bitset bs{odd_bitset(24)};
 
@@ -854,7 +856,7 @@ TEST_CASE("basic_bitset::reset(range): size 0 is no-op")
     CHECK_EQ(bs, odd_bitset(24));
 }
 
-TEST_CASE("basic_bitset::reset(range): spans a block boundary")
+TEST_CASE("dynamic_bitset::reset(range): spans a block boundary")
 {
     static constexpr std::size_t range_start = bitset::bits_per_block - 4;
     static constexpr std::size_t range_size = 8;
@@ -871,7 +873,7 @@ TEST_CASE("basic_bitset::reset(range): spans a block boundary")
     }
 }
 
-TEST_CASE("basic_bitset::flip(all): empty ")
+TEST_CASE("dynamic_bitset::flip(all): empty ")
 {
     bitset bs;
 
@@ -881,7 +883,7 @@ TEST_CASE("basic_bitset::flip(all): empty ")
     CHECK_EQ(bs.count(), 0);
 }
 
-TEST_CASE("basic_bitset::flip(all): flips all bits")
+TEST_CASE("dynamic_bitset::flip(all): flips all bits")
 {
     bitset expected{even_bitset(64)};
     bitset bs{odd_bitset(64)};
@@ -891,7 +893,7 @@ TEST_CASE("basic_bitset::flip(all): flips all bits")
     CHECK_EQ(bs, expected);
 }
 
-TEST_CASE("basic_bitset::flip(all): unused bits are masked out")
+TEST_CASE("dynamic_bitset::flip(all): unused bits are masked out")
 {
     bitset bs{bitset::bits_per_block + 5};
 
@@ -905,7 +907,7 @@ TEST_CASE("basic_bitset::flip(all): unused bits are masked out")
     CHECK_EQ(blocks.back() & ~mask, 0);
 }
 
-TEST_CASE("basic_bitset::flip(bit_idx): flip a bit")
+TEST_CASE("dynamic_bitset::flip(bit_idx): flip a bit")
 {
     bitset bs{64};
 
@@ -915,7 +917,7 @@ TEST_CASE("basic_bitset::flip(bit_idx): flip a bit")
     CHECK(bs.test(3));
 }
 
-TEST_CASE("basic_bitset::flip(range): sets a range")
+TEST_CASE("dynamic_bitset::flip(range): sets a range")
 {
     static constexpr std::size_t range_start = 2;
 
@@ -933,7 +935,7 @@ TEST_CASE("basic_bitset::flip(range): sets a range")
     }
 }
 
-TEST_CASE("basic_bitset::flip(range): size 0 is no-op")
+TEST_CASE("dynamic_bitset::flip(range): size 0 is no-op")
 {
     bitset bs{odd_bitset(24)};
 
@@ -942,7 +944,7 @@ TEST_CASE("basic_bitset::flip(range): size 0 is no-op")
     CHECK_EQ(bs, odd_bitset(24));
 }
 
-TEST_CASE("basic_bitset::for_each_set: empty visits nothing")
+TEST_CASE("dynamic_bitset::for_each_set: empty visits nothing")
 {
     bitset bs;
 
@@ -952,7 +954,7 @@ TEST_CASE("basic_bitset::for_each_set: empty visits nothing")
     CHECK_EQ(count, 0);
 }
 
-TEST_CASE("basic_bitset::for_each_set: visits every set bit")
+TEST_CASE("dynamic_bitset::for_each_set: visits every set bit")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
 
@@ -962,7 +964,7 @@ TEST_CASE("basic_bitset::for_each_set: visits every set bit")
     CHECK_EQ(visited, bs);
 }
 
-TEST_CASE("basic_bitset::for_each_set: visits interrupt on return false")
+TEST_CASE("dynamic_bitset::for_each_set: visits interrupt on return false")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
 
@@ -973,7 +975,7 @@ TEST_CASE("basic_bitset::for_each_set: visits interrupt on return false")
     CHECK_EQ(count, expected_count);
 }
 
-TEST_CASE("basic_bitset::for_each_unset: empty visits nothing")
+TEST_CASE("dynamic_bitset::for_each_unset: empty visits nothing")
 {
     bitset bs;
 
@@ -983,7 +985,7 @@ TEST_CASE("basic_bitset::for_each_unset: empty visits nothing")
     CHECK_EQ(count, 0);
 }
 
-TEST_CASE("basic_bitset::for_each_unset: visits every unset bit")
+TEST_CASE("dynamic_bitset::for_each_unset: visits every unset bit")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
 
@@ -994,7 +996,7 @@ TEST_CASE("basic_bitset::for_each_unset: visits every unset bit")
     CHECK_EQ(visited, bs);
 }
 
-TEST_CASE("basic_bitset::for_each_unset: visits interrupt on return false")
+TEST_CASE("dynamic_bitset::for_each_unset: visits interrupt on return false")
 {
     bitset bs{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
 
@@ -1005,7 +1007,7 @@ TEST_CASE("basic_bitset::for_each_unset: visits interrupt on return false")
     CHECK_EQ(count, expected_count);
 }
 
-TEST_CASE("basic_bitset::swap: from self is no-op")
+TEST_CASE("dynamic_bitset::swap: from self is no-op")
 {
     bitset expected{odd_bitset(bitset::inplace_capacity)};
 
@@ -1016,7 +1018,7 @@ TEST_CASE("basic_bitset::swap: from self is no-op")
     CHECK_EQ(to, expected);
 }
 
-TEST_CASE("basic_bitset::swap: from inplace to self inplace")
+TEST_CASE("dynamic_bitset::swap: from inplace to self inplace")
 {
     bitset from{odd_bitset(bitset::inplace_capacity)};
     bitset to{even_bitset(bitset::inplace_capacity)};
@@ -1027,7 +1029,7 @@ TEST_CASE("basic_bitset::swap: from inplace to self inplace")
     CHECK_EQ(to, odd_bitset(bitset::inplace_capacity));
 }
 
-TEST_CASE("basic_bitset::swap: from heap to self inplace")
+TEST_CASE("dynamic_bitset::swap: from heap to self inplace")
 {
     bitset from{odd_bitset(bitset::inplace_capacity + 1)};
     bitset to{even_bitset(bitset::inplace_capacity)};
@@ -1040,7 +1042,7 @@ TEST_CASE("basic_bitset::swap: from heap to self inplace")
     CHECK_EQ(to, odd_bitset(bitset::inplace_capacity + 1));
 }
 
-TEST_CASE("basic_bitset::swap: from inplace to self heap")
+TEST_CASE("dynamic_bitset::swap: from inplace to self heap")
 {
     bitset from{odd_bitset(bitset::inplace_capacity)};
     bitset to{even_bitset(bitset::inplace_capacity + 1)};
@@ -1053,7 +1055,7 @@ TEST_CASE("basic_bitset::swap: from inplace to self heap")
     CHECK_EQ(to, odd_bitset(bitset::inplace_capacity));
 }
 
-TEST_CASE("basic_bitset::swap: from heap to self heap")
+TEST_CASE("dynamic_bitset::swap: from heap to self heap")
 {
     constexpr std::size_t to_size = (bitset::inplace_capacity + 1) * 3;
     const std::size_t from_size = GENERATE(to_size - 1, to_size, to_size + 1);
@@ -1071,7 +1073,7 @@ TEST_CASE("basic_bitset::swap: from heap to self heap")
     CHECK_EQ(to, odd_bitset(from_size));
 }
 
-TEST_CASE("basic_bitset::reserve: stays inplace when reserving smaller")
+TEST_CASE("dynamic_bitset::reserve: stays inplace when reserving smaller")
 {
     bitset bs;
 
@@ -1082,7 +1084,7 @@ TEST_CASE("basic_bitset::reserve: stays inplace when reserving smaller")
     CHECK_FALSE(bs.is_heap());
 }
 
-TEST_CASE("basic_bitset::reserve: with size larger than inplace_capacity switch to heap")
+TEST_CASE("dynamic_bitset::reserve: with size larger than inplace_capacity switch to heap")
 {
     const std::size_t size = GENERATE(bitset::inplace_capacity + 1, bitset::inplace_capacity * 2);
 
@@ -1095,7 +1097,7 @@ TEST_CASE("basic_bitset::reserve: with size larger than inplace_capacity switch 
     CHECK(bs.is_heap());
 }
 
-TEST_CASE("basic_bitset::reserve: grows existing heap capacity and preserves bits")
+TEST_CASE("dynamic_bitset::reserve: grows existing heap capacity and preserves bits")
 {
     const std::size_t size = bitset::inplace_capacity + GENERATE(1, bitset::bits_per_block + 1);
     const std::size_t new_size = size + bitset::bits_per_block + 1;
@@ -1114,7 +1116,7 @@ TEST_CASE("basic_bitset::reserve: grows existing heap capacity and preserves bit
     }
 }
 
-TEST_CASE("basic_bitset::resize: no-op when resizing to same size")
+TEST_CASE("dynamic_bitset::resize: no-op when resizing to same size")
 {
     bitset bs{odd_bitset(16)};
 
@@ -1123,7 +1125,7 @@ TEST_CASE("basic_bitset::resize: no-op when resizing to same size")
     CHECK_EQ(bs, odd_bitset(16));
 }
 
-TEST_CASE("basic_bitset::resize(value = false): grow inplace")
+TEST_CASE("dynamic_bitset::resize(value = false): grow inplace")
 {
     const std::size_t size = GENERATE(1, bitset::inplace_capacity / 2, bitset::inplace_capacity - 1);
     const std::size_t new_size = size + 1;
@@ -1143,7 +1145,7 @@ TEST_CASE("basic_bitset::resize(value = false): grow inplace")
     }
 }
 
-TEST_CASE("basic_bitset::resize(value = true): grow inplace")
+TEST_CASE("dynamic_bitset::resize(value = true): grow inplace")
 {
     const std::size_t size = GENERATE(1, bitset::inplace_capacity / 2, bitset::inplace_capacity - 1);
     const std::size_t new_size = size + 1;
@@ -1157,7 +1159,7 @@ TEST_CASE("basic_bitset::resize(value = true): grow inplace")
     CHECK(bs.all());
 }
 
-TEST_CASE("basic_bitset::resize(value = false): grow heap")
+TEST_CASE("dynamic_bitset::resize(value = false): grow heap")
 {
     const std::size_t size = bitset::inplace_capacity / 2;
     const std::size_t new_size = size + GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size);
@@ -1177,7 +1179,7 @@ TEST_CASE("basic_bitset::resize(value = false): grow heap")
     }
 }
 
-TEST_CASE("basic_bitset::resize(value = true): grow heap")
+TEST_CASE("dynamic_bitset::resize(value = true): grow heap")
 {
     const std::size_t size = bitset::inplace_capacity / 2;
     const std::size_t new_size = size + GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size);
@@ -1193,7 +1195,7 @@ TEST_CASE("basic_bitset::resize(value = true): grow heap")
     CHECK(bs.all());
 }
 
-TEST_CASE("basic_bitset::resize(value = true): shrink")
+TEST_CASE("dynamic_bitset::resize(value = true): shrink")
 {
     const std::size_t size = GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size);
     const std::size_t new_size = size - bitset::bits_per_block / 2;
@@ -1207,7 +1209,7 @@ TEST_CASE("basic_bitset::resize(value = true): shrink")
     CHECK(bs.all());
 }
 
-TEST_CASE("basic_bitset::clear: resets size")
+TEST_CASE("dynamic_bitset::clear: resets size")
 {
     bitset bs{64};
     bs.set();
@@ -1216,7 +1218,7 @@ TEST_CASE("basic_bitset::clear: resets size")
     CHECK_EQ(bs.size(), 0);
 }
 
-TEST_CASE("basic_bitset::clear: no-op when empty")
+TEST_CASE("dynamic_bitset::clear: no-op when empty")
 {
     bitset bs;
 
@@ -1225,7 +1227,7 @@ TEST_CASE("basic_bitset::clear: no-op when empty")
     CHECK(bs.empty());
 }
 
-TEST_CASE("basic_bitset::compare: are equal")
+TEST_CASE("dynamic_bitset::compare: are equal")
 {
     bitset a{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
     bitset b{a};
@@ -1234,7 +1236,7 @@ TEST_CASE("basic_bitset::compare: are equal")
     CHECK_EQ(b, a);
 }
 
-TEST_CASE("basic_bitset::operator==: not equal when size differ")
+TEST_CASE("dynamic_bitset::operator==: not equal when size differ")
 {
     bitset a{odd_bitset(64)};
     bitset b{odd_bitset(65)};
@@ -1243,7 +1245,7 @@ TEST_CASE("basic_bitset::operator==: not equal when size differ")
     CHECK_NE(b, a);
 }
 
-TEST_CASE("basic_bitset::operator==: not equal when bits differ")
+TEST_CASE("dynamic_bitset::operator==: not equal when bits differ")
 {
     bitset a{odd_bitset(64)};
     bitset b{even_bitset(64)};
@@ -1252,7 +1254,7 @@ TEST_CASE("basic_bitset::operator==: not equal when bits differ")
     CHECK_NE(b, a);
 }
 
-TEST_CASE("basic_bitset::operator&: AND bits")
+TEST_CASE("dynamic_bitset::operator&: AND bits")
 {
     bitset expected{even_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
     bitset with{expected.size()};
@@ -1261,7 +1263,7 @@ TEST_CASE("basic_bitset::operator&: AND bits")
     CHECK_EQ(with & even_bitset(expected.size()), expected);
     CHECK_EQ(even_bitset(expected.size()) & with, expected);
 }
-TEST_CASE("basic_bitset::operator|: OR bits")
+TEST_CASE("dynamic_bitset::operator|: OR bits")
 {
     bitset expected{GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size)};
     expected.set();
@@ -1270,7 +1272,7 @@ TEST_CASE("basic_bitset::operator|: OR bits")
     CHECK_EQ(even_bitset(expected.size()) | odd_bitset(expected.size()), expected);
 }
 
-TEST_CASE("basic_bitset::operator^: XOR bits")
+TEST_CASE("dynamic_bitset::operator^: XOR bits")
 {
     bitset expected{odd_bitset(GENERATE(tail_only_blocks_size, full_only_blocks_size, full_and_tail_blocks_size))};
     bitset with{expected.size()};
@@ -1280,7 +1282,7 @@ TEST_CASE("basic_bitset::operator^: XOR bits")
     CHECK_EQ(with ^ even_bitset(expected.size()), expected);
 }
 
-TEST_CASE("basic_bitset::operator<: same size orders by most-significant bit")
+TEST_CASE("dynamic_bitset::operator<: same size orders by most-significant bit")
 {
     bitset a{64};
     bitset b{64};
@@ -1291,7 +1293,7 @@ TEST_CASE("basic_bitset::operator<: same size orders by most-significant bit")
     CHECK_FALSE(b < a);
 }
 
-TEST_CASE("basic_bitset::operator<: different sizes treat missing high blocks as zero")
+TEST_CASE("dynamic_bitset::operator<: different sizes treat missing high blocks as zero")
 {
     bitset small{64}; // all zeros
     bitset large{65}; // high bit beyond 64
@@ -1301,7 +1303,7 @@ TEST_CASE("basic_bitset::operator<: different sizes treat missing high blocks as
     CHECK_FALSE(large < small);
 }
 
-TEST_CASE("basic_bitset::operator<: cross-block higher block dominates lower block differences")
+TEST_CASE("dynamic_bitset::operator<: cross-block higher block dominates lower block differences")
 {
     // Ensure ordering considers the most-significant differing block first.
     bitset a{bitset::bits_per_block * 2};
@@ -1319,20 +1321,20 @@ TEST_CASE("basic_bitset::operator<: cross-block higher block dominates lower blo
     CHECK_FALSE(b < a);
 }
 
-TEST_CASE("basic_bitset::ctor: copy from different allocator type")
+TEST_CASE("dynamic_bitset::ctor: copy from different allocator type")
 {
-    bitset from{odd_bitset(pmr::bitset::inplace_capacity + 1)};
+    bitset from{odd_bitset(bitset::inplace_capacity + 1)};
 
-    pmr::bitset to{from};
+    new_allocator_bitset to{from};
 
     CHECK(to.is_heap());
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator=: copy from different allocator type")
+TEST_CASE("dynamic_bitset::operator=: copy from different allocator type")
 {
     bitset from{odd_bitset(bitset::inplace_capacity + 1)};
-    pmr::bitset to{even_bitset(pmr::bitset::inplace_capacity + 1)};
+    new_allocator_bitset to{even_bitset(bitset::inplace_capacity + 1)};
 
     to = from;
 
@@ -1340,10 +1342,10 @@ TEST_CASE("basic_bitset::operator=: copy from different allocator type")
     CHECK_EQ(to, from);
 }
 
-TEST_CASE("basic_bitset::operator<: from different allocator type")
+TEST_CASE("dynamic_bitset::operator<: from different allocator type")
 {
     bitset a{64};
-    pmr::bitset b{64};
+    new_allocator_bitset b{64};
     a.set(3); // ...00001000
     b.set(5); // ...00100000 (greater)
 

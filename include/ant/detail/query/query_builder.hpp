@@ -29,6 +29,7 @@ private:
 
     std::pmr::vector<table*> _tables;
     std::pmr::vector<std::uint32_t> _mapping;
+    std::pmr::memory_resource* _memory_resource;
 };
 
 template<typename Signature>
@@ -41,7 +42,7 @@ auto query_builder::build() -> query<Signature>
 
     using included_types = type_list_transform_t<std::remove_const, typename signature_traits::included>;
 
-    build_tables(signature_traits::required_bitset, signature_traits::excluded_bitset);
+    build_tables(component_bitset_of<typename signature_traits::required>(_memory_resource), component_bitset_of<typename signature_traits::excluded>(_memory_resource));
     build_mapping(included_types{});
 
     return query<Signature>(_schema, std::move(_tables), std::move(_mapping));

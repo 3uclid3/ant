@@ -7,7 +7,7 @@
 
 namespace ant::detail {
 
-table::table(bitset components, const schema& schema, std::pmr::memory_resource* memory_resource)
+table::table(component_bitset components, const schema& schema, std::pmr::memory_resource* memory_resource)
     : _components(std::move(components))
     , _columns(memory_resource)
     , _sparse_columns(memory_resource)

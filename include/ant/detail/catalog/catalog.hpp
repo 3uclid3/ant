@@ -44,12 +44,12 @@ public:
     auto for_each(const component_bitset& components, F&& f) noexcept(noexcept(f(std::size_t{}, std::declval<table&>()))) -> void;
 
 private:
-    using table_bitset = bitset;
+    using table_bitset = dynamic_bitset<512>;
 
     // bitset used for matching tables
     auto find_seed_component(const component_bitset& required) const noexcept -> std::size_t;
 
-    auto find_matches(const component_bitset& required, std::size_t seed_index, pmr::bitset& matches) const noexcept -> void;
+    auto find_matches(const component_bitset& required, std::size_t seed_index, table_bitset& matches) const noexcept -> void;
 
     auto emplace_table(const component_bitset& components) -> std::size_t;
 
@@ -85,7 +85,7 @@ auto catalog::for_each(const component_bitset& components, F&& f) noexcept(noexc
     // build matching bitset
     std::array<std::byte, 1024U * 16U> buffer{}; // 16 KiB stack buffer
     std::pmr::monotonic_buffer_resource buffer_resource{buffer.data(), buffer.size(), _memory_resource};
-    pmr::bitset table_matches{&buffer_resource};
+    table_bitset table_matches{&buffer_resource};
     find_matches(components, seed_index, table_matches);
 
     table_matches.for_each_set([this, &f](std::size_t table_index) {

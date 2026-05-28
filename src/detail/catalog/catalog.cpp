@@ -74,10 +74,9 @@ auto catalog::find_seed_component(const component_bitset& required) const noexce
 }
 
 // use the seed component's list of tables and filter down to matches
-auto catalog::find_matches(const component_bitset& required, std::size_t seed_index, pmr::bitset& table_matches) const noexcept -> void
+auto catalog::find_matches(const component_bitset& required, std::size_t seed_index, table_bitset& table_matches) const noexcept -> void
 {
     table_matches = _component_tables[seed_index];
-
     required.for_each_set([this, &table_matches](std::size_t index) {
         table_matches &= _component_tables[index];
     });
