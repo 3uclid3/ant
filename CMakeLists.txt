@@ -45,6 +45,7 @@ target_sources(ant
       include/ant/detail/schema/component_vtable.hpp
       include/ant/detail/schema/schema.hpp
       include/ant/detail/assert.hpp
+      include/ant/detail/algorithm.hpp
       include/ant/detail/dynamic_bitset.hpp
       include/ant/detail/signature_traits.hpp
       include/ant/detail/type_list.hpp
