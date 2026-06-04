@@ -82,10 +82,14 @@ public:
     constexpr auto set() -> basic_dynamic_bitset&;
     constexpr auto set(size_type bit_idx) -> basic_dynamic_bitset&;
     constexpr auto set(size_type bit_idx, size_type size) -> basic_dynamic_bitset&;
+    constexpr auto set_safe(size_type bit_idx) -> basic_dynamic_bitset&;
+    constexpr auto set_safe(size_type bit_idx, size_type size) -> basic_dynamic_bitset&;
 
     constexpr auto reset() -> basic_dynamic_bitset&;
     constexpr auto reset(size_type bit_idx) -> basic_dynamic_bitset&;
     constexpr auto reset(size_type bit_idx, size_type size) -> basic_dynamic_bitset&;
+    constexpr auto reset_safe(size_type bit_idx) -> basic_dynamic_bitset&;
+    constexpr auto reset_safe(size_type bit_idx, size_type size) -> basic_dynamic_bitset&;
 
     constexpr auto flip() -> basic_dynamic_bitset&;
     constexpr auto flip(size_type bit_idx) -> basic_dynamic_bitset&;
@@ -432,6 +436,28 @@ constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::set(size_type b
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
+constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::set_safe(size_type bit_idx) -> basic_dynamic_bitset&
+{
+    if (bit_idx >= _size)
+    {
+        resize(bit_idx + 1);
+    }
+    set(bit_idx);
+    return *this;
+}
+
+template<std::size_t InplaceCapacity, typename Allocator>
+constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::set_safe(size_type bit_idx, size_type size) -> basic_dynamic_bitset&
+{
+    if (bit_idx + size > _size)
+    {
+        resize(bit_idx + size);
+    }
+    set(bit_idx, size);
+    return *this;
+}
+
+template<std::size_t InplaceCapacity, typename Allocator>
 constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::reset() -> basic_dynamic_bitset&
 {
     if (_size > 0)
@@ -464,6 +490,27 @@ constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::reset(size_type
         [](block_type& block, block_type mask) {
             block &= ~mask;
         });
+}
+
+template<std::size_t InplaceCapacity, typename Allocator>
+constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::reset_safe(size_type bit_idx) -> basic_dynamic_bitset&
+{
+    if (bit_idx < _size)
+    {
+        reset(bit_idx);
+    }
+    return *this;
+}
+
+template<std::size_t InplaceCapacity, typename Allocator>
+constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::reset_safe(size_type bit_idx, size_type size) -> basic_dynamic_bitset&
+{
+    if (bit_idx < _size)
+    {
+        reset(bit_idx, std::min(bit_idx + size, _size) - bit_idx);
+    }
+
+    return *this;
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
@@ -501,12 +548,7 @@ constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::flip(size_type 
 template<std::size_t InplaceCapacity, typename Allocator>
 constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::push(size_type bit_idx) -> basic_dynamic_bitset&
 {
-    if (bit_idx >= _size)
-    {
-        resize(bit_idx + 1);
-    }
-    set(bit_idx);
-    return *this;
+    return set_safe(bit_idx);
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>

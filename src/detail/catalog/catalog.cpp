@@ -9,7 +9,7 @@ catalog::catalog(const schema& schema, std::pmr::memory_resource* memory_resourc
     , _component_tables(memory_resource)
     , _schema(&schema)
 {
-    _component_tables.resize(schema.range());
+    _component_tables.resize(schema.range(), component_bitset{_memory_resource});
 }
 
 auto catalog::empty() const noexcept -> bool
@@ -30,6 +30,11 @@ auto catalog::index_of(const component_bitset& components) const noexcept -> std
 
 auto catalog::ensure_of(const component_bitset& components) -> std::size_t
 {
+    if (components.none())
+    {
+        return npos;
+    }
+
     auto [it, inserted] = _table_signatures.try_emplace(components, npos);
 
     if (inserted)

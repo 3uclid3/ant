@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <ant/detail/assert.hpp>
+#include <ant/detail/schema/component_construct.hpp>
 #include <ant/detail/schema/schema.hpp>
 
 namespace ant::detail {
@@ -36,6 +37,7 @@ public:
 
     template<typename T, typename... Args>
     auto set(Args&&... args) -> T&;
+    auto set(component_construct ctor) -> void;
 
     template<typename T>
     auto unset() -> void;
@@ -80,27 +82,11 @@ auto env_registry::get() noexcept -> T*
 template<typename T, typename... Args>
 auto env_registry::set(Args&&... args) -> T&
 {
-    const component_meta& meta = _schema.get().meta_of(detail::component_index_of<T>());
+    const schema& sch = _schema.get();
+    set(make_component_construct<T>(sch, std::forward<Args>(args)...));
 
-    T* result{nullptr};
-
-    if (_sparse[meta.index] == component_npos)
-    {
-        _sparse[meta.index] = _dense.size();
-
-        void* ptr = _resource->allocate(sizeof(T), alignof(T));
-        result = new (ptr) T(std::forward<Args>(args)...);
-
-        _dense.emplace_back(ptr, &meta);
-    }
-    else
-    {
-        result = static_cast<T*>(_dense[_sparse[meta.index]].ptr);
-        *result = T(std::forward<Args>(args)...);
-    }
-
-    ANT_ASSERT(result != nullptr);
-    return *result;
+    const component_meta& meta = sch.meta_of(detail::component_index_of<T>());
+    return *static_cast<T*>(_dense[_sparse[meta.index]].ptr);
 }
 
 template<typename T>

@@ -38,6 +38,34 @@ auto env_registry::at_raw(size_type index) noexcept -> void*
     return const_cast<void*>(std::as_const(*this).at_raw(index));
 }
 
+auto env_registry::set(component_construct ctor) -> void
+{
+    const component_meta& meta = *ctor.meta;
+
+    if (meta.vtable.destroy != nullptr && _sparse[meta.index] != component_npos)
+    {
+        meta.vtable.destroy(_dense[_sparse[meta.index]].ptr);
+    }
+
+    if (_sparse[meta.index] == component_npos)
+    {
+        _sparse[meta.index] = _dense.size();
+
+        _dense.emplace_back(_resource->allocate(meta.stride, meta.alignment), &meta);
+    }
+
+    void* ptr = _dense[_sparse[meta.index]].ptr;
+
+    if (ctor.fn)
+    {
+        ctor.fn(ptr);
+    }
+    else if (meta.vtable.default_construct)
+    {
+        meta.vtable.default_construct(ptr);
+    }
+}
+
 auto env_registry::unset(const component_meta& meta) -> void
 {
     ANT_ASSERT(_schema.get().is_defined(meta.index), "component undefined");

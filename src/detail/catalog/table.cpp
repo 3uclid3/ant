@@ -38,7 +38,7 @@ auto table::insert(entity e) -> std::size_t
 
     for (std::size_t i = 0; i < _columns.size(); ++i)
     {
-        ctors.emplace_back(component_construct{nullptr, _columns[i].meta()});
+        ctors.emplace_back(component_construct{nullptr, &_columns[i].meta()});
     }
 
     return insert(e, ctors);
@@ -80,7 +80,7 @@ auto table::splice(entity e, table& source) -> std::size_t
 
     for (std::size_t i = 0; i < _columns.size(); ++i)
     {
-        ctors.emplace_back(component_construct{nullptr, _columns[i].meta()});
+        ctors.emplace_back(component_construct{nullptr, &_columns[i].meta()});
     }
 
     return splice(e, source, ctors);

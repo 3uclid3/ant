@@ -61,12 +61,12 @@ table_column::~table_column()
 
 auto table_column::emplace_back() -> std::size_t
 {
-    return emplace_back(component_construct{.meta = *_meta});
+    return emplace_back(component_construct{.meta = _meta});
 }
 
 auto table_column::emplace_back(component_construct ctor) -> std::size_t
 {
-    ANT_ASSERT(&ctor.meta.get() == _meta, "mismatched component_meta");
+    ANT_ASSERT(ctor.meta == _meta, "mismatched component_meta");
 
     ensure_capacity(_size + 1);
 

@@ -27,8 +27,11 @@ target_sources(ant
       include/ant/detail/catalog/catalog.hpp
       include/ant/detail/catalog/table.hpp
       include/ant/detail/catalog/table_column.hpp
-      include/ant/detail/changeset/change_queue.hpp
+      include/ant/detail/changeset/change_accumulator.hpp
+      include/ant/detail/changeset/change_coalescer.hpp
+      include/ant/detail/changeset/change_executor.hpp
       include/ant/detail/changeset/changeset_signature_traits.hpp
+      include/ant/detail/changeset/coalesced_change.hpp
       include/ant/detail/entity/entity_location.hpp
       include/ant/detail/entity/entity_registry.hpp
       include/ant/detail/entity/entity_traits.hpp
@@ -58,7 +61,9 @@ target_sources(ant
     src/detail/catalog/catalog.cpp
     src/detail/catalog/table.cpp
     src/detail/catalog/table_column.cpp
-    src/detail/changeset/change_queue.cpp
+    src/detail/changeset/change_accumulator.cpp
+    src/detail/changeset/change_coalescer.cpp
+    src/detail/changeset/change_executor.cpp
     src/detail/entity/entity_registry.cpp
     src/detail/env/env_registry.cpp
     src/detail/query/query_builder.cpp

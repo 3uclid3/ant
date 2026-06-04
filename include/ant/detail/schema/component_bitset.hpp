@@ -17,9 +17,12 @@ using component_bitset = dynamic_bitset<ANT_COMPONENT_BITSET_INPLACE_CAPACITY>;
 template<typename... T>
 constexpr auto component_bitset_of(type_list<T...>, std::pmr::memory_resource* memory_resource) noexcept -> component_bitset
 {
-    // TODO find highest index and resize then set instead of push
+    component_index max = 0;
+    ([&max, i = component_index_of<T>()] { max = std::max(max, i); }(), ...);
+
     component_bitset bitset{memory_resource};
-    (bitset.push(component_index_of<T>()), ...);
+    bitset.resize(max + 1);
+    (bitset.set(component_index_of<T>()), ...);
     return bitset;
 }
 
