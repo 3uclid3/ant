@@ -12,7 +12,8 @@
 
 namespace ant::detail { namespace {
 
-using fixture = table_fixture<8>;
+struct fixture : table_fixture<8>
+{};
 
 // helper to generate table sizes for template tests
 template<std::size_t Size>

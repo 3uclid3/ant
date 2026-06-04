@@ -1,81 +1,14 @@
 #include <ant/detail/catalog/catalog.hpp>
 #include <doctest/doctest.h>
 
-#include <sstream>
-
 #include <ant.mock/component.hpp>
-#include <ant.mock/detail/schema.hpp>
+#include <ant.mock/detail/catalog.hpp>
+#include <ant.mock/equivalent.hpp>
 #include <ant/detail/schema/component_bitset.hpp>
 
 namespace ant::detail { namespace {
 
-// use for outputting comparison results of two vectors ignoring order
-template<typename T>
-struct equivalent_result
-{
-    constexpr operator bool() const noexcept
-    {
-        return value;
-    }
-
-    const std::vector<T>& lhs;
-    const std::vector<T>& rhs;
-    bool value;
-};
-
-template<typename T>
-auto equivalent(const std::vector<T>& lhs, const std::vector<T>& rhs) -> equivalent_result<T>
-{
-    if (lhs.size() != rhs.size())
-    {
-        return {lhs, rhs, false};
-    }
-
-    for (const auto& item : lhs)
-    {
-        if (std::ranges::find(rhs, item) == rhs.end())
-        {
-            return {lhs, rhs, false};
-        }
-    }
-    return {lhs, rhs, true};
-}
-
-template<typename T>
-auto to_string(const std::vector<T>& in, std::ostringstream& stream) -> void
-{
-    stream << "[";
-    for (std::size_t i = 0; i < in.size(); ++i)
-    {
-        if (i != 0) { stream << ", "; }
-        stream << in[i];
-    }
-    stream << "]";
-}
-
-template<typename T>
-auto to_string(const std::vector<T>& in) -> std::string
-{
-    std::ostringstream stream;
-    to_string(in, stream);
-    return stream.str();
-}
-
-template<typename T>
-auto to_string(const equivalent_result<T>& in) -> std::string
-{
-    std::ostringstream stream;
-
-    stream << "lhs: ";
-    to_string(in.lhs, stream);
-
-    stream << ", rhs: ";
-    to_string(in.rhs, stream);
-
-    return stream.str();
-}
-
-struct fixture : schema_fixture<16>
+struct fixture : catalog_fixture<16>
 {
     // Recursively enumerate all non-empty subsets of {0..Size-1}
     // Cs... holds the currently included components in ascending order.
@@ -97,8 +30,6 @@ struct fixture : schema_fixture<16>
             emplace_combinations<Size, I + 1, Cs..., component<I>>();
         }
     }
-
-    detail::catalog catalog{this->schema};
 };
 
 TEST_CASE_FIXTURE(fixture, "catalog::ensure_of: create and retrieve table index matching components")

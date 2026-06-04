@@ -11,6 +11,7 @@ target_sources(ant_mock
       include/ant.mock/detail/table.hpp
       include/ant.mock/detail/schema.hpp
       include/ant.mock/component.hpp
+      include/ant.mock/equivalent.hpp
   PRIVATE
     src/component.cpp
 )
