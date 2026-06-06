@@ -21,6 +21,7 @@ struct fixture : public catalog_fixture<8>
     template<std::size_t... I, typename... V>
     auto emplace_attach(entity e, V... values) -> void
     {
+        static_assert(sizeof...(I) == sizeof...(V), "number of components must match number of values");
         (accumulator.emplace_attach<component<I>>(e, values), ...);
     }
 
@@ -33,6 +34,7 @@ struct fixture : public catalog_fixture<8>
     template<std::size_t... I, typename... V>
     auto emplace_set(V... values) -> void
     {
+        static_assert(sizeof...(I) == sizeof...(V), "number of components must match number of values");
         (accumulator.emplace_set<component<I>>(values), ...);
     }
 
@@ -42,7 +44,7 @@ struct fixture : public catalog_fixture<8>
         (accumulator.emplace_unset<component<I>>(), ...);
     }
 
-    auto consume_and_execute() -> void
+    auto execute() -> void
     {
         coalescer.consume(accumulator);
         coalesced_changes changes = coalescer.coalesce();
@@ -97,7 +99,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities erase ent
 
     emplace_destroy(e0);
 
-    consume_and_execute();
+    execute();
 
     CHECK_FALSE(entity_registry.contains(e0));
     check_entity_not_at(e0, prev_loc);
@@ -109,7 +111,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: attach insert new entity")
 
     emplace_attach<0, 1>(e0, 42, 24);
 
-    consume_and_execute();
+    execute();
 
     check_entity<0, 1>(e0, 42, 24);
 }
@@ -120,7 +122,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: attach move existing entit
 
     emplace_attach<1>(e0, 24);
 
-    consume_and_execute();
+    execute();
 
     check_entity<0, 1>(e0, 42, 24);
 }
@@ -132,7 +134,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach all erase entity fr
 
     emplace_detach<0, 1>(e0);
 
-    consume_and_execute();
+    execute();
 
     CHECK_EQ(entity_registry.locate(e0), entity_location::invalid);
     check_entity_not_at(e0, prev_loc);
@@ -145,7 +147,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach moves entity to new
 
     emplace_detach<0>(e0);
 
-    consume_and_execute();
+    execute();
 
     check_entity<1>(e0, 24);
     check_entity_not_at(e0, prev_loc);
@@ -155,7 +157,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: set")
 {
     emplace_set<0>(42);
 
-    consume_and_execute();
+    execute();
 
     const component<0>* c = env_registry.get<component<0>>();
 
@@ -169,7 +171,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: unset")
 
     emplace_unset<0>();
 
-    consume_and_execute();
+    execute();
 
     CHECK_FALSE(env_registry.has<component<0>>());
 }
