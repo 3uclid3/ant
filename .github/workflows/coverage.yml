@@ -35,6 +35,7 @@ jobs:
             --object-directory build \
             --xml coverage.xml \
             --verbose \
+            --exclude-throw-branches \
             --print-summary
 
       - name: Upload to Codecov
