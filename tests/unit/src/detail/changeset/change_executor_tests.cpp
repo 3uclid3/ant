@@ -105,6 +105,17 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities erase ent
     check_entity_not_at(e0, prev_loc);
 }
 
+TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities without components")
+{
+    const entity e0 = entity_registry.create();
+
+    emplace_destroy(e0);
+
+    execute();
+
+    CHECK_FALSE(entity_registry.contains(e0));
+}
+
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: attach insert new entity")
 {
     const entity e0 = entity_registry.create();
