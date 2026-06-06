@@ -6,4 +6,5 @@
 
 # Builds
 .cache/*
+__pycache__/*
 build/*
