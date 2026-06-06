@@ -15,7 +15,7 @@ class change_executor
 public:
     change_executor(entity_registry& entity_registry, env_registry& env_registry, catalog& catalog);
 
-    auto execute(coalesced_changes&& changes) -> void;
+    auto execute(coalesced_changes& changes) -> void;
 
 private:
     auto execute_envs(coalesced_changes& changes) -> void;

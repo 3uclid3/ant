@@ -44,8 +44,17 @@ auto change_coalescer::coalesce() -> coalesced_changes
         component_bitset bitset = loc == entity_location::invalid ? component_bitset{_memory_resource} : _catalog.at(loc.table).components();
         bitset |= coalesce_e.attach_components;
 
-        if (!coalesce_e.detach_components.empty())
+        if (coalesce_e.detach_components.any())
+        {
+            const std::size_t size = std::max(bitset.size(), coalesce_e.attach_components.size());
+
+            if (coalesce_e.detach_components.size() < size)
+            {
+                coalesce_e.detach_components.resize(size);
+            }
+
             bitset &= ~coalesce_e.detach_components;
+        }
 
         std::pmr::vector<component_construct> ctors{std::move(coalesce_e.attach_component_ctors)};
         ctors.reserve(bitset.count());

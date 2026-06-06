@@ -16,7 +16,7 @@ change_executor::change_executor(entity_registry& entity_registry, env_registry&
 {
 }
 
-auto change_executor::execute(coalesced_changes&& changes) -> void
+auto change_executor::execute(coalesced_changes& changes) -> void
 {
     execute_envs(changes);
     execute_destroy_entities(changes);
@@ -34,6 +34,9 @@ auto change_executor::execute_envs(coalesced_changes& changes) -> void
     {
         _env_registry.set(std::move(change.ctor));
     }
+
+    changes.unset_envs.clear();
+    changes.set_envs.clear();
 }
 
 auto change_executor::execute_destroy_entities(coalesced_changes& changes) -> void
@@ -42,22 +45,33 @@ auto change_executor::execute_destroy_entities(coalesced_changes& changes) -> vo
     {
         _entity_registry.destroy(entity);
     }
+
+    changes.destroy_entities.clear();
 }
 
 auto change_executor::execute_entities(coalesced_changes& changes) -> void
 {
     for (auto& change : changes.entities)
     {
-        // new entry
+        std::size_t row = entity_location::invalid.row;
+
         if (change.table_index == entity_location::invalid.table)
         {
-            _catalog.at(change.new_table_index).insert(change.entity, std::span(change.ctors));
+            row = _catalog.at(change.new_table_index).insert(change.entity, std::span(change.ctors));
         }
-        else // splice
+        else if (change.new_table_index == entity_location::invalid.table)
         {
-            _catalog.at(change.new_table_index).splice(change.entity, _catalog.at(change.table_index), std::span(change.ctors));
+            _catalog.at(change.table_index).erase(change.entity);
         }
+        else
+        {
+            row = _catalog.at(change.new_table_index).splice(change.entity, _catalog.at(change.table_index), std::span(change.ctors));
+        }
+
+        _entity_registry.relocate(change.entity, {.table = change.new_table_index, .row = row});
     }
+
+    changes.entities.clear();
 }
 
 } // namespace ant::detail
