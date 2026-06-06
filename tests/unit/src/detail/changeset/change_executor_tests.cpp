@@ -13,6 +13,35 @@ namespace ant::detail { namespace {
 
 struct fixture : public catalog_fixture<8>
 {
+    auto emplace_destroy(entity e)
+    {
+        accumulator.emplace_destroy(e);
+    }
+
+    template<std::size_t... I, typename... V>
+    auto emplace_attach(entity e, V... values) -> void
+    {
+        (accumulator.emplace_attach<component<I>>(e, values), ...);
+    }
+
+    template<std::size_t... I>
+    auto emplace_detach(entity e) -> void
+    {
+        (accumulator.emplace_detach<component<I>>(e), ...);
+    }
+
+    template<std::size_t... I, typename... V>
+    auto emplace_set(V... values) -> void
+    {
+        (accumulator.emplace_set<component<I>>(values), ...);
+    }
+
+    template<std::size_t... I>
+    auto emplace_unset() -> void
+    {
+        (accumulator.emplace_unset<component<I>>(), ...);
+    }
+
     auto consume_and_execute() -> void
     {
         coalescer.consume(accumulator);
@@ -66,7 +95,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities erase ent
     const entity e0 = create_entity<0>(42);
     const entity_location prev_loc = entity_registry.locate(e0);
 
-    accumulator.emplace_destroy(e0);
+    emplace_destroy(e0);
 
     consume_and_execute();
 
@@ -78,8 +107,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: attach insert new entity")
 {
     const entity e0 = entity_registry.create();
 
-    accumulator.emplace_attach<component<0>>(e0, 42);
-    accumulator.emplace_attach<component<1>>(e0, 24);
+    emplace_attach<0, 1>(e0, 42, 24);
 
     consume_and_execute();
 
@@ -90,7 +118,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: attach move existing entit
 {
     const entity e0 = create_entity<0>(42);
 
-    accumulator.emplace_attach<component<1>>(e0, 24);
+    emplace_attach<1>(e0, 24);
 
     consume_and_execute();
 
@@ -102,8 +130,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach all erase entity fr
     const entity e0 = create_entity<0, 1>();
     const entity_location prev_loc = entity_registry.locate(e0);
 
-    accumulator.emplace_detach<component<0>>(e0);
-    accumulator.emplace_detach<component<1>>(e0);
+    emplace_detach<0, 1>(e0);
 
     consume_and_execute();
 
@@ -116,7 +143,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach moves entity to new
     const entity e0 = create_entity<0, 1>(42, 24);
     const entity_location prev_loc = entity_registry.locate(e0);
 
-    accumulator.emplace_detach<component<0>>(e0);
+    emplace_detach<0>(e0);
 
     consume_and_execute();
 
@@ -126,7 +153,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach moves entity to new
 
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: set")
 {
-    accumulator.emplace_set<component<0>>(42);
+    emplace_set<0>(42);
 
     consume_and_execute();
 
@@ -140,7 +167,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: unset")
 {
     env_registry.set<component<0>>();
 
-    accumulator.emplace_unset<component<0>>();
+    emplace_unset<0>();
 
     consume_and_execute();
 
