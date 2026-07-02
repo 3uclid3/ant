@@ -15,7 +15,7 @@ namespace ant::detail {
 using component_bitset = dynamic_bitset<ANT_COMPONENT_BITSET_INPLACE_CAPACITY>;
 
 template<typename... T>
-constexpr auto component_bitset_of(type_list<T...>, std::pmr::memory_resource* memory_resource) noexcept -> component_bitset
+constexpr auto component_bitset_of(type_list<T...>, std::pmr::memory_resource* memory_resource) -> component_bitset
 {
     component_index max = 0;
     ([&max, i = component_index_of<T>()] { max = std::max(max, i); }(), ...);
@@ -28,14 +28,14 @@ constexpr auto component_bitset_of(type_list<T...>, std::pmr::memory_resource* m
 
 template<typename TypeList>
 requires(is_type_list_v<TypeList>)
-constexpr auto component_bitset_of(std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource()) noexcept -> component_bitset
+constexpr auto component_bitset_of(std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource()) -> component_bitset
 {
     return component_bitset_of(TypeList{}, memory_resource);
 }
 
 template<typename... T>
 requires(... && !is_type_list_v<T>)
-constexpr auto component_bitset_of(std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource()) noexcept -> detail::component_bitset
+constexpr auto component_bitset_of(std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource()) -> detail::component_bitset
 {
     return component_bitset_of(type_list<T...>{}, memory_resource);
 }
