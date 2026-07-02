@@ -104,8 +104,8 @@ auto change_coalescer::consume_change(change_accumulator::attach_change& change)
 
     if (!entity.attach_components.test(change.ctor.meta->index))
     {
-        entity.attach_component_ctors.emplace_back(std::move(change.ctor));
         entity.attach_components.set_safe(change.ctor.meta->index);
+        entity.attach_component_ctors.emplace_back(std::move(change.ctor));
     }
 }
 
