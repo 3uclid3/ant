@@ -86,20 +86,6 @@ TEST_CASE("entity_traits::construct: assigns index and version")
     CHECK_EQ(entity_traits::to_version(entity), version);
 }
 
-TEST_CASE("entity_traits::construct: wraps around when index/version exceeds max")
-{
-    auto index = GENERATE(0U, entity_traits::index_max + 1);
-    auto version = GENERATE(0U, entity_traits::version_max + 1);
-
-    CAPTURE(index);
-    CAPTURE(version);
-
-    auto entity = entity_traits::construct(index, version);
-
-    CHECK_EQ(entity_traits::to_index(entity), 0);
-    CHECK_EQ(entity_traits::to_version(entity), 0);
-}
-
 TEST_CASE("entity_traits::bump: increments version")
 {
     auto index = GENERATE(0U, entity_traits::index_max);

@@ -69,15 +69,20 @@ constexpr auto entity_traits::to_version(value_type value) noexcept -> version_t
 
 constexpr auto entity_traits::construct(index_type index, version_type version) noexcept -> value_type
 {
-    return static_cast<value_type>(((static_cast<integral_type>(index) << index_shift) % index_mask) | ((static_cast<integral_type>(version) << version_shift) % version_mask));
+    ANT_ASSERT(index <= index_max, "index out of range");
+    ANT_ASSERT(version <= version_max, "version out of range");
+
+    return static_cast<value_type>(
+        ((static_cast<integral_type>(index) << index_shift) & index_mask) |
+        ((static_cast<integral_type>(version) << version_shift) & version_mask));
 }
 
 constexpr auto entity_traits::bump(value_type value) noexcept -> value_type
 {
-    const index_type index = to_index(value);
     const version_type version = to_version(value);
-    const version_type new_version = static_cast<version_type>((version + 1) % version_mask);
-    return construct(index, new_version);
+    const version_type new_version = version >= version_max ? 0 : version + 1;
+
+    return construct(to_index(value), new_version);
 }
 
 } // namespace ant::detail
