@@ -25,8 +25,8 @@ public:
     table(const table&) = delete;
     table& operator=(const table&) = delete;
 
-    table(table&&) noexcept = default;
-    table& operator=(table&&) noexcept = default;
+    table(table&&) = default;
+    table& operator=(table&&) = default;
 
     auto contains(entity e) const noexcept -> bool;
     auto insert(entity e) -> std::size_t;

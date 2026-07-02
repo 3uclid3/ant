@@ -11,7 +11,7 @@ table_column::table_column(const component_meta& meta, std::pmr::memory_resource
 {
 }
 
-table_column::table_column(table_column&& other) noexcept
+table_column::table_column(table_column&& other)
     : _memory_resource(other._memory_resource)
     , _blocks(std::move(other._blocks))
     , _size(std::exchange(other._size, 0))
@@ -19,7 +19,7 @@ table_column::table_column(table_column&& other) noexcept
 {
 }
 
-auto table_column::operator=(table_column&& other) noexcept -> table_column&
+auto table_column::operator=(table_column&& other) -> table_column&
 {
     if (this != &other)
     {

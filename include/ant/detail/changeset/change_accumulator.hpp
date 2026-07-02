@@ -53,8 +53,8 @@ public:
     change_accumulator(const change_accumulator&) = delete;
     change_accumulator& operator=(const change_accumulator&) = delete;
 
-    change_accumulator(change_accumulator&&) noexcept = default;
-    change_accumulator& operator=(change_accumulator&& other) noexcept = default;
+    change_accumulator(change_accumulator&&) = default;
+    change_accumulator& operator=(change_accumulator&& other) = default;
 
     auto emplace_destroy(entity e) -> void;
 

@@ -24,8 +24,8 @@ public:
     catalog(const catalog&) = delete;
     auto operator=(const catalog&) -> catalog& = delete;
 
-    catalog(catalog&&) noexcept = default;
-    auto operator=(catalog&&) noexcept -> catalog& = default;
+    catalog(catalog&&) = default;
+    auto operator=(catalog&&) -> catalog& = default;
 
     [[nodiscard]] auto empty() const noexcept -> bool;
     [[nodiscard]] auto size() const noexcept -> std::size_t;

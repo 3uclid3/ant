@@ -19,8 +19,8 @@ public:
     table_column(const table_column& other) = delete;
     auto operator=(const table_column& other) -> table_column& = delete;
 
-    table_column(table_column&& other) noexcept;
-    auto operator=(table_column&& other) noexcept -> table_column&;
+    table_column(table_column&& other);
+    auto operator=(table_column&& other) -> table_column&;
 
     auto emplace_back() -> std::size_t;
     auto emplace_back(component_construct ctor) -> std::size_t;
