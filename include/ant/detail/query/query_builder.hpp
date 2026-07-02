@@ -19,7 +19,6 @@ public:
     auto build() -> query<Signature>;
 
 private:
-
     auto build_tables(const component_bitset& required, const component_bitset& excluded) -> void;
 
     template<typename... IncludedTypes>
