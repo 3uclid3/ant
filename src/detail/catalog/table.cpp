@@ -53,10 +53,7 @@ auto table::insert(entity e, std::span<component_construct> ctors) -> std::size_
 
     ensure_sparse_capacity(index + 1);
 
-    if (_sparse_rows[index] != npos)
-    {
-        return _sparse_rows[index];
-    }
+    ANT_ASSERT(_sparse_rows[index] == npos, "insertion does not support existing rows yet");
 
     _sparse_rows[index] = _rows.size();
     _rows.push_back(e);
