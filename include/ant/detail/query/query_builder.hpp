@@ -19,6 +19,7 @@ public:
     auto build() -> query<Signature>;
 
 private:
+
     auto build_tables(const component_bitset& required, const component_bitset& excluded) -> void;
 
     template<typename... IncludedTypes>
@@ -28,7 +29,7 @@ private:
     catalog& _catalog;
 
     std::pmr::vector<table*> _tables;
-    std::pmr::vector<std::uint32_t> _mapping;
+    std::pmr::vector<base_query::mapping_type> _mapping;
     std::pmr::memory_resource* _memory_resource;
 };
 
