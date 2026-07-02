@@ -31,7 +31,7 @@ auto table::contains(entity e) const noexcept -> bool
 
 auto table::insert(entity e) -> std::size_t
 {
-    std::array<std::byte,  sizeof(component_construct) * 256> buffer{};
+    std::array<std::byte,  sizeof(component_construct) * 256> buffer;
     std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
     std::pmr::vector<component_construct> ctors(&mbr);
     ctors.reserve(_columns.size());
@@ -73,7 +73,7 @@ auto table::insert(entity e, std::span<component_construct> ctors) -> std::size_
 
 auto table::splice(entity e, table& source) -> std::size_t
 {
-    std::array<std::byte,  sizeof(component_construct) * 256> buffer{};
+    std::array<std::byte,  sizeof(component_construct) * 256> buffer;
     std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
     std::pmr::vector<component_construct> ctors(&mbr);
     ctors.reserve(_columns.size());
