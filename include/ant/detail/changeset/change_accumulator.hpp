@@ -92,7 +92,19 @@ private:
 template<typename Component, typename... Args>
 auto change_accumulator::emplace_attach(entity e, Args&&... args) -> void
 {
-    _buffer.emplace_back(attach_change{.entity = e, .ctor = make_component_construct<Component>(*_schema, std::forward<Args>(args)...)});
+    auto is_attach = [e](const value_type& value) {
+        const auto* c = std::get_if<attach_change>(&value);
+        return c != nullptr && c->entity == e && c->ctor.meta->index == detail::component_index_of<Component>();
+    };
+
+    if (auto it = std::ranges::find_if(_buffer, is_attach); it != _buffer.end())
+    {
+        std::get<attach_change>(*it).ctor = make_component_construct<Component>(*_schema, std::forward<Args>(args)...);
+    }
+    else
+    {
+        _buffer.emplace_back(attach_change{.entity = e, .ctor = make_component_construct<Component>(*_schema, std::forward<Args>(args)...)});
+    }
 }
 
 template<typename Component>
@@ -104,7 +116,19 @@ auto change_accumulator::emplace_detach(entity e) -> void
 template<typename Component, typename... Args>
 auto change_accumulator::emplace_set(Args&&... args) -> void
 {
-    _buffer.emplace_back(set_change{.ctor = make_component_construct<Component>(*_schema, std::forward<Args>(args)...)});
+    auto is_set = [](const value_type& value) {
+        const auto* c = std::get_if<set_change>(&value);
+        return c != nullptr && c->ctor.meta->index == detail::component_index_of<Component>();
+    };
+
+    if (auto it = std::ranges::find_if(_buffer, is_set); it != _buffer.end())
+    {
+        std::get<set_change>(*it).ctor = make_component_construct<Component>(*_schema, std::forward<Args>(args)...);
+    }
+    else
+    {
+        _buffer.emplace_back(set_change{.ctor = make_component_construct<Component>(*_schema, std::forward<Args>(args)...)});
+    }
 }
 
 template<typename Component>
