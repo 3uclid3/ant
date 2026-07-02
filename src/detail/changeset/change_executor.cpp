@@ -43,12 +43,15 @@ auto change_executor::execute_destroy_entities(coalesced_changes& changes) -> vo
 {
     for (const auto& entity : changes.destroy_entities)
     {
-        if (const entity_location loc = _entity_registry.locate(entity); loc != entity_location::invalid)
+        if (_entity_registry.contains(entity))
         {
-            _catalog.at(loc.table).erase(entity);
-        }
+            if (const entity_location loc = _entity_registry.locate(entity); loc != entity_location::invalid)
+            {
+                _catalog.at(loc.table).erase(entity);
+            }
 
-        _entity_registry.destroy(entity);
+            _entity_registry.destroy(entity);
+        }
     }
 
     changes.destroy_entities.clear();
