@@ -41,7 +41,7 @@ public:
     [[nodiscard]] auto at(std::size_t index) noexcept -> table&;
 
     template<typename F>
-    auto for_each(const component_bitset& components, F&& f) noexcept(noexcept(f(std::size_t{}, std::declval<table&>()))) -> void;
+    auto for_each(const component_bitset& components, F&& f) -> void;
 
 private:
     using table_bitset = dynamic_bitset<512>;
@@ -63,7 +63,7 @@ private:
 };
 
 template<typename F>
-auto catalog::for_each(const component_bitset& components, F&& f) noexcept(noexcept(f(std::size_t{}, std::declval<table&>()))) -> void
+auto catalog::for_each(const component_bitset& components, F&& f) -> void
 {
     // early out: no required components means all tables match
     if (components.none())
