@@ -42,21 +42,25 @@ target_sources(ant
       include/ant/detail/query/query_cursor.hpp
       include/ant/detail/query/query_signature_traits.hpp
       include/ant/detail/schema/component_bitset.hpp
+      include/ant/detail/schema/component_construct.hpp
       include/ant/detail/schema/component_index.hpp
       include/ant/detail/schema/component_meta.hpp
       include/ant/detail/schema/component_name.hpp
       include/ant/detail/schema/component_vtable.hpp
       include/ant/detail/schema/schema.hpp
-      include/ant/detail/assert.hpp
       include/ant/detail/algorithm.hpp
+      include/ant/detail/assert.hpp
       include/ant/detail/dynamic_bitset.hpp
       include/ant/detail/signature_traits.hpp
       include/ant/detail/type_list.hpp
       include/ant/assert.hpp
+      include/ant/changeset.hpp
       include/ant/changeset_fwd.hpp
       include/ant/entity.hpp
       include/ant/env.hpp
       include/ant/env_fwd.hpp
+      include/ant/query.hpp
+      include/ant/query_fwd.hpp
   PRIVATE
     src/detail/catalog/catalog.cpp
     src/detail/catalog/table.cpp
