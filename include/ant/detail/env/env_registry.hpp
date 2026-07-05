@@ -1,13 +1,12 @@
 #pragma once
 
 #include <functional>
-#include <memory_resource>
 #include <utility>
-#include <vector>
 
 #include <ant/detail/assert.hpp>
 #include <ant/detail/schema/component_construct.hpp>
 #include <ant/detail/schema/schema.hpp>
+#include <ant/detail/containers.hpp>
 
 namespace ant::detail {
 
@@ -17,7 +16,7 @@ public:
     using size_type = schema::size_type;
 
 public:
-    explicit env_registry(const schema& schema, std::pmr::memory_resource* resource = std::pmr::get_default_resource());
+    explicit env_registry(const schema& schema);
     ~env_registry();
 
     env_registry(const env_registry&) = delete;
@@ -56,9 +55,8 @@ private:
 
 private:
     std::reference_wrapper<const schema> _schema;
-    std::pmr::vector<var> _dense;
-    std::pmr::vector<size_type> _sparse; // component idx to dense idx
-    std::pmr::memory_resource* _resource{nullptr};
+    vector<var> _dense;
+    vector<size_type> _sparse; // component idx to dense idx
 };
 
 template<typename T>

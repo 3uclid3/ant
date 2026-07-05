@@ -1,14 +1,12 @@
 #include <ant/detail/env/env_registry.hpp>
 
+#include <ant/detail/memory.hpp>
 #include <ant/detail/schema/component_index.hpp>
 
 namespace ant::detail {
 
-env_registry::env_registry(const schema& sch, std::pmr::memory_resource* resource)
+env_registry::env_registry(const schema& sch)
     : _schema(sch)
-    , _dense(resource)
-    , _sparse(resource)
-    , _resource(resource)
 {
     _sparse.resize(sch.range(), component_npos);
 }
@@ -22,7 +20,7 @@ env_registry::~env_registry()
             var.meta->vtable.destroy(var.ptr);
         }
 
-        _resource->deallocate(var.ptr, var.meta->size, var.meta->alignment);
+        deallocate(var.ptr, var.meta->size, var.meta->alignment);
     }
 }
 
@@ -51,7 +49,7 @@ auto env_registry::set(component_construct ctor) -> void
     {
         _sparse[meta.index] = _dense.size();
 
-        _dense.emplace_back(_resource->allocate(meta.stride, meta.alignment), &meta);
+        _dense.emplace_back(allocate(meta.stride, meta.alignment), &meta);
     }
 
     void* ptr = _dense[_sparse[meta.index]].ptr;
@@ -92,7 +90,7 @@ auto env_registry::unset(const component_meta& meta) -> void
         meta.vtable.destroy(_dense.back().ptr);
     }
 
-    _resource->deallocate(_dense.back().ptr, meta.size, meta.alignment);
+    deallocate(_dense.back().ptr, meta.size, meta.alignment);
 
     _dense.pop_back();
 }

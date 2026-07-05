@@ -2,9 +2,8 @@
 
 namespace ant::detail {
 
-change_accumulator::change_accumulator(const schema& schema, std::pmr::memory_resource* memory_resource)
+change_accumulator::change_accumulator(const schema& schema)
     : _schema{&schema}
-    , _buffer{memory_resource}
 {
 }
 

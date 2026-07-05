@@ -1,9 +1,8 @@
 #pragma once
 
-#include <memory_resource>
 #include <variant>
-#include <vector>
 
+#include <ant/detail/containers.hpp>
 #include <ant/detail/schema/component_construct.hpp>
 #include <ant/detail/schema/component_meta.hpp>
 #include <ant/detail/schema/schema.hpp>
@@ -44,11 +43,11 @@ public:
     using change = std::variant<destroy_change, attach_change, detach_change, set_change, unset_change>;
     using value_type = change;
 
-    using iterator = std::pmr::vector<value_type>::iterator;
-    using const_iterator = std::pmr::vector<value_type>::const_iterator;
+    using iterator = vector<value_type>::iterator;
+    using const_iterator = vector<value_type>::const_iterator;
 
 public:
-    explicit change_accumulator(const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
+    explicit change_accumulator(const schema& schema);
 
     change_accumulator(const change_accumulator&) = delete;
     change_accumulator& operator=(const change_accumulator&) = delete;
@@ -86,7 +85,7 @@ public:
 
 private:
     const schema* _schema;
-    std::pmr::vector<value_type> _buffer;
+    vector<value_type> _buffer;
 };
 
 template<typename Component, typename... Args>

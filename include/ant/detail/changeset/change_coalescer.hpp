@@ -1,10 +1,7 @@
 #pragma once
 
-#include <memory_resource>
-#include <unordered_map>
-#include <vector>
-
 #include <ant/detail/changeset/coalesced_change.hpp>
+#include <ant/detail/containers.hpp>
 #include <ant/detail/schema/component_bitset.hpp>
 
 namespace ant::detail {
@@ -16,7 +13,7 @@ class entity_registry;
 class change_coalescer
 {
 public:
-    change_coalescer(const schema& schema, entity_registry& entity_registry, catalog& catalog, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
+    change_coalescer(const schema& schema, entity_registry& entity_registry, catalog& catalog);
 
     auto consume(change_accumulator& accumulator) -> void;
     auto coalesce() -> coalesced_changes;
@@ -24,11 +21,9 @@ public:
 private:
     struct coalescing_entity
     {
-        coalescing_entity(std::pmr::memory_resource* memory_resource);
-
         component_bitset detach_components;
         component_bitset attach_components;
-        std::pmr::vector<component_construct> attach_component_ctors;
+        vector<component_construct> attach_component_ctors;
     };
 
     auto consume_change(change_accumulator::destroy_change& change) -> void;
@@ -45,8 +40,7 @@ private:
     catalog& _catalog;
 
     coalesced_changes _changes;
-    std::pmr::unordered_map<entity, coalescing_entity> _changing_entities;
-    std::pmr::memory_resource* _memory_resource;
+    unordered_map<entity, coalescing_entity> _changing_entities;
 };
 
 } // namespace ant::detail

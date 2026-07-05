@@ -6,12 +6,12 @@
 #include <cstring>
 #include <iterator>
 #include <memory>
-#include <memory_resource>
 #include <numeric>
 #include <span>
 #include <type_traits>
 #include <utility>
 
+#include <ant/detail/allocator.hpp>
 #include <ant/detail/assert.hpp>
 
 namespace ant::detail {
@@ -20,7 +20,7 @@ template<std::size_t InplaceCapacity, typename Allocator>
 class basic_dynamic_bitset;
 
 template<std::size_t InplaceCapacity>
-using dynamic_bitset = basic_dynamic_bitset<InplaceCapacity, std::pmr::polymorphic_allocator<std::uint64_t>>;
+using dynamic_bitset = basic_dynamic_bitset<InplaceCapacity, allocator<std::uint64_t>>;
 
 // A dynamic bitset with small-size optimization for up to InplaceCapacity bits.
 // Sizes and Capacities are in bits.

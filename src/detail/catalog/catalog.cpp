@@ -2,14 +2,10 @@
 
 namespace ant::detail {
 
-catalog::catalog(const schema& schema, std::pmr::memory_resource* memory_resource)
-    : _memory_resource(memory_resource)
-    , _tables(memory_resource)
-    , _table_signatures(memory_resource)
-    , _component_tables(memory_resource)
-    , _schema(&schema)
+catalog::catalog(const schema& schema)
+    : _schema(&schema)
 {
-    _component_tables.resize(schema.range(), component_bitset{_memory_resource});
+    _component_tables.resize(schema.range());
 }
 
 auto catalog::empty() const noexcept -> bool
@@ -90,7 +86,7 @@ auto catalog::find_matches(const component_bitset& required, std::size_t seed_in
 auto catalog::emplace_table(const component_bitset& components) -> std::size_t
 {
     const std::size_t index = _tables.size();
-    _tables.emplace_back(components, *_schema, _memory_resource);
+    _tables.emplace_back(components, *_schema);
     return index;
 }
 

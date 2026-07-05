@@ -1,14 +1,11 @@
 #pragma once
 
-#include <array>
 #include <cstddef>
-#include <deque>
 #include <limits>
-#include <memory_resource>
-#include <unordered_map>
-#include <vector>
 
 #include <ant/detail/catalog/table.hpp>
+#include <ant/detail/containers.hpp>
+#include <ant/detail/memory.hpp>
 #include <ant/detail/schema/component_bitset.hpp>
 #include <ant/detail/schema/schema.hpp>
 
@@ -19,7 +16,7 @@ class catalog
 public:
     static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
 
-    catalog(const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
+    explicit catalog(const schema& schema);
 
     catalog(const catalog&) = delete;
     auto operator=(const catalog&) -> catalog& = delete;
@@ -53,11 +50,9 @@ private:
 
     auto emplace_table(const component_bitset& components) -> std::size_t;
 
-    std::pmr::memory_resource* _memory_resource{std::pmr::get_default_resource()};
-
-    std::pmr::deque<table> _tables;
-    std::pmr::unordered_map<component_bitset, std::size_t> _table_signatures; // component_bitset -> table index
-    std::pmr::vector<table_bitset> _component_tables;                         // component_index -> associated tables where bits are table indexes
+    deque<table> _tables;
+    unordered_map<component_bitset, std::size_t> _table_signatures; // component_bitset -> table index
+    vector<table_bitset> _component_tables;                         // component_index -> associated tables where bits are table indexes
 
     const schema* _schema{nullptr};
 };
@@ -83,9 +78,7 @@ auto catalog::for_each(const component_bitset& components, F&& f) -> void
     }
 
     // build matching bitset
-    std::array<std::byte, 1024U * 16U> buffer; // 16 KiB stack buffer
-    std::pmr::monotonic_buffer_resource buffer_resource{buffer.data(), buffer.size(), _memory_resource};
-    table_bitset table_matches{&buffer_resource};
+    table_bitset table_matches;
     find_matches(components, seed_index, table_matches);
 
     table_matches.for_each_set([this, &f](std::size_t table_index) {

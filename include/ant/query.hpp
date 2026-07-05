@@ -6,6 +6,7 @@
 
 #include <ant/detail/catalog/catalog.hpp>
 #include <ant/detail/catalog/table.hpp>
+#include <ant/detail/containers.hpp>
 #include <ant/detail/query/base_query.hpp>
 #include <ant/detail/query/query_cursor.hpp>
 #include <ant/detail/query/query_signature_traits.hpp>
@@ -54,7 +55,7 @@ public:
     auto end() -> iterator;
 
 private:
-    query(const detail::schema& schema, std::pmr::vector<detail::table*>&& tables, std::pmr::vector<base_query::mapping_type>&& mapping);
+    query(const detail::schema& schema, detail::vector<detail::table*>&& tables, detail::vector<base_query::mapping_type>&& mapping);
 
     auto make_cursor(std::size_t table_index, std::size_t row_index) noexcept -> detail::query_cursor;
 
@@ -108,7 +109,7 @@ query<Signature>::iterator::iterator(detail::query_cursor cursor) noexcept
 }
 
 template<typename Signature>
-auto query<Signature>::iterator::operator++() noexcept-> iterator&
+auto query<Signature>::iterator::operator++() noexcept -> iterator&
 {
     _cursor.advance();
 
@@ -116,7 +117,7 @@ auto query<Signature>::iterator::operator++() noexcept-> iterator&
 }
 
 template<typename Signature>
-auto query<Signature>::iterator::operator++(int) noexcept-> iterator
+auto query<Signature>::iterator::operator++(int) noexcept -> iterator
 {
     iterator temp = *this;
     ++(*this);
@@ -124,7 +125,7 @@ auto query<Signature>::iterator::operator++(int) noexcept-> iterator
 }
 
 template<typename Signature>
-auto query<Signature>::iterator::operator*() const noexcept-> row_type
+auto query<Signature>::iterator::operator*() const noexcept -> row_type
 {
     return row_type(_cursor);
 }
@@ -174,7 +175,7 @@ auto query<Signature>::end() -> iterator
 }
 
 template<typename Signature>
-query<Signature>::query(const detail::schema& schema, std::pmr::vector<detail::table*>&& tables, std::pmr::vector<base_query::mapping_type>&& mapping)
+query<Signature>::query(const detail::schema& schema, detail::vector<detail::table*>&& tables, detail::vector<base_query::mapping_type>&& mapping)
 {
     _schema = &schema;
     _tables = std::move(tables);

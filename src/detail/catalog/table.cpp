@@ -1,25 +1,22 @@
 #include <ant/detail/catalog/table.hpp>
 
 #include <algorithm>
+#include <memory_resource>
 
 #include <ant/detail/assert.hpp>
 #include <ant/detail/schema/schema.hpp>
 
 namespace ant::detail {
 
-table::table(component_bitset components, const schema& schema, std::pmr::memory_resource* memory_resource)
+table::table(component_bitset components, const schema& schema)
     : _components(std::move(components))
-    , _columns(memory_resource)
-    , _sparse_columns(memory_resource)
-    , _rows(memory_resource)
-    , _sparse_rows(memory_resource)
 {
     _columns.reserve(_components.count());
     _sparse_columns.resize(schema.range(), npos);
 
     _components.for_each_set([&](std::size_t index) {
         _sparse_columns[index] = _columns.size();
-        _columns.emplace_back(schema.meta_of(index), memory_resource);
+        _columns.emplace_back(schema.meta_of(index));
     });
 }
 
@@ -32,7 +29,7 @@ auto table::contains(entity e) const noexcept -> bool
 auto table::insert(entity e) -> std::size_t
 {
     std::array<std::byte,  sizeof(component_construct) * 256> buffer;
-    std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+    std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size(), pmr::get_default_resource()};
     std::pmr::vector<component_construct> ctors(&mbr);
     ctors.reserve(_columns.size());
 
@@ -71,7 +68,7 @@ auto table::insert(entity e, std::span<component_construct> ctors) -> std::size_
 auto table::splice(entity e, table& source) -> std::size_t
 {
     std::array<std::byte,  sizeof(component_construct) * 256> buffer;
-    std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+    std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size(), pmr::get_default_resource()};
     std::pmr::vector<component_construct> ctors(&mbr);
     ctors.reserve(_columns.size());
 

@@ -8,20 +8,10 @@
 
 namespace ant::detail {
 
-change_coalescer::coalescing_entity::coalescing_entity(std::pmr::memory_resource* memory_resource)
-    : detach_components(memory_resource)
-    , attach_components(memory_resource)
-    , attach_component_ctors(memory_resource)
-{
-}
-
-change_coalescer::change_coalescer(const schema& schema, entity_registry& entity_registry, catalog& catalog, std::pmr::memory_resource* memory_resource)
+change_coalescer::change_coalescer(const schema& schema, entity_registry& entity_registry, catalog& catalog)
     : _schema(schema)
     , _entity_registry(entity_registry)
     , _catalog(catalog)
-    , _changes(memory_resource)
-    , _changing_entities(memory_resource)
-    , _memory_resource(memory_resource)
 {
 }
 
@@ -41,7 +31,7 @@ auto change_coalescer::coalesce() -> coalesced_changes
     {
         const auto loc = _entity_registry.locate(e);
 
-        component_bitset bitset = loc == entity_location::invalid ? component_bitset{_memory_resource} : _catalog.at(loc.table).components();
+        component_bitset bitset = loc == entity_location::invalid ? component_bitset{} : _catalog.at(loc.table).components();
         bitset |= coalesce_e.attach_components;
 
         if (coalesce_e.detach_components.any())
@@ -56,7 +46,7 @@ auto change_coalescer::coalesce() -> coalesced_changes
             bitset &= ~coalesce_e.detach_components;
         }
 
-        std::pmr::vector<component_construct> ctors{std::move(coalesce_e.attach_component_ctors)};
+        vector<component_construct> ctors{std::move(coalesce_e.attach_component_ctors)};
         ctors.reserve(bitset.count());
         bitset.for_each_set([this, &coalesce_e, &ctors](std::size_t component_index) {
             if (!coalesce_e.attach_components.test(component_index))
@@ -159,7 +149,7 @@ auto change_coalescer::ensure_entity(entity entity) -> coalescing_entity&
 
     if (it == _changing_entities.end())
     {
-        auto result = _changing_entities.insert(std::make_pair(entity, coalescing_entity{_memory_resource}));
+        auto result = _changing_entities.insert(std::make_pair(entity, coalescing_entity{}));
         ANT_ASSERT(result.second, "failed to insert new coalescing_entity");
         it = result.first;
     }

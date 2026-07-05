@@ -6,18 +6,6 @@
 
 namespace ant::detail {
 
-schema::schema(std::pmr::memory_resource* resource) noexcept
-    : _dense(resource)
-    , _sparse(resource)
-{
-}
-
-schema::builder::builder(std::pmr::memory_resource* resource) noexcept
-    : _metas(resource)
-    , _resource(resource)
-{
-}
-
 auto schema::builder::define_impl(const component_options& options, meta_type&& meta) -> void
 {
     ANT_ASSERT(std::ranges::none_of(_metas, [&meta](const meta_type& m) { return m.index == meta.index; }), "Component already defined");
@@ -37,7 +25,7 @@ auto schema::builder::build() -> schema
     });
     _metas.shrink_to_fit();
 
-    schema result(_resource);
+    schema result;
     result._dense = std::move(_metas);
 
     if (!result._dense.empty())

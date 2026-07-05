@@ -7,8 +7,8 @@
 
 namespace ant::detail {
 
-using bitset = basic_dynamic_bitset<256, std::allocator<std::uint64_t>>;
-using small_bitset = basic_dynamic_bitset<64, std::allocator<std::uint64_t>>;
+using bitset = basic_dynamic_bitset<256, allocator<std::uint64_t>>;
+using small_bitset = basic_dynamic_bitset<64, allocator<std::uint64_t>>;
 using new_allocator_bitset = basic_dynamic_bitset<64, std::pmr::polymorphic_allocator<std::uint64_t>>;
 
 template<std::size_t C, typename Allocator>

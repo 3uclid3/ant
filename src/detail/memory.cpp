@@ -23,6 +23,32 @@ allocate_fn allocate_hook = &default_allocate;
 deallocate_fn deallocate_hook = &default_deallocate;
 } // namespace
 
+namespace pmr {
+auto get_default_resource() -> std::pmr::memory_resource*
+{
+    struct impl : std::pmr::memory_resource
+    {
+        auto do_allocate(std::size_t bytes, std::size_t alignment) -> void* override
+        {
+            return ant::detail::allocate(bytes, alignment);
+        }
+
+        auto do_deallocate(void* ptr, std::size_t bytes, std::size_t alignment) -> void override
+        {
+            ant::detail::deallocate(ptr, bytes, alignment);
+        }
+
+        auto do_is_equal(const std::pmr::memory_resource& other) const noexcept -> bool override
+        {
+            return this == &other;
+        }
+    };
+
+    static impl default_resource;
+    return &default_resource;
+}
+} // namespace pmr
+
 auto allocate(std::size_t size, std::size_t alignment) -> void*
 {
     return allocate_hook(size, alignment);

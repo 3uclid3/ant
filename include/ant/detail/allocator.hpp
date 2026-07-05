@@ -2,6 +2,7 @@
 
 #include <cstddef>
 
+#include <ant/detail/memory.hpp>
 #include <ant/memory.hpp>
 
 namespace ant::detail {
@@ -36,13 +37,13 @@ constexpr allocator<T>::allocator(const allocator<U>&) noexcept
 template<typename T>
 [[nodiscard]] auto allocator<T>::allocate(std::size_t n) -> T*
 {
-    return static_cast<T*>(ant::allocate(n * sizeof(T), alignof(T)));
+    return static_cast<T*>(ant::detail::allocate(n * sizeof(T), alignof(T)));
 }
 
 template<typename T>
 auto allocator<T>::deallocate(T* ptr, std::size_t n) noexcept -> void
 {
-    ant::deallocate(ptr, n * sizeof(T), alignof(T));
+    ant::detail::deallocate(ptr, n * sizeof(T), alignof(T));
 }
 
 } // namespace ant::detail

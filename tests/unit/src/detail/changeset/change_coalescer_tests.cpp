@@ -25,7 +25,7 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy entities")
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
 
-    CHECK(equivalent(changes.destroy_entities, std::pmr::vector<entity>{e0, e1}));
+    CHECK(equivalent(changes.destroy_entities, vector<entity>{e0, e1}));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy prevents any changes on the entity")
@@ -40,7 +40,7 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy prevents any cha
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
 
-    CHECK_EQ(changes.destroy_entities, std::pmr::vector<entity>{e0});
+    CHECK_EQ(changes.destroy_entities, vector<entity>{e0});
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: attach")
@@ -131,7 +131,7 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: unset env")
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
 
-    std::pmr::vector<coalesced_unset_change> expected{{{.meta = &schema.meta_of<component<0>>()}, {.meta = &schema.meta_of<component<1>>()}}};
+    vector<coalesced_unset_change> expected{{{.meta = &schema.meta_of<component<0>>()}, {.meta = &schema.meta_of<component<1>>()}}};
     CHECK(equivalent(changes.unset_envs, expected, [](const auto& lhs, const auto& rhs) { return lhs.meta == rhs.meta; }));
 }
 

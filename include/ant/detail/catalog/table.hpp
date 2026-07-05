@@ -1,10 +1,9 @@
 #pragma once
 
-#include <memory_resource>
 #include <span>
-#include <vector>
 
 #include <ant/detail/catalog/table_column.hpp>
+#include <ant/detail/containers.hpp>
 #include <ant/detail/entity/entity_traits.hpp>
 #include <ant/detail/schema/component_bitset.hpp>
 #include <ant/detail/schema/component_construct.hpp>
@@ -20,7 +19,7 @@ public:
     static constexpr auto npos = entity_traits::index_npos;
 
     table() noexcept = default;
-    table(component_bitset components, const schema& schema, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
+    table(component_bitset components, const schema& schema);
 
     table(const table&) = delete;
     table& operator=(const table&) = delete;
@@ -60,10 +59,10 @@ private:
     auto ensure_sparse_capacity(std::size_t capacity) -> void;
 
     component_bitset _components;
-    std::pmr::vector<table_column> _columns;
-    std::pmr::vector<std::size_t> _sparse_columns;
-    std::pmr::vector<entity> _rows;
-    std::pmr::vector<entity_traits::index_type> _sparse_rows;
+    vector<table_column> _columns;
+    vector<std::size_t> _sparse_columns;
+    vector<entity> _rows;
+    vector<entity_traits::index_type> _sparse_rows;
 };
 
 template<typename T>

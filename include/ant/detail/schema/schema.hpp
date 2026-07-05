@@ -1,9 +1,8 @@
 #pragma once
 
-#include <memory_resource>
 #include <optional>
-#include <vector>
 
+#include <ant/detail/containers.hpp>
 #include <ant/detail/schema/component_meta.hpp>
 
 namespace ant::detail {
@@ -24,7 +23,7 @@ public:
     class builder
     {
     public:
-        explicit builder(std::pmr::memory_resource* resource = std::pmr::get_default_resource()) noexcept;
+        builder() noexcept = default;
 
         builder(builder&&) noexcept = default;
         builder(const builder&) = delete;
@@ -40,13 +39,10 @@ public:
     private:
         auto define_impl(const component_options& options, meta_type&& meta) -> void;
 
-        std::pmr::vector<meta_type> _metas;
-        std::pmr::memory_resource* _resource;
+        vector<meta_type> _metas;
     };
 
 public:
-    schema() noexcept = default;
-
     schema(const schema&) = delete;
     schema& operator=(const schema&) = delete;
 
@@ -66,10 +62,10 @@ public:
     [[nodiscard]] auto range() const noexcept -> size_type; // max component_index + 1
 
 private:
-    explicit schema(std::pmr::memory_resource* resource) noexcept;
+    schema() noexcept = default;
 
-    std::pmr::vector<meta_type> _dense;
-    std::pmr::vector<meta_type*> _sparse;
+    vector<meta_type> _dense;
+    vector<meta_type*> _sparse;
 };
 
 template<typename T>

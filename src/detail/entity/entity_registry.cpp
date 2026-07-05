@@ -4,12 +4,6 @@
 
 namespace ant::detail {
 
-entity_registry::entity_registry(std::pmr::memory_resource* resource) noexcept
-    : _entries(resource)
-    , _free(resource)
-{
-}
-
 auto entity_registry::contains(value_type e) const noexcept -> bool
 {
     const std::size_t index = static_cast<std::size_t>(entity_traits::to_index(e));

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <deque>
 #include <unordered_map>
 #include <vector>
@@ -7,6 +8,9 @@
 #include <ant/detail/allocator.hpp>
 
 namespace ant::detail {
+
+template<typename T, std::size_t Size>
+using array = std::array<T, Size>;
 
 template<typename T>
 using deque = std::deque<T, ant::detail::allocator<T>>;

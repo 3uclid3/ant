@@ -2,18 +2,17 @@
 
 #include <cstring>
 
+#include <ant/detail/memory.hpp>
+
 namespace ant::detail {
 
-table_column::table_column(const component_meta& meta, std::pmr::memory_resource* memory_resource) noexcept
-    : _memory_resource(memory_resource)
-    , _blocks(memory_resource)
-    , _meta(&meta)
+table_column::table_column(const component_meta& meta) noexcept
+    : _meta(&meta)
 {
 }
 
 table_column::table_column(table_column&& other)
-    : _memory_resource(other._memory_resource)
-    , _blocks(std::move(other._blocks))
+    : _blocks(std::move(other._blocks))
     , _size(std::exchange(other._size, 0))
     , _meta(other._meta)
 {
@@ -32,10 +31,9 @@ auto table_column::operator=(table_column&& other) -> table_column&
         }
         for (std::byte* block : _blocks)
         {
-            _memory_resource->deallocate(block, _meta->stride * _meta->stride_per_block, _meta->alignment);
+            deallocate(block, _meta->stride * _meta->stride_per_block, _meta->alignment);
         }
 
-        _memory_resource = other._memory_resource;
         _blocks = std::move(other._blocks);
         _size = std::exchange(other._size, 0);
         _meta = other._meta;
@@ -55,7 +53,7 @@ table_column::~table_column()
 
     for (std::byte* block : _blocks)
     {
-        _memory_resource->deallocate(block, _meta->stride * _meta->stride_per_block, _meta->alignment);
+        deallocate(block, _meta->stride * _meta->stride_per_block, _meta->alignment);
     }
 }
 
@@ -144,7 +142,7 @@ auto table_column::ensure_capacity(std::size_t capacity) -> void
 
     if (capacity > current_capacity)
     {
-        _blocks.push_back(static_cast<std::byte*>(_memory_resource->allocate(_meta->stride * _meta->stride_per_block, _meta->alignment)));
+        _blocks.push_back(static_cast<std::byte*>(allocate(_meta->stride * _meta->stride_per_block, _meta->alignment)));
     }
 }
 

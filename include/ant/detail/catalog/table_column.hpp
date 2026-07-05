@@ -1,10 +1,9 @@
 #pragma once
 
-#include <memory_resource>
 #include <utility>
-#include <vector>
 
 #include <ant/detail/assert.hpp>
+#include <ant/detail/containers.hpp>
 #include <ant/detail/schema/component_construct.hpp>
 #include <ant/detail/schema/component_meta.hpp>
 
@@ -13,7 +12,7 @@ namespace ant::detail {
 class table_column
 {
 public:
-    explicit table_column(const component_meta& meta, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource()) noexcept;
+    explicit table_column(const component_meta& meta) noexcept;
     ~table_column();
 
     table_column(const table_column& other) = delete;
@@ -45,8 +44,7 @@ private:
     auto at_raw(std::size_t index) const noexcept -> const void*;
     auto at_raw(std::size_t index) noexcept -> void*;
 
-    std::pmr::memory_resource* _memory_resource{nullptr};
-    std::pmr::vector<std::byte*> _blocks; // block = meta.stride_per_block * meta.stride
+    vector<std::byte*> _blocks; // block = meta.stride_per_block * meta.stride
     std::size_t _size{0};
 
     const component_meta* _meta{nullptr};

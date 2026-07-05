@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vector>
-
 #include <ant/detail/catalog/table.hpp>
+#include <ant/detail/containers.hpp>
 #include <ant/detail/entity/entity_traits.hpp>
 #include <ant/detail/schema/schema.hpp>
 
@@ -15,8 +14,8 @@ struct base_query
     static constexpr auto npos{entity_traits::index_npos};
 
     const schema* _schema{nullptr};
-    std::pmr::vector<table*> _tables;
-    std::pmr::vector<mapping_type> _mapping; // tables * (signature_traits::required -> signature_traits::optional)
+    vector<table*> _tables;
+    vector<mapping_type> _mapping; // tables * (signature_traits::required -> signature_traits::optional)
 };
 
 }} // namespace ant::detail

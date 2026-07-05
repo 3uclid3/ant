@@ -1,8 +1,7 @@
 #pragma once
 
-#include <memory_resource>
-
 #include <ant/detail/catalog/catalog.hpp>
+#include <ant/detail/containers.hpp>
 #include <ant/detail/schema/component_bitset.hpp>
 #include <ant/detail/schema/schema.hpp>
 #include <ant/detail/type_list.hpp>
@@ -13,7 +12,7 @@ namespace ant { namespace detail {
 class query_builder
 {
 public:
-    query_builder(const schema& schema, catalog& catalog, std::pmr::memory_resource* memory_resource = std::pmr::get_default_resource());
+    query_builder(const schema& schema, catalog& catalog);
 
     template<typename Signature>
     auto build() -> query<Signature>;
@@ -27,9 +26,8 @@ private:
     const schema& _schema;
     catalog& _catalog;
 
-    std::pmr::vector<table*> _tables;
-    std::pmr::vector<base_query::mapping_type> _mapping;
-    std::pmr::memory_resource* _memory_resource;
+    vector<table*> _tables;
+    vector<base_query::mapping_type> _mapping;
 };
 
 template<typename Signature>
@@ -42,7 +40,7 @@ auto query_builder::build() -> query<Signature>
 
     using included_types = type_list_transform_t<std::remove_const, typename signature_traits::included>;
 
-    build_tables(component_bitset_of<typename signature_traits::required>(_memory_resource), component_bitset_of<typename signature_traits::excluded>(_memory_resource));
+    build_tables(component_bitset_of<typename signature_traits::required>(), component_bitset_of<typename signature_traits::excluded>());
     build_mapping(included_types{});
 
     return query<Signature>(_schema, std::move(_tables), std::move(_mapping));

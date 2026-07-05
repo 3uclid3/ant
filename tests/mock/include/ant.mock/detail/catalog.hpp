@@ -5,6 +5,7 @@
 #include <ant.mock/component.hpp>
 #include <ant.mock/detail/schema.hpp>
 #include <ant/detail/catalog/catalog.hpp>
+#include <ant/detail/containers.hpp>
 #include <ant/detail/entity/entity_registry.hpp>
 
 namespace ant::detail {
@@ -29,7 +30,7 @@ struct catalog_fixture : schema_fixture<Size>
     requires(sizeof...(Cs) > 0 && sizeof...(Cs) == sizeof...(Args))
     [[nodiscard]] auto create_entity(Args... values) -> entity
     {
-        std::pmr::vector<component_construct> components;
+        vector<component_construct> components;
         components.reserve(sizeof...(Cs));
         (components.emplace_back(make_component_construct<component<Cs>>(this->schema, static_cast<std::size_t>(values))), ...);
 
@@ -46,7 +47,7 @@ struct catalog_fixture : schema_fixture<Size>
     requires(sizeof...(Cs) > 1)
     [[nodiscard]] auto create_entity(std::size_t value) -> entity
     {
-        std::pmr::vector<component_construct> components;
+        vector<component_construct> components;
         components.reserve(sizeof...(Cs));
         (components.emplace_back(make_component_construct<component<Cs>>(this->schema, value)), ...);
 
