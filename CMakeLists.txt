@@ -49,7 +49,9 @@ target_sources(ant
       include/ant/detail/schema/component_vtable.hpp
       include/ant/detail/schema/schema.hpp
       include/ant/detail/algorithm.hpp
+      include/ant/detail/allocator.hpp
       include/ant/detail/assert.hpp
+      include/ant/detail/containers.hpp
       include/ant/detail/dynamic_bitset.hpp
       include/ant/detail/signature_traits.hpp
       include/ant/detail/type_list.hpp
@@ -59,6 +61,7 @@ target_sources(ant
       include/ant/entity.hpp
       include/ant/env.hpp
       include/ant/env_fwd.hpp
+      include/ant/memory.hpp
       include/ant/query.hpp
       include/ant/query_fwd.hpp
   PRIVATE
@@ -75,6 +78,7 @@ target_sources(ant
     src/detail/schema/component_index.cpp
     src/detail/schema/schema.cpp
     src/detail/assert.cpp
+    src/detail/memory.cpp
 )
 
 # tests
