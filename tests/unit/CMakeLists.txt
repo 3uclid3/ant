@@ -18,7 +18,7 @@ add_executable(ant_unit
   src/detail/entity/entity_registry_tests.cpp
   src/detail/entity/entity_traits_tests.cpp
   src/detail/env/env_registry_tests.cpp
-  src/detail/query/query_builder_tests.cpp
+  src/detail/query/query_compiler_tests.cpp
   src/detail/query/query_cursor_tests.cpp
   src/detail/schema/component_meta_tests.cpp
   src/detail/schema/component_vtable_tests.cpp

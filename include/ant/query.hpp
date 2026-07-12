@@ -7,8 +7,9 @@
 #include <ant/detail/catalog/catalog.hpp>
 #include <ant/detail/catalog/table.hpp>
 #include <ant/detail/containers.hpp>
-#include <ant/detail/query/base_query.hpp>
 #include <ant/detail/query/query_cursor.hpp>
+#include <ant/detail/query/query_iterator.hpp>
+#include <ant/detail/query/query_mapping.hpp>
 #include <ant/detail/query/query_signature_traits.hpp>
 #include <ant/detail/type_list.hpp>
 #include <ant/entity.hpp>
@@ -16,36 +17,42 @@
 
 namespace ant {
 namespace detail {
-class query_builder;
+class query_compiler;
 }
 
 template<typename Signature>
-class query final : detail::base_query
+class compiled_query final
 {
 public:
     using signature = Signature;
     using signature_traits = detail::query_signature_traits<Signature>;
 
     using row_type = query_row<Signature>;
+    using iterator = detail::query_iterator<Signature>;
 
 public:
-    class iterator
-    {
-    public:
-        auto operator==(const iterator& other) const noexcept -> bool = default;
-        auto operator!=(const iterator& other) const noexcept -> bool = default;
+    auto query() const noexcept -> query<Signature>;
+    auto epoch() const noexcept -> std::size_t;
 
-        auto operator++() noexcept -> iterator&;
-        auto operator++(int) noexcept -> iterator;
-        auto operator*() const noexcept -> row_type;
+private:
+    compiled_query(detail::vector<detail::table*>&& tables, detail::query_mapping&& mapping, std::size_t epoch);
 
-    private:
-        iterator(detail::query_cursor cursor) noexcept;
+    detail::vector<detail::table*> _tables;
+    detail::query_mapping _mapping;
+    std::size_t _epoch{0};
 
-        detail::query_cursor _cursor;
+    friend class detail::query_compiler;
+};
 
-        friend class query<Signature>;
-    };
+template<typename Signature>
+class query final
+{
+public:
+    using signature = Signature;
+    using signature_traits = detail::query_signature_traits<Signature>;
+
+    using row_type = query_row<Signature>;
+    using iterator = detail::query_iterator<Signature>;
 
 public:
     auto row(entity e) -> std::optional<row_type>;
@@ -55,19 +62,24 @@ public:
     auto end() -> iterator;
 
 private:
-    query(const detail::schema& schema, detail::vector<detail::table*>&& tables, detail::vector<base_query::mapping_type>&& mapping);
+    query(std::span<detail::table* const> tables, detail::query_mapping_view mapping);
 
     auto make_cursor(std::size_t table_index, std::size_t row_index) noexcept -> detail::query_cursor;
 
-    friend class detail::query_builder;
+    std::span<detail::table* const> _tables;
+    detail::query_mapping_view _mapping; // tables * (signature_traits::required -> signature_traits::optional)
+
+    friend class compiled_query<Signature>;
 };
 
 template<typename Signature>
 class query_row final
 {
 public:
-    using signature = typename query<Signature>::signature;
-    using signature_traits = typename query<Signature>::signature_traits;
+    using signature = compiled_query<Signature>::signature;
+    using signature_traits = compiled_query<Signature>::signature_traits;
+
+    using iterator = compiled_query<Signature>::iterator;
 
     operator bool() const noexcept;
 
@@ -94,40 +106,34 @@ public:
     auto has() const noexcept -> bool;
 
 private:
-    query_row(detail::query_cursor cursor) noexcept;
+    query_row(detail::query_cursor cursor, detail::query_mapping_view mapping) noexcept;
 
 private:
     detail::query_cursor _cursor;
+    detail::query_mapping_view _mapping; // tables * (signature_traits::required -> signature_traits::optional)
 
     friend class query<Signature>;
+    friend class detail::query_iterator<Signature>;
 };
 
 template<typename Signature>
-query<Signature>::iterator::iterator(detail::query_cursor cursor) noexcept
-    : _cursor(std::move(cursor))
+auto compiled_query<Signature>::query() const noexcept -> ant::query<Signature>
 {
+    return ant::query<Signature>(_tables, _mapping);
 }
 
 template<typename Signature>
-auto query<Signature>::iterator::operator++() noexcept -> iterator&
+auto compiled_query<Signature>::epoch() const noexcept -> std::size_t
 {
-    _cursor.advance();
-
-    return *this;
+    return _epoch;
 }
 
 template<typename Signature>
-auto query<Signature>::iterator::operator++(int) noexcept -> iterator
+compiled_query<Signature>::compiled_query(detail::vector<detail::table*>&& tables, detail::query_mapping&& mapping, std::size_t epoch)
+    : _tables(std::move(tables))
+    , _mapping(std::move(mapping))
+    , _epoch(epoch)
 {
-    iterator temp = *this;
-    ++(*this);
-    return temp;
-}
-
-template<typename Signature>
-auto query<Signature>::iterator::operator*() const noexcept -> row_type
-{
-    return row_type(_cursor);
 }
 
 template<typename Signature>
@@ -140,7 +146,7 @@ auto query<Signature>::row(entity e) -> std::optional<row_type>
 
         if (row_index != detail::table::npos)
         {
-            return query_row<Signature>{make_cursor(table_index, row_index)};
+            return query_row<Signature>(make_cursor(table_index, row_index), _mapping);
         }
     }
 
@@ -165,27 +171,26 @@ auto query<Signature>::begin() -> iterator
         ++table_index;
     }
 
-    return iterator(make_cursor(table_index, 0));
+    return iterator(make_cursor(table_index, 0), _mapping);
 }
 
 template<typename Signature>
 auto query<Signature>::end() -> iterator
 {
-    return iterator(make_cursor(_tables.size(), 0));
+    return iterator(make_cursor(_tables.size(), 0), _mapping);
 }
 
 template<typename Signature>
-query<Signature>::query(const detail::schema& schema, detail::vector<detail::table*>&& tables, detail::vector<base_query::mapping_type>&& mapping)
+query<Signature>::query(std::span<detail::table* const> tables, detail::query_mapping_view mapping)
+    : _tables(tables)
+    , _mapping(mapping)
 {
-    _schema = &schema;
-    _tables = std::move(tables);
-    _mapping = std::move(mapping);
 }
 
 template<typename Signature>
 auto query<Signature>::make_cursor(std::size_t table_index, std::size_t row_index) noexcept -> detail::query_cursor
 {
-    return detail::query_cursor{this, table_index, row_index};
+    return detail::query_cursor{_tables, table_index, row_index};
 }
 
 template<typename Signature>
@@ -208,9 +213,9 @@ auto query_row<Signature>::get() const noexcept -> const T&
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
     constexpr std::size_t type_size = signature_traits::size;
 
-    const std::size_t column_index = _cursor.query->_mapping[_cursor.table_index * type_size + type_index];
+    const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
-    return _cursor.table().template at<T>(column_index, _cursor.row_index);
+    return _cursor.table().template at<T>(column_index, _cursor.row_index());
 }
 
 template<typename Signature>
@@ -221,9 +226,9 @@ auto query_row<Signature>::get() noexcept -> T&
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
     constexpr std::size_t type_size = signature_traits::size;
 
-    const std::size_t column_index = _cursor.query->_mapping[_cursor.table_index * type_size + type_index];
+    const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
-    return _cursor.table().template at<T>(column_index, _cursor.row_index);
+    return _cursor.table().template at<T>(column_index, _cursor.row_index());
 }
 
 template<typename Signature>
@@ -234,9 +239,9 @@ auto query_row<Signature>::get() const noexcept -> const T*
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
     constexpr std::size_t type_size = signature_traits::size;
 
-    const std::size_t column_index = _cursor.query->_mapping[_cursor.table_index * type_size + type_index];
+    const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
-    return column_index != detail::table::npos ? &_cursor.table().template at<T>(column_index, _cursor.row_index) : nullptr;
+    return column_index != detail::table::npos ? &_cursor.table().template at<T>(column_index, _cursor.row_index()) : nullptr;
 }
 
 template<typename Signature>
@@ -247,9 +252,9 @@ auto query_row<Signature>::get() noexcept -> T*
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
     constexpr std::size_t type_size = signature_traits::size;
 
-    const std::size_t column_index = _cursor.query->_mapping[_cursor.table_index * type_size + type_index];
+    const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
-    return column_index != detail::table::npos ? &_cursor.table().template at<T>(column_index, _cursor.row_index) : nullptr;
+    return column_index != detail::table::npos ? &_cursor.table().template at<T>(column_index, _cursor.row_index()) : nullptr;
 }
 
 template<typename Signature>
@@ -260,14 +265,15 @@ auto query_row<Signature>::has() const noexcept -> bool
     constexpr std::size_t type_index = signature_traits::template index_of<T>;
     constexpr std::size_t type_size = signature_traits::size;
 
-    const std::size_t column_index = _cursor.query->_mapping[_cursor.table_index * type_size + type_index];
+    const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
     return column_index != detail::table::npos;
 }
 
 template<typename Signature>
-query_row<Signature>::query_row(detail::query_cursor cursor) noexcept
+query_row<Signature>::query_row(detail::query_cursor cursor, detail::query_mapping_view mapping) noexcept
     : _cursor(std::move(cursor))
+    , _mapping(mapping)
 {
 }
 

@@ -1,14 +1,25 @@
 #pragma once
 
-#include <ant/detail/query/base_query.hpp>
+#include <span>
+
+#include <ant/detail/catalog/table.hpp>
 #include <ant/entity.hpp>
-#include <ant/query_fwd.hpp>
 
 namespace ant { namespace detail {
 
-struct query_cursor
+class query_cursor
 {
-    auto operator==(const query_cursor& other) const noexcept -> bool = default;
+public:
+    query_cursor() = default;
+    query_cursor(const query_cursor&) = default;
+    query_cursor& operator=(const query_cursor&) = default;
+    query_cursor(query_cursor&&) = default;
+    query_cursor& operator=(query_cursor&&) = default;
+
+    explicit query_cursor(std::span<detail::table* const> tables) noexcept;
+    query_cursor(std::span<detail::table* const> tables, std::size_t table_index, std::size_t row_index) noexcept;
+
+    auto operator==(const query_cursor& other) const noexcept -> bool;
     auto operator!=(const query_cursor& other) const noexcept -> bool = default;
 
     auto advance() noexcept -> bool;
@@ -20,9 +31,13 @@ struct query_cursor
 
     auto entity() const noexcept -> ant::entity;
 
-    base_query* query{nullptr};
-    std::size_t table_index{0};
-    std::size_t row_index{0};
+    auto table_index() const noexcept -> std::size_t;
+    auto row_index() const noexcept -> std::size_t;
+
+private:
+    std::span<detail::table* const> _tables;
+    std::size_t _table_index{0};
+    std::size_t _row_index{0};
 };
 
 }} // namespace ant::detail

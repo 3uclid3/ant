@@ -14,6 +14,9 @@ template<typename... Parameters>
 class query_signature;
 
 template<typename Signature>
+class compiled_query;
+
+template<typename Signature>
 class query;
 
 template<typename Signature>
