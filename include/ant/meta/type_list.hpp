@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <type_traits>
 
 namespace ant {
@@ -7,6 +8,8 @@ namespace ant {
 template<typename... Types>
 struct type_list
 {};
+
+inline constexpr std::size_t type_list_npos_v = std::numeric_limits<std::size_t>::max();
 
 // check if a type is a type_list
 template<typename T>
@@ -51,6 +54,41 @@ struct type_list_index_of<T, type_list<U, Types...>> : std::integral_constant<st
 
 template<typename T, typename TypeList>
 static inline constexpr std::size_t type_list_index_of_v = type_list_index_of<T, TypeList>::value;
+
+// get element at index of type_list
+template<std::size_t Index, typename TypeList>
+struct type_list_at;
+
+template<std::size_t Index, typename H, typename... Types>
+struct type_list_at<Index, type_list<H, Types...>>
+{
+    using type = typename type_list_at<Index - 1, type_list<Types...>>::type;
+};
+
+template<typename H, typename... Types>
+struct type_list_at<0, type_list<H, Types...>>
+{
+    using type = H;
+};
+
+template<std::size_t Index, typename TypeList>
+using type_list_at_t = typename type_list_at<Index, TypeList>::type;
+
+// return the front of a type_list, or Fallback if empty
+template<typename TypeList, typename Fallback>
+struct type_list_front_or
+{
+    using type = Fallback;
+};
+
+template<typename Head, typename... Tail, typename Fallback>
+struct type_list_front_or<type_list<Head, Tail...>, Fallback>
+{
+    using type = Head;
+};
+
+template<typename TypeList, typename Fallback>
+using type_list_front_or_t = typename type_list_front_or<TypeList, Fallback>::type;
 
 // check if type_list contains a type T
 template<typename T, typename TypeList>

@@ -33,7 +33,7 @@ auto query_compiler::compile(catalog& catalog) -> compiled_query<Signature>
 {
     using signature_traits = typename compiled_query<Signature>::signature_traits;
 
-    using required_types = typename signature_traits::required;
+    using required_types = type_list_transform_t<std::remove_const, typename signature_traits::required>;
     using excluded_types = typename signature_traits::excluded;
     using included_types = type_list_transform_t<std::remove_const, typename signature_traits::included>;
 

@@ -21,6 +21,9 @@ struct query_signature_traits<query_signature<Parameters...>>
     using excluded = type_list_transform_t<detail::remove_exclude, type_list_filter_t<detail::is_excluded, flatten>>;
     using included = type_list_concat_t<required, optional>;
 
+    using read = type_list_transform_t<std::remove_const, type_list_filter_t<detail::is_read, type_list_concat_t<required, optional>>>;
+    using write = type_list_filter_t<detail::is_write, type_list_concat_t<required, optional>>;
+
     template<typename T>
     static constexpr bool is_required = type_list_contains_v<T, required>;
 

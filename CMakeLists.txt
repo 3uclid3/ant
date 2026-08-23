@@ -58,6 +58,7 @@ target_sources(ant
       include/ant/detail/assert.hpp
       include/ant/detail/containers.hpp
       include/ant/detail/dynamic_bitset.hpp
+      include/ant/detail/function_traits.hpp
       include/ant/detail/memory.hpp
       include/ant/detail/signature_traits.hpp
       include/ant/env/env_signature.hpp
@@ -89,6 +90,7 @@ target_sources(ant
     src/detail/query/query_cursor.cpp
     src/detail/assert.cpp
     src/detail/memory.cpp
+    src/database.cpp
     src/schema.cpp
 )
 

@@ -31,6 +31,12 @@ public:
     using iterator = query_iterator<Signature>;
 
 public:
+    compiled_query() = default;
+    compiled_query(const compiled_query&) = delete;
+    compiled_query& operator=(const compiled_query&) = delete;
+    compiled_query(compiled_query&&) = default;
+    compiled_query& operator=(compiled_query&&) = default;
+
     auto query() const noexcept -> query<Signature>;
     auto epoch() const noexcept -> std::size_t;
 

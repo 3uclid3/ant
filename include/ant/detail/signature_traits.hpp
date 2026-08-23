@@ -28,4 +28,20 @@ template<typename T>
 struct is_optional<T*> : std::true_type
 {};
 
+template<typename T>
+struct is_read : std::false_type
+{};
+
+template<typename T>
+struct is_read<const T> : std::true_type
+{};
+
+template<typename T>
+struct is_read<const T*> : std::true_type
+{};
+
+template<typename T>
+struct is_write : std::negation<is_read<T>>
+{};
+
 } // namespace ant::detail

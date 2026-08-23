@@ -36,7 +36,17 @@ endfunction()
 ant_compile_test(type_list meta)
 ant_compile_fail_test(type_list_index_of_not_found meta)
 
+## function_traits
+ant_compile_test(function_traits detail)
+
 # database
+
+## binding
+ant_compile_test(binding_traits detail/binding)
+ant_compile_fail_test(binding_traits_multiple_changesets detail/binding)
+ant_compile_fail_test(binding_traits_multiple_envs detail/binding)
+ant_compile_fail_test(binding_traits_no_args detail/binding)
+ant_compile_fail_test(binding_traits_unsupported_type detail/binding)
 
 ## changeset
 ant_compile_test(changeset changeset)
