@@ -1,5 +1,6 @@
 
 #include <ant/binding.hpp>
+#include <ant/detail/change/change_accumulator_consumer.hpp>
 #include <doctest/doctest.h>
 
 #include <memory>
@@ -280,7 +281,7 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: supplies arguments in decla
 
     CHECK(called);
     REQUIRE_EQ(accumulator.size(), 1u);
-    CHECK(std::holds_alternative<detail::set_change>(accumulator[0]));
+    CHECK(std::holds_alternative<detail::set_change>(detail::change_accumulator_consumer::changes(accumulator)[0]));
     CHECK_EQ(db.env<env_signature<const component<2>>>().get<component<2>>().value, 42u);
 }
 
@@ -293,7 +294,7 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: changeset writes into the p
     b.invoke(ctx);
 
     REQUIRE_EQ(accumulator.size(), 1u);
-    CHECK(std::holds_alternative<detail::set_change>(accumulator[0]));
+    CHECK(std::holds_alternative<detail::set_change>(detail::change_accumulator_consumer::changes(accumulator)[0]));
 }
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: env writes through to the registry")

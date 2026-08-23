@@ -2,11 +2,14 @@
 
 #include <variant>
 
-#include <ant/component/component_meta.hpp>
 #include <ant/detail/component/component_construct.hpp>
 #include <ant/entity.hpp>
 
-namespace ant::detail {
+namespace ant {
+
+struct component_meta;
+
+namespace detail {
 
 struct destroy_change
 {
@@ -42,4 +45,5 @@ using change = std::variant<
     set_change,
     unset_change>;
 
-} // namespace ant::detail
+} // namespace detail
+} // namespace ant

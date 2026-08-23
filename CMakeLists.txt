@@ -81,6 +81,7 @@ target_sources(ant
     src/detail/catalog/catalog.cpp
     src/detail/catalog/table.cpp
     src/detail/catalog/table_column.cpp
+    src/detail/change/change_accumulator_consumer.cpp
     src/detail/change/change_coalescer.cpp
     src/detail/change/change_executor.cpp
     src/detail/component/component_index.cpp

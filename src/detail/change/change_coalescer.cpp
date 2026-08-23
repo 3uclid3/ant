@@ -3,6 +3,7 @@
 #include <ant/change/change_accumulator.hpp>
 #include <ant/detail/algorithm.hpp>
 #include <ant/detail/catalog/catalog.hpp>
+#include <ant/detail/change/change_accumulator_consumer.hpp>
 #include <ant/detail/entity/entity_location.hpp>
 #include <ant/detail/entity/entity_registry.hpp>
 #include <ant/schema.hpp>
@@ -18,12 +19,12 @@ change_coalescer::change_coalescer(const schema& schema, entity_registry& entity
 
 auto change_coalescer::consume(change_accumulator& accumulator) -> void
 {
-    for (change& c : accumulator)
+    for (change& c : change_accumulator_consumer::changes(accumulator))
     {
         std::visit([this](auto&& c) { consume_change(c); }, c);
     }
 
-    accumulator.clear();
+    change_accumulator_consumer::clear(accumulator);
 }
 
 auto change_coalescer::coalesce() -> coalesced_changes

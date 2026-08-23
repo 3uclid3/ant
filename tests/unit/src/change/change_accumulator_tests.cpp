@@ -1,4 +1,5 @@
 #include <ant/change/change_accumulator.hpp>
+#include <ant/detail/change/change_accumulator_consumer.hpp>
 #include <doctest/doctest.h>
 
 #include <ant.mock/component.hpp>
@@ -19,7 +20,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_destroy: emplace destroy
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if< destroy_change>(&accumulator[0]);
+    const auto* change = std::get_if<destroy_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
@@ -33,7 +34,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: emplace attach c
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if<attach_change>(&accumulator[0]);
+    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
@@ -49,7 +50,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: emplace attach c
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if<attach_change>(&accumulator[0]);
+    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
@@ -66,7 +67,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: override pending
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if<attach_change>(&accumulator[0]);
+    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
@@ -84,11 +85,11 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: does not overrid
 
     REQUIRE_EQ(accumulator.size(), 2u);
 
-    const auto* first = std::get_if<attach_change>(&accumulator[0]);
+    const auto* first = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(first != nullptr);
     CHECK_EQ(first->entity, e0);
 
-    const auto* second = std::get_if<attach_change>(&accumulator[1]);
+    const auto* second = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[1]);
     REQUIRE(second != nullptr);
     CHECK_EQ(second->entity, e1);
 }
@@ -102,11 +103,11 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: does not overrid
 
     REQUIRE_EQ(accumulator.size(), 2u);
 
-    const auto* first = std::get_if<attach_change>(&accumulator[0]);
+    const auto* first = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(first != nullptr);
     CHECK_EQ(first->ctor.meta, &schema.meta_of<component<0>>());
 
-    const auto* second = std::get_if<attach_change>(&accumulator[1]);
+    const auto* second = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[1]);
     REQUIRE(second != nullptr);
     CHECK_EQ(second->ctor.meta, &schema.meta_of<component<1>>());
 }
@@ -119,7 +120,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_detach: emplace detach c
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if<detach_change>(&accumulator[0]);
+    const auto* change = std::get_if<detach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
@@ -132,7 +133,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_set: emplace set env cha
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if<set_change>(&accumulator[0]);
+    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->ctor.fn, nullptr);
@@ -145,7 +146,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_set: emplace set env cha
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if<set_change>(&accumulator[0]);
+    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_NE(change->ctor.fn, nullptr);
@@ -159,7 +160,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_set: override pending se
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if<set_change>(&accumulator[0]);
+    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_NE(change->ctor.fn, nullptr);
@@ -173,11 +174,11 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_set: does not override p
 
     REQUIRE_EQ(accumulator.size(), 2u);
 
-    const auto* first = std::get_if<set_change>(&accumulator[0]);
+    const auto* first = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(first != nullptr);
     CHECK_EQ(first->ctor.meta, &schema.meta_of<component<0>>());
 
-    const auto* second = std::get_if<set_change>(&accumulator[1]);
+    const auto* second = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[1]);
     REQUIRE(second != nullptr);
     CHECK_EQ(second->ctor.meta, &schema.meta_of<component<1>>());
 }
@@ -188,7 +189,7 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_unset: emplace unset cha
 
     REQUIRE_EQ(accumulator.size(), 1u);
 
-    const auto* change = std::get_if<unset_change>(&accumulator[0]);
+    const auto* change = std::get_if<unset_change>(&change_accumulator_consumer::changes(accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->meta, &schema.meta_of<component<0>>());

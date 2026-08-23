@@ -7,14 +7,12 @@
 
 namespace ant {
 
+namespace detail {
+class change_accumulator_consumer;
+} // namespace detail
+
 class change_accumulator
 {
-public:
-    using value_type = detail::change;
-
-    using iterator = detail::vector<value_type>::iterator;
-    using const_iterator = detail::vector<value_type>::const_iterator;
-
 public:
     explicit change_accumulator(const schema& schema);
 
@@ -38,23 +36,16 @@ public:
     template<typename Component>
     auto emplace_unset() -> void;
 
-    auto operator[](std::size_t index) const noexcept -> const value_type&;
-    auto operator[](std::size_t index) noexcept -> value_type&;
-
     auto empty() const noexcept -> bool;
     auto size() const noexcept -> std::size_t;
 
-    auto begin() const noexcept -> const_iterator;
-    auto end() const noexcept -> const_iterator;
-
-    auto begin() noexcept -> iterator;
-    auto end() noexcept -> iterator;
-
-    auto clear() noexcept -> void;
-
 private:
+    using value_type = detail::change;
+
     const schema* _schema;
     detail::vector<value_type> _buffer;
+
+    friend class detail::change_accumulator_consumer;
 };
 
 template<typename Component, typename... Args>
