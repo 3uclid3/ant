@@ -4,9 +4,9 @@
 #include <utility>
 
 #include <ant/detail/assert.hpp>
-#include <ant/detail/schema/component_construct.hpp>
-#include <ant/detail/schema/schema.hpp>
+#include <ant/detail/component/component_construct.hpp>
 #include <ant/detail/containers.hpp>
+#include <ant/schema.hpp>
 
 namespace ant::detail {
 
@@ -68,13 +68,13 @@ auto env_registry::has() const noexcept -> bool
 template<typename T>
 auto env_registry::get() const noexcept -> const T*
 {
-    return static_cast<const T*>(at_raw(detail::component_index_of<T>()));
+    return static_cast<const T*>(at_raw(component_index_of<T>()));
 }
 
 template<typename T>
 auto env_registry::get() noexcept -> T*
 {
-    return static_cast<T*>(at_raw(detail::component_index_of<T>()));
+    return static_cast<T*>(at_raw(component_index_of<T>()));
 }
 
 template<typename T, typename... Args>
@@ -83,14 +83,14 @@ auto env_registry::set(Args&&... args) -> T&
     const schema& sch = _schema.get();
     set(make_component_construct<T>(sch, std::forward<Args>(args)...));
 
-    const component_meta& meta = sch.meta_of(detail::component_index_of<T>());
+    const component_meta& meta = sch.meta_of(component_index_of<T>());
     return *static_cast<T*>(_dense[_sparse[meta.index]].ptr);
 }
 
 template<typename T>
 auto env_registry::unset() -> void
 {
-    unset(_schema.get().meta_of(detail::component_index_of<T>()));
+    unset(_schema.get().meta_of(component_index_of<T>()));
 }
 
 } // namespace ant::detail

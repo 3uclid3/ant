@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 
 #include <ant.mock/component.hpp>
-#include <ant/detail/schema/schema.hpp>
+#include <ant/schema.hpp>
 
 namespace ant::detail { namespace {
 
@@ -10,7 +10,7 @@ struct fixture : component_fixture
 {
     using component_t = component<0>;
 
-    static inline const component_meta meta = component_meta_of<component_t>();
+    static inline const component_meta meta = make_component_meta<component_t>();
 
     auto track() const -> const component_track&
     {

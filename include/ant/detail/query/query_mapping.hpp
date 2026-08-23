@@ -2,11 +2,8 @@
 
 #include <span>
 
-#include <ant/detail/catalog/catalog.hpp>
 #include <ant/detail/containers.hpp>
 #include <ant/detail/entity/entity_traits.hpp>
-#include <ant/detail/query/query_signature_traits.hpp>
-#include <ant/detail/schema/component_bitset.hpp>
 
 namespace ant::detail {
 

@@ -33,8 +33,8 @@ endfunction()
 # core
 
 ## typelist
-ant_compile_test(type_list detail/type_list)
-ant_compile_fail_test(type_list_index_of_not_found detail/type_list)
+ant_compile_test(type_list meta)
+ant_compile_fail_test(type_list_index_of_not_found meta)
 
 # database
 
@@ -52,8 +52,8 @@ ant_compile_fail_test(changeset_unsupported_unset_env changeset)
 ant_compile_fail_test(changeset_unsupported_unset_env_type changeset)
 
 ## env signature
-ant_compile_test(env_signature_traits detail/env)
-ant_compile_fail_test(env_signature_traits_duplicate_type detail/env)
+ant_compile_test(env_signature_traits env)
+ant_compile_fail_test(env_signature_traits_duplicate_type env)
 
 ## env
 ant_compile_test(env_has env)
@@ -68,9 +68,9 @@ ant_compile_fail_test(env_get_unsupported_required env)
 ant_compile_fail_test(env_get_unsupported_type env)
 
 ## query signature
-ant_compile_test(query_signature_traits detail/query)
-ant_compile_fail_test(query_signature_traits_duplicate_parameter detail/query)
-ant_compile_fail_test(query_signature_traits_duplicate_type detail/query)
+ant_compile_test(query_signature_traits query)
+ant_compile_fail_test(query_signature_traits_duplicate_parameter query)
+ant_compile_fail_test(query_signature_traits_duplicate_type query)
 
 ## query row
 ant_compile_test(query_row_has query)

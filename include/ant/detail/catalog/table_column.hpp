@@ -2,10 +2,10 @@
 
 #include <utility>
 
+#include <ant/component/component_meta.hpp>
 #include <ant/detail/assert.hpp>
+#include <ant/detail/component/component_construct.hpp>
 #include <ant/detail/containers.hpp>
-#include <ant/detail/schema/component_construct.hpp>
-#include <ant/detail/schema/component_meta.hpp>
 
 namespace ant::detail {
 

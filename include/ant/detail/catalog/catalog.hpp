@@ -3,11 +3,11 @@
 #include <cstddef>
 #include <limits>
 
+#include <ant/component/component_bitset.hpp>
 #include <ant/detail/catalog/table.hpp>
 #include <ant/detail/containers.hpp>
 #include <ant/detail/memory.hpp>
-#include <ant/detail/schema/component_bitset.hpp>
-#include <ant/detail/schema/schema.hpp>
+#include <ant/schema.hpp>
 
 namespace ant::detail {
 

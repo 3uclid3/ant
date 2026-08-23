@@ -24,62 +24,72 @@ target_sources(ant
     BASE_DIRS
       include
     FILES
+      include/ant/change/change_accumulator.hpp
+      include/ant/changeset/changeset_signature.hpp
+      include/ant/changeset/changeset_signature_traits.hpp
+      include/ant/changeset/fwd.hpp
+      include/ant/component/component_bitset.hpp
+      include/ant/component/component_index.hpp
+      include/ant/component/component_meta.hpp
+      include/ant/component/component_name.hpp
+      include/ant/component/component_vtable.hpp
       include/ant/detail/catalog/catalog.hpp
       include/ant/detail/catalog/table.hpp
       include/ant/detail/catalog/table_column.hpp
-      include/ant/detail/changeset/change_accumulator.hpp
-      include/ant/detail/changeset/change_coalescer.hpp
-      include/ant/detail/changeset/change_executor.hpp
+      include/ant/detail/change/change.hpp
+      include/ant/detail/change/change_coalescer.hpp
+      include/ant/detail/change/change_executor.hpp
+      include/ant/detail/change/coalesced_change.hpp
       include/ant/detail/changeset/changeset_signature_traits.hpp
-      include/ant/detail/changeset/coalesced_change.hpp
+      include/ant/detail/component/component_construct.hpp
+      include/ant/detail/component/component_index.hpp
+      include/ant/detail/component/component_meta.hpp
+      include/ant/detail/component/component_vtable.hpp
       include/ant/detail/entity/entity_location.hpp
       include/ant/detail/entity/entity_registry.hpp
       include/ant/detail/entity/entity_traits.hpp
       include/ant/detail/env/env_registry.hpp
-      include/ant/detail/env/env_signature_traits.hpp
       include/ant/detail/query/query_compiler.hpp
       include/ant/detail/query/query_cursor.hpp
-      include/ant/detail/query/query_iterator.hpp
       include/ant/detail/query/query_mapping.hpp
       include/ant/detail/query/query_signature_traits.hpp
-      include/ant/detail/schema/component_bitset.hpp
-      include/ant/detail/schema/component_construct.hpp
-      include/ant/detail/schema/component_index.hpp
-      include/ant/detail/schema/component_meta.hpp
-      include/ant/detail/schema/component_name.hpp
-      include/ant/detail/schema/component_vtable.hpp
-      include/ant/detail/schema/schema.hpp
       include/ant/detail/algorithm.hpp
       include/ant/detail/allocator.hpp
       include/ant/detail/assert.hpp
       include/ant/detail/containers.hpp
       include/ant/detail/dynamic_bitset.hpp
+      include/ant/detail/memory.hpp
       include/ant/detail/signature_traits.hpp
-      include/ant/detail/type_list.hpp
+      include/ant/env/env_signature.hpp
+      include/ant/env/env_signature_traits.hpp
+      include/ant/env/fwd.hpp
+      include/ant/meta/type_list.hpp
+      include/ant/query/fwd.hpp
+      include/ant/query/query_iterator.hpp
+      include/ant/query/query_signature.hpp
+      include/ant/query/query_signature_traits.hpp
       include/ant/assert.hpp
       include/ant/changeset.hpp
-      include/ant/changeset_fwd.hpp
       include/ant/entity.hpp
       include/ant/env.hpp
-      include/ant/env_fwd.hpp
       include/ant/memory.hpp
       include/ant/query.hpp
-      include/ant/query_fwd.hpp
+      include/ant/schema.hpp
   PRIVATE
+    src/change/change_accumulator.cpp
     src/detail/catalog/catalog.cpp
     src/detail/catalog/table.cpp
     src/detail/catalog/table_column.cpp
-    src/detail/changeset/change_accumulator.cpp
-    src/detail/changeset/change_coalescer.cpp
-    src/detail/changeset/change_executor.cpp
+    src/detail/change/change_coalescer.cpp
+    src/detail/change/change_executor.cpp
+    src/detail/component/component_index.cpp
     src/detail/entity/entity_registry.cpp
     src/detail/env/env_registry.cpp
     src/detail/query/query_compiler.cpp
     src/detail/query/query_cursor.cpp
-    src/detail/schema/component_index.cpp
-    src/detail/schema/schema.cpp
     src/detail/assert.cpp
     src/detail/memory.cpp
+    src/schema.cpp
 )
 
 # tests

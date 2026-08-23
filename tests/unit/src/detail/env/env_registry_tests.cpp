@@ -2,7 +2,7 @@
 #include <ant/detail/env/env_registry.hpp>
 #include <doctest/doctest.h>
 
-#include <ant.mock/detail/schema.hpp>
+#include <ant.mock/schema.hpp>
 
 namespace ant::detail { namespace {
 

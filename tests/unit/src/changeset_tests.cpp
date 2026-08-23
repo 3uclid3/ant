@@ -3,11 +3,11 @@
 #include <doctest/doctest.h>
 
 #include <ant.mock/component.hpp>
-#include <ant.mock/detail/schema.hpp>
+#include <ant.mock/schema.hpp>
 
 namespace ant { namespace {
 
-struct fixture : detail::schema_fixture<5>
+struct fixture : schema_fixture<5>
 {
     template<typename... C>
     auto make_changeset() -> changeset_of<C...>
@@ -15,7 +15,7 @@ struct fixture : detail::schema_fixture<5>
         return changeset_of<C...>{accumulator, entity_registry};
     }
 
-    detail::change_accumulator accumulator{schema};
+    change_accumulator accumulator{schema};
     detail::entity_registry entity_registry{};
 };
 
@@ -34,7 +34,7 @@ TEST_CASE_FIXTURE(fixture, "changeset::destroy: emplace destroy change")
     cs.destroy(entity{});
 
     REQUIRE_EQ(accumulator.size(), 1u);
-    CHECK(std::holds_alternative<detail::change_accumulator::destroy_change>(accumulator[0]));
+    CHECK(std::holds_alternative<detail::destroy_change>(accumulator[0]));
 }
 
 TEST_CASE_FIXTURE(fixture, "changeset::attach: emplace attach change")
@@ -43,7 +43,7 @@ TEST_CASE_FIXTURE(fixture, "changeset::attach: emplace attach change")
     cs.attach<component<0>>(entity{});
 
     REQUIRE_EQ(accumulator.size(), 1u);
-    CHECK(std::holds_alternative<detail::change_accumulator::attach_change>(accumulator[0]));
+    CHECK(std::holds_alternative<detail::attach_change>(accumulator[0]));
 }
 
 TEST_CASE_FIXTURE(fixture, "changeset::detach: emplace detach change")
@@ -52,7 +52,7 @@ TEST_CASE_FIXTURE(fixture, "changeset::detach: emplace detach change")
     cs.detach<component<0>>(entity{});
 
     REQUIRE_EQ(accumulator.size(), 1u);
-    CHECK(std::holds_alternative<detail::change_accumulator::detach_change>(accumulator[0]));
+    CHECK(std::holds_alternative<detail::detach_change>(accumulator[0]));
 }
 
 TEST_CASE_FIXTURE(fixture, "changeset::set_env: emplace set change")
@@ -61,7 +61,7 @@ TEST_CASE_FIXTURE(fixture, "changeset::set_env: emplace set change")
     cs.set_env<component<0>>();
 
     REQUIRE_EQ(accumulator.size(), 1u);
-    CHECK(std::holds_alternative<detail::change_accumulator::set_change>(accumulator[0]));
+    CHECK(std::holds_alternative<detail::set_change>(accumulator[0]));
 }
 
 TEST_CASE_FIXTURE(fixture, "changeset::unset: emplace unset change")
@@ -70,7 +70,7 @@ TEST_CASE_FIXTURE(fixture, "changeset::unset: emplace unset change")
     cs.unset_env<component<0>>();
 
     REQUIRE_EQ(accumulator.size(), 1u);
-    CHECK(std::holds_alternative<detail::change_accumulator::unset_change>(accumulator[0]));
+    CHECK(std::holds_alternative<detail::unset_change>(accumulator[0]));
 }
 
 }} // namespace ant

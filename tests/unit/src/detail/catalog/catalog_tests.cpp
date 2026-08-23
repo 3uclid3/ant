@@ -4,7 +4,7 @@
 #include <ant.mock/component.hpp>
 #include <ant.mock/detail/catalog.hpp>
 #include <ant.mock/equivalent.hpp>
-#include <ant/detail/schema/component_bitset.hpp>
+#include <ant/component/component_bitset.hpp>
 
 namespace ant::detail { namespace {
 

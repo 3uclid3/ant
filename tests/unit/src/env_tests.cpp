@@ -3,11 +3,11 @@
 #include <doctest/doctest.h>
 
 #include <ant.mock/component.hpp>
-#include <ant.mock/detail/schema.hpp>
+#include <ant.mock/schema.hpp>
 
 namespace ant { namespace {
 
-struct fixture : detail::schema_fixture<5>
+struct fixture : schema_fixture<5>
 {
     fixture()
     {

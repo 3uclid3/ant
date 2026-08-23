@@ -1,8 +1,8 @@
 #pragma once
 
 #include <ant/detail/env/env_registry.hpp>
-#include <ant/detail/env/env_signature_traits.hpp>
-#include <ant/env_fwd.hpp>
+#include <ant/env/env_signature_traits.hpp>
+#include <ant/env/fwd.hpp>
 
 namespace ant {
 
@@ -11,7 +11,7 @@ class env final
 {
 public:
     using signature = Signature;
-    using signature_traits = detail::env_signature_traits<Signature>;
+    using signature_traits = env_signature_traits<Signature>;
 
     explicit env(detail::env_registry& e) noexcept
         : _env{&e}

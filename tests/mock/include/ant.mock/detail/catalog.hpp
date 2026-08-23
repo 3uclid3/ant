@@ -3,7 +3,7 @@
 #include <cstddef>
 
 #include <ant.mock/component.hpp>
-#include <ant.mock/detail/schema.hpp>
+#include <ant.mock/schema.hpp>
 #include <ant/detail/catalog/catalog.hpp>
 #include <ant/detail/containers.hpp>
 #include <ant/detail/entity/entity_registry.hpp>

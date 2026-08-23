@@ -1,9 +1,9 @@
 #pragma once
 
-#include <ant/changeset_fwd.hpp>
+#include <ant/change/change_accumulator.hpp>
+#include <ant/changeset/changeset_signature_traits.hpp>
+#include <ant/changeset/fwd.hpp>
 #include <ant/detail/catalog/table.hpp>
-#include <ant/detail/changeset/change_accumulator.hpp>
-#include <ant/detail/changeset/changeset_signature_traits.hpp>
 #include <ant/detail/entity/entity_registry.hpp>
 #include <ant/entity.hpp>
 
@@ -15,9 +15,9 @@ class changeset final
 {
 public:
     using signature = Signature;
-    using signature_traits = detail::changeset_signature_traits<Signature>;
+    using signature_traits = changeset_signature_traits<Signature>;
 
-    changeset(detail::change_accumulator& accumulator, detail::entity_registry& entity_registry) noexcept
+    changeset(change_accumulator& accumulator, detail::entity_registry& entity_registry) noexcept
         : _accumulator{&accumulator}
         , _entity_registry{&entity_registry}
     {}
@@ -63,7 +63,7 @@ public:
     }
 
 private:
-    detail::change_accumulator* _accumulator{nullptr};
+    change_accumulator* _accumulator{nullptr};
     detail::entity_registry* _entity_registry{nullptr};
 };
 

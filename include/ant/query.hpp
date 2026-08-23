@@ -8,12 +8,12 @@
 #include <ant/detail/catalog/table.hpp>
 #include <ant/detail/containers.hpp>
 #include <ant/detail/query/query_cursor.hpp>
-#include <ant/detail/query/query_iterator.hpp>
 #include <ant/detail/query/query_mapping.hpp>
-#include <ant/detail/query/query_signature_traits.hpp>
-#include <ant/detail/type_list.hpp>
 #include <ant/entity.hpp>
-#include <ant/query_fwd.hpp>
+#include <ant/meta/type_list.hpp>
+#include <ant/query/fwd.hpp>
+#include <ant/query/query_iterator.hpp>
+#include <ant/query/query_signature_traits.hpp>
 
 namespace ant {
 namespace detail {
@@ -25,10 +25,10 @@ class compiled_query final
 {
 public:
     using signature = Signature;
-    using signature_traits = detail::query_signature_traits<Signature>;
+    using signature_traits = query_signature_traits<Signature>;
 
     using row_type = query_row<Signature>;
-    using iterator = detail::query_iterator<Signature>;
+    using iterator = query_iterator<Signature>;
 
 public:
     auto query() const noexcept -> query<Signature>;
@@ -49,10 +49,10 @@ class query final
 {
 public:
     using signature = Signature;
-    using signature_traits = detail::query_signature_traits<Signature>;
+    using signature_traits = query_signature_traits<Signature>;
 
     using row_type = query_row<Signature>;
-    using iterator = detail::query_iterator<Signature>;
+    using iterator = query_iterator<Signature>;
 
 public:
     auto row(entity e) -> std::optional<row_type>;
@@ -113,7 +113,7 @@ private:
     detail::query_mapping_view _mapping; // tables * (signature_traits::required -> signature_traits::optional)
 
     friend class query<Signature>;
-    friend class detail::query_iterator<Signature>;
+    friend class query_iterator<Signature>;
 };
 
 template<typename Signature>

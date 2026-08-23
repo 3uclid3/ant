@@ -9,24 +9,24 @@ FetchContent_MakeAvailable(doctest)
 
 # ant_unit
 add_executable(ant_unit
+  src/change/change_accumulator_tests.cpp
+  src/component/component_meta_tests.cpp
+  src/component/component_vtable_tests.cpp
   src/detail/catalog/catalog_tests.cpp
   src/detail/catalog/table_column_tests.cpp
   src/detail/catalog/table_tests.cpp
-  src/detail/changeset/change_accumulator_tests.cpp
-  src/detail/changeset/change_coalescer_tests.cpp
-  src/detail/changeset/change_executor_tests.cpp
+  src/detail/change/change_coalescer_tests.cpp
+  src/detail/change/change_executor_tests.cpp
   src/detail/entity/entity_registry_tests.cpp
   src/detail/entity/entity_traits_tests.cpp
   src/detail/env/env_registry_tests.cpp
   src/detail/query/query_compiler_tests.cpp
   src/detail/query/query_cursor_tests.cpp
-  src/detail/schema/component_meta_tests.cpp
-  src/detail/schema/component_vtable_tests.cpp
-  src/detail/schema/schema_tests.cpp
   src/detail/dynamic_bitset_tests.cpp
   src/changeset_tests.cpp
   src/env_tests.cpp
   src/query_tests.cpp
+  src/schema_tests.cpp
 
   src/main.cpp
 )

@@ -2,9 +2,9 @@
 #include <doctest/doctest.h>
 
 #include <ant.mock/component.hpp>
-#include <ant.mock/detail/schema.hpp>
+#include <ant.mock/schema.hpp>
+#include <ant/component/component_bitset.hpp>
 #include <ant/detail/catalog/catalog.hpp>
-#include <ant/detail/schema/component_bitset.hpp>
 
 namespace ant::detail { namespace {
 

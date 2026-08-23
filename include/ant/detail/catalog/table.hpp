@@ -2,16 +2,18 @@
 
 #include <span>
 
+#include <ant/component/component_bitset.hpp>
 #include <ant/detail/catalog/table_column.hpp>
+#include <ant/detail/component/component_construct.hpp>
 #include <ant/detail/containers.hpp>
 #include <ant/detail/entity/entity_traits.hpp>
-#include <ant/detail/schema/component_bitset.hpp>
-#include <ant/detail/schema/component_construct.hpp>
 #include <ant/entity.hpp>
 
-namespace ant::detail {
+namespace ant {
 
 class schema;
+
+namespace detail {
 
 class table
 {
@@ -105,4 +107,5 @@ inline auto table::entities() const noexcept -> std::span<const entity>
     return _rows;
 }
 
-} // namespace ant::detail
+} // namespace detail
+} // namespace ant
