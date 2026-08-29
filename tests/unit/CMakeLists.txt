@@ -27,6 +27,7 @@ add_executable(ant_unit
   src/changeset_tests.cpp
   src/env_tests.cpp
   src/query_tests.cpp
+  src/scheduler_tests.cpp
   src/schema_tests.cpp
 
   src/main.cpp

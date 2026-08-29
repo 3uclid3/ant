@@ -6,7 +6,9 @@
 #include <ant/detail/env/env_registry.hpp>
 #include <ant/detail/query/query_compiler.hpp>
 #include <ant/env.hpp>
+#include <ant/inspect/inspector.hpp>
 #include <ant/query.hpp>
+#include <ant/schema.hpp>
 
 namespace ant {
 
@@ -16,6 +18,7 @@ public:
     explicit database(ant::schema schema);
 
     auto schema() const noexcept -> const ant::schema&;
+    auto inspect() const noexcept -> inspector;
 
     template<typename Signature>
     auto env() -> ant::env<Signature>;
@@ -41,6 +44,11 @@ private:
 inline auto database::schema() const noexcept -> const ant::schema&
 {
     return _schema;
+}
+
+inline auto database::inspect() const noexcept -> inspector
+{
+    return inspector(&_schema, &_envs, &_entities, &_catalog);
 }
 
 template<typename Signature>
