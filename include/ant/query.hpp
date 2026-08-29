@@ -221,7 +221,7 @@ auto query_row<Signature>::get() const noexcept -> const T&
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
-    return _cursor.table().template at<T>(column_index, _cursor.row_index());
+    return _cursor.table().template at<T>(_cursor.row_index(), column_index);
 }
 
 template<typename Signature>
@@ -234,7 +234,7 @@ auto query_row<Signature>::get() noexcept -> T&
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
-    return _cursor.table().template at<T>(column_index, _cursor.row_index());
+    return _cursor.table().template at<T>(_cursor.row_index(), column_index);
 }
 
 template<typename Signature>
@@ -247,7 +247,7 @@ auto query_row<Signature>::get() const noexcept -> const T*
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
-    return column_index != detail::table::npos ? &_cursor.table().template at<T>(column_index, _cursor.row_index()) : nullptr;
+    return column_index != detail::table::npos ? &_cursor.table().template at<T>(_cursor.row_index(), column_index) : nullptr;
 }
 
 template<typename Signature>
@@ -260,7 +260,7 @@ auto query_row<Signature>::get() noexcept -> T*
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
-    return column_index != detail::table::npos ? &_cursor.table().template at<T>(column_index, _cursor.row_index()) : nullptr;
+    return column_index != detail::table::npos ? &_cursor.table().template at<T>(_cursor.row_index(), column_index) : nullptr;
 }
 
 template<typename Signature>

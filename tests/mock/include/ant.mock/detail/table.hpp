@@ -51,7 +51,7 @@ struct table_fixture : schema_fixture<SchemaSize>
     {
         const std::size_t row_index = table.row_of(e);
 
-        (f(Ids, table.at<component<Ids>>(table.column_of<component<Ids>>(), row_index)), ...);
+        (f(Ids, table.at<component<Ids>>(row_index)), ...);
     }
 
     template<typename F>

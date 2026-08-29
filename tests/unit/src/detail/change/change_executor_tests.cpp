@@ -57,7 +57,7 @@ struct fixture : public catalog_fixture<8>
         const table& t = catalog.at(loc.table);
         const std::size_t col = t.column_of(component_index_of<component<I>>());
 
-        CHECK_EQ(t.at<component<I>>(col, loc.row).value, val);
+        CHECK_EQ(t.at<component<I>>(loc.row, col).value, val);
     }
 
     template<std::size_t... I, typename... V>

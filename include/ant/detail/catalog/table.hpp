@@ -44,10 +44,16 @@ public:
     auto entity_at(std::size_t row_index) const noexcept -> entity;
 
     template<typename T>
-    auto at(std::size_t column_index, std::size_t row_index) const noexcept -> const T&;
+    auto at(std::size_t row_index) const noexcept -> const T&;
 
     template<typename T>
-    auto at(std::size_t column_index, std::size_t row_index) noexcept -> T&;
+    auto at(std::size_t row_index) noexcept -> T&;
+
+    template<typename T>
+    auto at(std::size_t row_index, std::size_t column_index) const noexcept -> const T&;
+
+    template<typename T>
+    auto at(std::size_t row_index, std::size_t column_index) noexcept -> T&;
 
     auto empty() const noexcept -> bool;
     auto size() const noexcept -> std::size_t;
@@ -74,7 +80,19 @@ auto table::column_of() const noexcept -> std::size_t
 }
 
 template<typename T>
-auto table::at(std::size_t column_index, std::size_t row_index) const noexcept -> const T&
+auto table::at(std::size_t row_index) const noexcept -> const T&
+{
+    return at<T>(row_index, column_of<T>());
+}
+
+template<typename T>
+auto table::at(std::size_t row_index) noexcept -> T&
+{
+    return at<T>(row_index, column_of<T>());
+}
+
+template<typename T>
+auto table::at(std::size_t row_index, std::size_t column_index) const noexcept -> const T&
 {
     ANT_ASSERT(column_index < _columns.size());
     ANT_ASSERT(row_index < _rows.size());
@@ -82,9 +100,9 @@ auto table::at(std::size_t column_index, std::size_t row_index) const noexcept -
 }
 
 template<typename T>
-auto table::at(std::size_t column_index, std::size_t row_index) noexcept -> T&
+auto table::at(std::size_t row_index, std::size_t column_index) noexcept -> T&
 {
-    return const_cast<T&>(std::as_const(*this).at<T>(column_index, row_index));
+    return const_cast<T&>(std::as_const(*this).at<T>(row_index, column_index));
 }
 
 inline auto table::empty() const noexcept -> bool
