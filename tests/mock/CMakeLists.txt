@@ -1,6 +1,6 @@
 
 add_library(ant_mock STATIC)
-target_link_libraries(ant_mock PRIVATE ant ant_warnings)
+target_link_libraries(ant_mock PRIVATE ant::ant ant_warnings)
 target_sources(ant_mock
   PUBLIC
     FILE_SET HEADERS

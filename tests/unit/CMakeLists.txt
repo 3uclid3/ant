@@ -36,7 +36,7 @@ target_compile_definitions(ant_unit PRIVATE DOCTEST_CONFIG_USE_STD_HEADERS)
 
 target_link_libraries(ant_unit
     PRIVATE
-        ant
+        ant::ant
         ant_mock
         ant_warnings
         doctest::doctest
