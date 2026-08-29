@@ -15,6 +15,7 @@ target_compile_options(ant_warnings INTERFACE
 
 # ant
 add_library(ant STATIC)
+add_library(ant::ant ALIAS ant)
 target_link_libraries(ant PRIVATE ant_warnings)
 target_compile_features(ant PUBLIC cxx_std_26)
 target_compile_options(ant PUBLIC -freflection) # experimental
