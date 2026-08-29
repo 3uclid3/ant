@@ -64,6 +64,7 @@ target_sources(ant
       include/ant/env/env_signature.hpp
       include/ant/env/env_signature_traits.hpp
       include/ant/env/fwd.hpp
+      include/ant/inspect/inspector.hpp
       include/ant/meta/type_list.hpp
       include/ant/query/fwd.hpp
       include/ant/query/query_iterator.hpp
