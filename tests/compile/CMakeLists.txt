@@ -41,6 +41,10 @@ ant_compile_test(function_traits detail)
 
 # database
 
+ant_compile_fail_test(database_changeset_requires_signature database)
+ant_compile_fail_test(database_env_requires_signature database)
+ant_compile_fail_test(database_query_requires_signature database)
+
 ## binding
 ant_compile_test(binding_traits detail/binding)
 ant_compile_fail_test(binding_traits_multiple_changesets detail/binding)
