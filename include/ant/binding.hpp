@@ -37,6 +37,8 @@ struct binding_descriptor
 
         component_bitset reads;
         component_bitset writes;
+
+        component_bitset requireds;
     };
 
     struct queries_descriptor
@@ -69,6 +71,8 @@ class binding_context
 public:
     binding_context(database& db, change_accumulator& accumulator) noexcept;
 
+    auto has_env(const component_bitset& required) const noexcept -> bool;
+
     template<typename Signature>
     auto env() noexcept -> ant::env<Signature>;
 
@@ -95,6 +99,7 @@ public:
     binding(const binding&) = delete;
     binding& operator=(const binding&) = delete;
 
+    auto is_ready(binding_context& ctx) const noexcept -> bool;
     auto invoke(binding_context& ctx) -> void;
     auto descriptor() const noexcept -> const binding_descriptor&;
 
@@ -173,6 +178,8 @@ constexpr auto binding_descriptor::env_descriptor::describe() -> binding_descrip
 
     descriptor.reads = component_bitset_of<typename signature_traits::read>();
     descriptor.writes = component_bitset_of<typename signature_traits::write>();
+
+    descriptor.requireds = component_bitset_of<type_list_transform_t<std::remove_const, typename signature_traits::required>>();
 
     return descriptor;
 }
@@ -255,6 +262,11 @@ inline binding_context::binding_context(database& db, change_accumulator& accumu
 {
 }
 
+inline auto binding_context::has_env(const component_bitset& required) const noexcept -> bool
+{
+    return _db.has_env(required);
+}
+
 template<typename Signature>
 auto binding_context::env() noexcept -> ant::env<Signature>
 {
@@ -297,6 +309,11 @@ binding::binding(F&& func)
     : _descriptor(binding_descriptor::describe<F>())
     , _fn(make_fn(std::forward<F>(func)))
 {
+}
+
+inline auto binding::is_ready(binding_context& ctx) const noexcept -> bool
+{
+    return _descriptor.env.requireds.none() || ctx.has_env(_descriptor.env.requireds);
 }
 
 inline auto binding::invoke(binding_context& ctx) -> void

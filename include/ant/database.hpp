@@ -20,6 +20,8 @@ public:
     auto schema() const noexcept -> const ant::schema&;
     auto inspect() const noexcept -> inspector;
 
+    [[nodiscard]] auto has_env(const component_bitset& required) const noexcept -> bool;
+
     template<typename Signature>
     auto env() -> ant::env<Signature>;
 

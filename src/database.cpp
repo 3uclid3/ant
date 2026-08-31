@@ -10,6 +10,11 @@ database::database(ant::schema schema)
 {
 }
 
+auto database::has_env(const component_bitset& required) const noexcept -> bool
+{
+    return _envs.contains(required);
+}
+
 auto database::flush(std::span<change_accumulator> accumulators) -> void
 {
     detail::change_coalescer coalescer(_schema, _entities, _catalog);

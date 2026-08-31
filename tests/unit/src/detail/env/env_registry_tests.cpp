@@ -24,6 +24,36 @@ TEST_CASE_FIXTURE(fixture, "env_registry::ctor: initially no components are set"
     CHECK_FALSE(registry.has<component<3>>());
 }
 
+TEST_CASE_FIXTURE(fixture, "env_registry::contains: empty requirement is satisfied")
+{
+    CHECK(registry.contains(component_bitset{}));
+}
+
+TEST_CASE_FIXTURE(fixture, "env_registry::contains: missing required component is not satisfied")
+{
+    CHECK_FALSE(registry.contains(component_bitset_of<component<0>>()));
+}
+
+TEST_CASE_FIXTURE(fixture, "env_registry::contains: all required components must be set")
+{
+    registry.set<component<0>>();
+
+    CHECK(registry.contains(component_bitset_of<component<0>>()));
+    CHECK_FALSE(registry.contains(component_bitset_of<component<0>, component<1>>()));
+
+    registry.set<component<1>>();
+
+    CHECK(registry.contains(component_bitset_of<component<0>, component<1>>()));
+}
+
+TEST_CASE_FIXTURE(fixture, "env_registry::contains: unset required component is not satisfied")
+{
+    registry.set<component<0>>();
+    registry.unset<component<0>>();
+
+    CHECK_FALSE(registry.contains(component_bitset_of<component<0>>()));
+}
+
 TEST_CASE_FIXTURE(fixture, "env_registry::set: stores and retrieves bool")
 {
     registry.set<component<0>>();

@@ -258,6 +258,43 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: invokes the function")
     CHECK(called);
 }
 
+TEST_CASE_FIXTURE(binding_fixture, "binding::is_ready: false when a required env component is missing")
+{
+    binding b([](env_of<component<0>>) {});
+
+    CHECK_FALSE(b.is_ready(ctx));
+}
+
+TEST_CASE_FIXTURE(binding_fixture, "binding::is_ready: true when all required env components are set")
+{
+    auto setup = db.changeset<changeset_signature<set_env<component<0>>, set_env<component<1>>>>(accumulator);
+    setup.set_env<component<0>>();
+    setup.set_env<component<1>>();
+    flush();
+
+    binding b([](env_of<component<0>, const component<1>>) {});
+
+    CHECK(b.is_ready(ctx));
+}
+
+TEST_CASE_FIXTURE(binding_fixture, "binding::is_ready: false when any required env component is missing")
+{
+    auto setup = db.changeset<changeset_signature<set_env<component<0>>>>(accumulator);
+    setup.set_env<component<0>>();
+    flush();
+
+    binding b([](env_of<component<0>, const component<1>>) {});
+
+    CHECK_FALSE(b.is_ready(ctx));
+}
+
+TEST_CASE_FIXTURE(binding_fixture, "binding::is_ready: true when an optional env component is missing")
+{
+    binding b([](env_of<component<0>*>) {});
+
+    CHECK(b.is_ready(ctx));
+}
+
 TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: supplies arguments in declared order")
 {
     [[maybe_unused]] const entity e = create_entity<0>();

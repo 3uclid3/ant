@@ -8,6 +8,7 @@ env_registry::env_registry(const schema& sch)
     : _schema(sch)
 {
     _sparse.resize(sch.range(), component_npos);
+    _components.resize(sch.range());
 }
 
 env_registry::~env_registry()
@@ -23,16 +24,9 @@ env_registry::~env_registry()
     }
 }
 
-auto env_registry::at_raw(size_type index) const noexcept -> const void*
+auto env_registry::contains(const component_bitset& required) const noexcept -> bool
 {
-    ANT_ASSERT(index < _sparse.size(), "index out of bounds");
-    const size_type dense_index = _sparse[index];
-    return dense_index != component_npos ? _dense[dense_index].ptr : nullptr;
-}
-
-auto env_registry::at_raw(size_type index) noexcept -> void*
-{
-    return const_cast<void*>(std::as_const(*this).at_raw(index));
+    return (_components & required) == required;
 }
 
 auto env_registry::set(component_construct ctor) -> void
@@ -49,6 +43,8 @@ auto env_registry::set(component_construct ctor) -> void
         _sparse[meta.index] = _dense.size();
 
         _dense.emplace_back(allocate(meta.stride, meta.alignment), &meta);
+
+        _components.set(meta.index);
     }
 
     void* ptr = _dense[_sparse[meta.index]].ptr;
@@ -89,9 +85,23 @@ auto env_registry::unset(const component_meta& meta) -> void
         meta.vtable.destroy(_dense.back().ptr);
     }
 
+    _components.reset(meta.index);
+
     deallocate(_dense.back().ptr, meta.size, meta.alignment);
 
     _dense.pop_back();
+}
+
+auto env_registry::at_raw(size_type index) const noexcept -> const void*
+{
+    ANT_ASSERT(index < _sparse.size(), "index out of bounds");
+    const size_type dense_index = _sparse[index];
+    return dense_index != component_npos ? _dense[dense_index].ptr : nullptr;
+}
+
+auto env_registry::at_raw(size_type index) noexcept -> void*
+{
+    return const_cast<void*>(std::as_const(*this).at_raw(index));
 }
 
 } // namespace ant::detail

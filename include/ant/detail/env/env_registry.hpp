@@ -3,6 +3,7 @@
 #include <functional>
 #include <utility>
 
+#include <ant/component/component_bitset.hpp>
 #include <ant/detail/assert.hpp>
 #include <ant/detail/component/component_construct.hpp>
 #include <ant/detail/containers.hpp>
@@ -42,6 +43,8 @@ public:
     auto unset() -> void;
     auto unset(const component_meta& meta) -> void;
 
+    auto contains(const component_bitset& required) const noexcept -> bool;
+
 private:
     struct var
     {
@@ -57,6 +60,7 @@ private:
     std::reference_wrapper<const schema> _schema;
     vector<var> _dense;
     vector<size_type> _sparse; // component idx to dense idx
+    component_bitset _components;
 };
 
 template<typename T>

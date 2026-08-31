@@ -123,7 +123,11 @@ auto scheduler::execute_impl(schedule_type_id schedule_id) -> void
         for (system_node* system : stage.ordered_systems)
         {
             binding_context context{_db, accumulator};
-            system->executable.invoke(context);
+
+            if (system->executable.is_ready(context))
+            {
+                system->executable.invoke(context);
+            }
         }
 
         _db.flush(std::span(&accumulator, 1));
