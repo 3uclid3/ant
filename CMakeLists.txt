@@ -107,9 +107,14 @@ else()
   option(ANT_BUILD_TESTS "Build ant tests" OFF)
 endif()
 
+option(ANT_TESTING "Build ant testing library" ON)
+
+if(ANT_TESTING OR ANT_BUILD_TESTS)
+  add_subdirectory(testing)
+endif()
+
 if(ANT_BUILD_TESTS)
   enable_testing()
-  add_subdirectory(testing)
   add_subdirectory(tests/compile)
   add_subdirectory(tests/unit)
 endif()
