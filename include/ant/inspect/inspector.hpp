@@ -94,7 +94,7 @@ auto inspector::get(entity e) const noexcept -> const T*
         return nullptr;
     }
 
-    return _catalog->at(location.table).at<T>(location.row);
+    return &_catalog->at(location.table).at<T>(location.row);
 }
 
 } // namespace ant
