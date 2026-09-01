@@ -1,9 +1,9 @@
 #include <ant/detail/change/change_executor.hpp>
 #include <doctest/doctest.h>
 
-#include <ant.mock/component.hpp>
-#include <ant.mock/detail/catalog.hpp>
-#include <ant.mock/equivalent.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/detail/catalog.hpp>
+#include <ant.testing/equivalent.hpp>
 #include <ant/change/change_accumulator.hpp>
 #include <ant/detail/change/change_coalescer.hpp>
 #include <ant/detail/entity/entity_registry.hpp>

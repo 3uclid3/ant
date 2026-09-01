@@ -1,8 +1,8 @@
 #include <ant/detail/query/query_cursor.hpp>
 #include <doctest/doctest.h>
 
-#include <ant.mock/component.hpp>
-#include <ant.mock/schema.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/schema.hpp>
 #include <ant/component/component_bitset.hpp>
 #include <ant/detail/catalog/catalog.hpp>
 

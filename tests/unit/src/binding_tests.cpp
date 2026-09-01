@@ -6,8 +6,8 @@
 #include <memory>
 #include <type_traits>
 
-#include <ant.mock/component.hpp>
-#include <ant.mock/schema.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/schema.hpp>
 
 namespace ant { namespace {
 

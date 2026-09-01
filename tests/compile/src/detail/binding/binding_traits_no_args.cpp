@@ -1,6 +1,6 @@
 #include <ant/detail/binding/binding_traits.hpp>
 
-#include <ant.mock/component.hpp>
+#include <ant.testing/component.hpp>
 #include <ant/changeset.hpp>
 
 namespace ant::detail { namespace {

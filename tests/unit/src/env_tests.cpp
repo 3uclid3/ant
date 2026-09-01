@@ -1,8 +1,8 @@
 #include <ant/env.hpp>
 #include <doctest/doctest.h>
 
-#include <ant.mock/component.hpp>
-#include <ant.mock/schema.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/schema.hpp>
 
 namespace ant { namespace {
 

@@ -5,8 +5,8 @@
 #include <ant/scheduler.hpp>
 #include <ant/scheduler/stage.hpp>
 
-#include <ant.mock/component.hpp>
-#include <ant.mock/detail/catalog.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/detail/catalog.hpp>
 
 namespace ant { namespace {
 

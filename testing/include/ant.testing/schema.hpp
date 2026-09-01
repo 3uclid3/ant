@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <utility>
 
-#include <ant.mock/component.hpp>
+#include <ant.testing/component.hpp>
 #include <ant/schema.hpp>
 
 namespace ant {

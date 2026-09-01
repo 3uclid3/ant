@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include <ant.mock/component.hpp>
+#include <ant.testing/component.hpp>
 
 namespace ant { namespace {
 

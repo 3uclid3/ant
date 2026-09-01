@@ -1,6 +1,6 @@
 #include <ant/query/query_signature_traits.hpp>
 
-#include <ant.mock/component.hpp>
+#include <ant.testing/component.hpp>
 
 namespace ant { namespace {
 

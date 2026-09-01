@@ -3,8 +3,8 @@
 
 #include <ant/detail/query/query_compiler.hpp>
 
-#include <ant.mock/component.hpp>
-#include <ant.mock/detail/catalog.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/detail/catalog.hpp>
 
 namespace ant { namespace detail { namespace {
 

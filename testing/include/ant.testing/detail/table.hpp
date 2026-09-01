@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <utility>
 
-#include <ant.mock/schema.hpp>
+#include <ant.testing/schema.hpp>
 #include <ant/detail/catalog/table.hpp>
 #include <ant/detail/dynamic_bitset.hpp>
 

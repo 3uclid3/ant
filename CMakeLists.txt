@@ -109,7 +109,7 @@ endif()
 
 if(ANT_BUILD_TESTS)
   enable_testing()
-  add_subdirectory(tests/mock)
+  add_subdirectory(testing)
   add_subdirectory(tests/compile)
   add_subdirectory(tests/unit)
 endif()

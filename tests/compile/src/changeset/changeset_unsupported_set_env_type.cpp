@@ -1,6 +1,6 @@
 #include <ant/changeset.hpp>
 
-#include <ant.mock/component.hpp>
+#include <ant.testing/component.hpp>
 
 namespace ant { namespace {
 

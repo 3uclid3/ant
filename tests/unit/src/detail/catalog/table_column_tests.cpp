@@ -1,7 +1,7 @@
 #include <ant/detail/catalog/table_column.hpp>
 #include <doctest/doctest.h>
 
-#include <ant.mock/component.hpp>
+#include <ant.testing/component.hpp>
 #include <ant/schema.hpp>
 
 namespace ant::detail { namespace {

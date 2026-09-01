@@ -1,8 +1,8 @@
 #include <ant/change/change_accumulator.hpp>
 #include <ant/database.hpp>
 
-#include <ant.mock/component.hpp>
-#include <ant.mock/schema.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/schema.hpp>
 
 namespace ant { namespace {
 

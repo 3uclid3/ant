@@ -36,10 +36,10 @@ target_compile_definitions(ant_unit PRIVATE DOCTEST_CONFIG_USE_STD_HEADERS)
 
 target_link_libraries(ant_unit
     PRIVATE
-        ant::ant
-        ant_mock
-        ant_warnings
-        doctest::doctest
+      ant_warnings
+      ant::ant
+      ant::ant_testing
+      doctest::doctest
 )
 
 target_compile_options(ant_unit

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <ant.mock/detail/table.hpp>
+#include <ant.testing/detail/table.hpp>
 #include <ant/detail/entity/entity_traits.hpp>
 #include <ant/entity.hpp>
 #include <ant/schema.hpp>
