@@ -9,6 +9,7 @@ target_sources(ant_testing
     FILES
       include/ant.testing/component.hpp
       include/ant.testing/schema.hpp
+      include/ant.testing/system.hpp
   PRIVATE
     src/component.cpp
 )
