@@ -2,23 +2,76 @@
 #include <doctest/doctest.h>
 
 #include <algorithm>
+#include <type_traits>
 #include <vector>
 
-#include <ant.testing/detail/table.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/schema.hpp>
 #include <ant/detail/entity/entity_traits.hpp>
 #include <ant/entity.hpp>
 #include <ant/schema.hpp>
 
 namespace ant::detail { namespace {
 
-struct fixture : table_fixture<8>
-{};
+template<std::size_t... Ids>
+constexpr auto make_table(const schema& schema, std::index_sequence<Ids...>) -> table
+{
+    return table{component_bitset_of<testing::component<Ids>...>(), schema};
+}
+
+template<std::size_t Size>
+constexpr auto make_table(const schema& schema) -> table
+{
+    return make_table(schema, std::make_index_sequence<Size>{});
+}
 
 // helper to generate table sizes for template tests
 template<std::size_t Size>
 struct table_size
 {
     static constexpr std::size_t value = Size;
+};
+
+struct fixture
+{
+    static auto make_entities(std::size_t size, bool shuffled = false) -> std::vector<entity>
+    {
+        std::vector<entity> entities{};
+        entities.reserve(size);
+
+        for (std::size_t i = 0; i < size; ++i)
+        {
+            entities.push_back(detail::entity_traits::construct(i));
+        }
+
+        if (shuffled)
+        {
+            // just split odd and even indices for determinism and simplicity
+            for (std::size_t i = 1; i < entities.size(); i += 2)
+            {
+                std::swap(entities[i], entities[i / 2]);
+            }
+        }
+
+        return entities;
+    }
+
+    template<typename F, std::size_t... Ids>
+    static auto for_each_components(const table& table, entity e, F&& f, std::index_sequence<Ids...>) -> void
+    {
+        const std::size_t row_index = table.row_of(e);
+
+        (f(Ids, table.at<testing::component<Ids>>(row_index)), ...);
+    }
+
+    template<typename F>
+    static auto for_each_components(const table& table, entity e, F&& f) -> void
+    {
+        for_each_components(table, e, std::forward<F>(f), std::make_index_sequence<8>{});
+    }
+
+    ant::schema schema{testing::make_indexed_schema<16>()};
+    detail::table table{make_table<8>(schema)};
 };
 
 TEST_CASE("table::ctor(default): creates an empty table")
@@ -31,7 +84,7 @@ TEST_CASE_TEMPLATE("table::ctor(components): creates a table with given componen
 {
     constexpr std::size_t size = T::value;
 
-    schema schema{make_schema<size>()};
+    schema schema{testing::make_indexed_schema<size>()};
     table table{make_table<size>(schema)};
 
     CHECK_EQ(table.components().count(), size);
@@ -47,7 +100,7 @@ TEST_CASE_FIXTURE(fixture, "table::insert: maintains order and sizes")
         CHECK_EQ(table.insert(entities[i]), i);
 
         for_each_components(table, entities[i], [](std::size_t id, const auto& comp) {
-            CHECK_EQ(comp.get_index(), id);
+            CHECK_EQ(std::remove_cvref_t<decltype(comp)>::index, id);
             CHECK_EQ(comp.value, id);
         });
     }
@@ -111,7 +164,7 @@ TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destinati
         CHECK(table.contains(e));
 
         for_each_components(table, entities[i], [](std::size_t id, const auto& comp) {
-            CHECK_EQ(comp.get_index(), id);
+            CHECK_EQ(std::remove_cvref_t<decltype(comp)>::index, id);
             CHECK_EQ(comp.value, id);
         });
     }
@@ -123,10 +176,10 @@ TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destinati
 
 TEST_CASE_FIXTURE(fixture, "table::column_of: returns correct column indices")
 {
-    CHECK_NE(table.column_of<component<0>>(), detail::table::npos);
-    CHECK_NE(table.column_of<component<1>>(), detail::table::npos);
+    CHECK_NE(table.column_of<testing::component<0>>(), detail::table::npos);
+    CHECK_NE(table.column_of<testing::component<1>>(), detail::table::npos);
 
-    CHECK_EQ(table.column_of<component<10'000>>(), detail::table::npos);
+    CHECK_EQ(table.column_of<testing::component<10'000>>(), detail::table::npos);
 }
 
 TEST_CASE_FIXTURE(fixture, "table::row_of: returns npos for non-existent entity")

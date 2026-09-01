@@ -6,8 +6,8 @@
 namespace ant::detail { namespace {
 
 [[maybe_unused]] auto system(
-    changeset_of<set_env<component<0>>>,
-    changeset_of<set_env<component<1>>>) -> void
+    changeset_of<set_env<testing::component<0>>>,
+    changeset_of<set_env<testing::component<1>>>) -> void
 {
 }
 

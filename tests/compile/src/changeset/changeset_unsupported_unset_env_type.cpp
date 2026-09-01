@@ -4,9 +4,9 @@
 
 namespace ant { namespace {
 
-[[maybe_unused]] auto func(changeset_of<unset_env<component<0>>> cs) -> void
+[[maybe_unused]] auto func(changeset_of<unset_env<testing::component<0>>> cs) -> void
 {
-    cs.unset_env<component<1>>();
+    cs.unset_env<testing::component<1>>();
 }
 
 }} // namespace ant

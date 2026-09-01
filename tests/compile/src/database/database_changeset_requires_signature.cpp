@@ -8,8 +8,7 @@ namespace ant { namespace {
 
 auto invalid_changeset() -> void
 {
-    schema_fixture<1> fixture;
-    database database{std::move(fixture.schema)};
+    database database{testing::make_indexed_schema<1>()};
     change_accumulator accumulator{database.schema()};
 
     [[maybe_unused]] auto changes = database.changeset<create>(accumulator);

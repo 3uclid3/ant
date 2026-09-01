@@ -8,12 +8,12 @@
 
 namespace ant::detail { namespace {
 
-struct fixture : schema_fixture<16>
+struct fixture
 {
     fixture()
     {
-        table_idx0 = catalog.ensure_of(component_bitset_of<component<0>>());
-        table_idx1 = catalog.ensure_of(component_bitset_of<component<1>>());
+        table_idx0 = catalog.ensure_of(component_bitset_of<testing::component<0>>());
+        table_idx1 = catalog.ensure_of(component_bitset_of<testing::component<1>>());
     }
 
     auto table0() -> table&
@@ -26,6 +26,7 @@ struct fixture : schema_fixture<16>
         return catalog.at(table_idx1);
     }
 
+    ant::schema schema{testing::make_indexed_schema<16>()};
     detail::catalog catalog{schema};
 
     std::size_t table_idx0{};
@@ -111,7 +112,7 @@ TEST_CASE_FIXTURE(fixture, "query_cursor::advance: skips empty intermediate tabl
 {
     table0().insert(entity{0});
     // table1 is empty
-    table& table2 = catalog.at(catalog.ensure_of(component_bitset_of<component<2>>()));
+    table& table2 = catalog.at(catalog.ensure_of(component_bitset_of<testing::component<2>>()));
     table2.insert(entity{2});
 
     std::vector<detail::table*> tables{&table0(), &table1(), &table2};

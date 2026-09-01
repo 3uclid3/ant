@@ -5,7 +5,7 @@
 
 namespace ant { namespace {
 
-TEST_CASE_TEMPLATE("schema::builder::define: store component metadata correctly", T, trivial_component<24>, component<42>)
+TEST_CASE_TEMPLATE("schema::builder::define: store component metadata correctly", T, testing::component<24>, testing::component<42>)
 {
     schema::builder builder;
     builder.define<T>();
@@ -27,7 +27,7 @@ TEST_CASE_TEMPLATE("schema::builder::define: store component metadata correctly"
 
 TEST_CASE("schema::builder::define: override component options")
 {
-    using T = component<42>;
+    using T = testing::component<42>;
 
     schema::builder builder;
     builder.define<T>({.stride_per_block = 8});

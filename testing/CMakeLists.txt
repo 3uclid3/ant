@@ -7,10 +7,7 @@ target_sources(ant_testing
     BASE_DIRS
         include
     FILES
-      include/ant.testing/detail/catalog.hpp
-      include/ant.testing/detail/table.hpp
       include/ant.testing/component.hpp
-      include/ant.testing/equivalent.hpp
       include/ant.testing/schema.hpp
   PRIVATE
     src/component.cpp

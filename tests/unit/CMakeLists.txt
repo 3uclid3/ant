@@ -23,6 +23,7 @@ add_executable(ant_unit
   src/detail/query/query_compiler_tests.cpp
   src/detail/query/query_cursor_tests.cpp
   src/detail/dynamic_bitset_tests.cpp
+  src/detail/entity_creator.hpp
   src/binding_tests.cpp
   src/changeset_tests.cpp
   src/env_tests.cpp

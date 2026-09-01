@@ -1,16 +1,15 @@
 #include <ant/database.hpp>
 
-#include <ant/mock/component.hpp>
-#include <ant/mock/schema.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/schema.hpp>
 
 namespace ant { namespace {
 
 auto invalid_env() -> void
 {
-    schema_fixture<1> fixture;
-    database database{std::move(fixture.schema)};
+    database database{testing::make_indexed_schema<1>()};
 
-    [[maybe_unused]] auto environment = database.env<component<0>>();
+    [[maybe_unused]] auto environment = database.env<testing::component<0>>();
 }
 
 }} // namespace ant

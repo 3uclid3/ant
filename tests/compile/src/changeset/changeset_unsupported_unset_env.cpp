@@ -6,7 +6,7 @@ namespace ant { namespace {
 
 [[maybe_unused]] auto func(changeset_of<create> cs) -> void
 {
-    cs.unset_env<component<0>>();
+    cs.unset_env<testing::component<0>>();
 }
 
 }} // namespace ant

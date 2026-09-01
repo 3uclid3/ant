@@ -1,16 +1,15 @@
 #include <ant/database.hpp>
 
-#include <ant/mock/component.hpp>
-#include <ant/mock/schema.hpp>
+#include <ant.testing/component.hpp>
+#include <ant.testing/schema.hpp>
 
 namespace ant { namespace {
 
 auto invalid_query() -> void
 {
-    schema_fixture<1> fixture;
-    database database{std::move(fixture.schema)};
+    database database{testing::make_indexed_schema<1>()};
 
-    [[maybe_unused]] auto query = database.compile_query<component<0>>();
+    [[maybe_unused]] auto query = database.compile_query<testing::component<0>>();
 }
 
 }} // namespace ant

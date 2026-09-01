@@ -4,9 +4,9 @@
 
 namespace ant { namespace {
 
-[[maybe_unused]] auto func(changeset_of<attach<component<0>>> cs) -> void
+[[maybe_unused]] auto func(changeset_of<attach<testing::component<0>>> cs) -> void
 {
-    cs.attach<component<1>>(entity{0});
+    cs.attach<testing::component<1>>(entity{0});
 }
 
 }} // namespace ant

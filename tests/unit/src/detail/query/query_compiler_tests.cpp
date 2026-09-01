@@ -4,11 +4,15 @@
 #include <ant/detail/query/query_compiler.hpp>
 
 #include <ant.testing/component.hpp>
-#include <ant.testing/detail/catalog.hpp>
+#include <ant.testing/schema.hpp>
+#include <ant/detail/catalog/catalog.hpp>
+#include <ant/detail/entity/entity_registry.hpp>
+
+#include "../entity_creator.hpp"
 
 namespace ant { namespace detail { namespace {
 
-struct fixture : catalog_fixture<4>
+struct fixture
 {
     template<typename Signature>
     auto compile_query() -> compiled_query<Signature>
@@ -20,17 +24,22 @@ struct fixture : catalog_fixture<4>
     {
         query_compiler::recompile<Signature>(catalog, cq);
     }
+
+    ant::schema schema{testing::make_indexed_schema<4>()};
+    ant::detail::entity_registry entity_registry;
+    ant::detail::catalog catalog{schema};
+    entity_creator creator{schema, entity_registry, catalog};
 };
 
 TEST_CASE_FIXTURE(fixture, "query_compiler::compile: supports sequential query construction")
 {
-    const entity e0 = create_entity<0>();
-    const entity e1 = create_entity<1>();
-    const entity e2 = create_entity<0, 1>();
+    const entity e0 = creator.create_entity<0>();
+    const entity e1 = creator.create_entity<1>();
+    const entity e2 = creator.create_entity<0, 1>();
 
-    using signature0 = query_signature<component<0>>;
-    using signature1 = query_signature<component<1>>;
-    using signature01 = query_signature<component<0>, exclude<component<1>>>;
+    using signature0 = query_signature<testing::component<0>>;
+    using signature1 = query_signature<testing::component<1>>;
+    using signature01 = query_signature<testing::component<0>, exclude<testing::component<1>>>;
 
     compiled_query cquery0 = compile_query<signature0>();
     compiled_query cquery1 = compile_query<signature1>();
@@ -58,14 +67,14 @@ TEST_CASE_FIXTURE(fixture, "query_compiler::compile: supports sequential query c
 
 TEST_CASE_FIXTURE(fixture, "query_compiler::recompile: recompiles query when catalog changes")
 {
-    using signature = query_signature<component<0>>;
+    using signature = query_signature<testing::component<0>>;
 
-    const entity _ = create_entity<0>();
+    const entity _ = creator.create_entity<0>();
 
     compiled_query cquery = compile_query<signature>();
     const auto epoch = cquery.epoch();
 
-    const entity _ = create_entity<0, 1>();
+    const entity _ = creator.create_entity<0, 1>();
 
     recompile_query<signature>(cquery);
 

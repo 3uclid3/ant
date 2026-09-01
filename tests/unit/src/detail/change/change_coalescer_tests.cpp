@@ -1,16 +1,24 @@
 #include <ant/detail/change/change_coalescer.hpp>
 #include <doctest/doctest.h>
 
+#include <algorithm>
+
 #include <ant.testing/component.hpp>
-#include <ant.testing/detail/catalog.hpp>
-#include <ant.testing/equivalent.hpp>
+#include <ant.testing/schema.hpp>
 #include <ant/change/change_accumulator.hpp>
+#include <ant/detail/catalog/catalog.hpp>
 #include <ant/detail/entity/entity_registry.hpp>
+
+#include "../entity_creator.hpp"
 
 namespace ant::detail { namespace {
 
-struct fixture : public catalog_fixture<8>
+struct fixture
 {
+    ant::schema schema{testing::make_indexed_schema<8>()};
+    ant::detail::entity_registry entity_registry;
+    ant::detail::catalog catalog{schema};
+    entity_creator creator{schema, entity_registry, catalog};
     change_coalescer coalescer{schema, entity_registry, catalog};
 };
 
@@ -26,7 +34,7 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy entities")
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
 
-    CHECK(equivalent(changes.destroy_entities, vector<entity>{e0, e1}));
+    CHECK(std::ranges::is_permutation(changes.destroy_entities, vector<entity>{e0, e1}));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy prevents any changes on the entity")
@@ -35,8 +43,8 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy prevents any cha
 
     change_accumulator accumulator{schema};
     accumulator.emplace_destroy(e0);
-    accumulator.emplace_attach<component<0>>(e0);
-    accumulator.emplace_detach<component<0>>(e0);
+    accumulator.emplace_attach<testing::component<0>>(e0);
+    accumulator.emplace_detach<testing::component<0>>(e0);
 
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
@@ -49,12 +57,12 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: attach")
     const entity e0 = entity_registry.create();
 
     component_bitset expected;
-    expected.set_safe(schema.meta_of<component<0>>().index);
-    expected.set_safe(schema.meta_of<component<1>>().index);
+    expected.set_safe(schema.meta_of<testing::component<0>>().index);
+    expected.set_safe(schema.meta_of<testing::component<1>>().index);
 
     change_accumulator accumulator{schema};
-    accumulator.emplace_attach<component<0>>(e0);
-    accumulator.emplace_attach<component<1>>(e0, 42);
+    accumulator.emplace_attach<testing::component<0>>(e0);
+    accumulator.emplace_attach<testing::component<1>>(e0, 42);
 
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
@@ -67,17 +75,17 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: attach")
     CHECK_EQ(coalesced_e.new_table_index, catalog.ensure_of(expected));
 
     REQUIRE_EQ(coalesced_e.ctors.size(), 2);
-    CHECK_EQ(coalesced_e.ctors[0].meta, &schema.meta_of<component<0>>());
-    CHECK_EQ(coalesced_e.ctors[1].meta, &schema.meta_of<component<1>>());
+    CHECK_EQ(coalesced_e.ctors[0].meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(coalesced_e.ctors[1].meta, &schema.meta_of<testing::component<1>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach")
 {
-    const entity e0 = create_entity<0, 1, 2>();
+    const entity e0 = creator.create_entity<0, 1, 2>();
 
     change_accumulator accumulator{schema};
-    accumulator.emplace_detach<component<0>>(e0);
-    accumulator.emplace_detach<component<1>>(e0);
+    accumulator.emplace_detach<testing::component<0>>(e0);
+    accumulator.emplace_detach<testing::component<1>>(e0);
 
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
@@ -87,16 +95,16 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach")
 
     CHECK_EQ(coalesced_e.entity, e0);
     CHECK_EQ(coalesced_e.table_index, entity_registry.locate(e0).table);
-    CHECK_EQ(coalesced_e.new_table_index, catalog.index_of(component_bitset_of<component<2>>()));
+    CHECK_EQ(coalesced_e.new_table_index, catalog.index_of(component_bitset_of<testing::component<2>>()));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach prevent attach")
 {
-    const entity e0 = create_entity<0, 1, 2>();
+    const entity e0 = creator.create_entity<0, 1, 2>();
 
     change_accumulator accumulator{schema};
-    accumulator.emplace_detach<component<0>>(e0);
-    accumulator.emplace_attach<component<0>>(e0);
+    accumulator.emplace_detach<testing::component<0>>(e0);
+    accumulator.emplace_attach<testing::component<0>>(e0);
 
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
@@ -106,41 +114,41 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach prevent attach")
 
     CHECK_EQ(coalesced_e.entity, e0);
     CHECK_EQ(coalesced_e.table_index, entity_registry.locate(e0).table);
-    CHECK_EQ(coalesced_e.new_table_index, catalog.index_of(component_bitset_of<component<1>, component<2>>()));
+    CHECK_EQ(coalesced_e.new_table_index, catalog.index_of(component_bitset_of<testing::component<1>, testing::component<2>>()));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: set env")
 {
     change_accumulator accumulator{schema};
-    accumulator.emplace_set<component<0>>();
-    accumulator.emplace_set<component<1>>(42);
+    accumulator.emplace_set<testing::component<0>>();
+    accumulator.emplace_set<testing::component<1>>(42);
 
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
 
     CHECK_EQ(changes.set_envs.size(), 2);
-    CHECK(std::ranges::any_of(changes.set_envs, [this](const auto& change) { return change.ctor.meta == &schema.meta_of<component<0>>(); }));
-    CHECK(std::ranges::any_of(changes.set_envs, [this](const auto& change) { return change.ctor.meta == &schema.meta_of<component<1>>(); }));
+    CHECK(std::ranges::any_of(changes.set_envs, [this](const auto& change) { return change.ctor.meta == &schema.meta_of<testing::component<0>>(); }));
+    CHECK(std::ranges::any_of(changes.set_envs, [this](const auto& change) { return change.ctor.meta == &schema.meta_of<testing::component<1>>(); }));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: unset env")
 {
     change_accumulator accumulator{schema};
-    accumulator.emplace_unset<component<0>>();
-    accumulator.emplace_unset<component<1>>();
+    accumulator.emplace_unset<testing::component<0>>();
+    accumulator.emplace_unset<testing::component<1>>();
 
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
 
-    vector<coalesced_unset_change> expected{{{.meta = &schema.meta_of<component<0>>()}, {.meta = &schema.meta_of<component<1>>()}}};
-    CHECK(equivalent(changes.unset_envs, expected, [](const auto& lhs, const auto& rhs) { return lhs.meta == rhs.meta; }));
+    vector<coalesced_unset_change> expected{{{.meta = &schema.meta_of<testing::component<0>>()}, {.meta = &schema.meta_of<testing::component<1>>()}}};
+    CHECK(std::ranges::is_permutation(changes.unset_envs, expected, [](const auto& lhs, const auto& rhs) { return lhs.meta == rhs.meta; }));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: unset prevent set env")
 {
     change_accumulator accumulator{schema};
-    accumulator.emplace_unset<component<0>>();
-    accumulator.emplace_set<component<0>>();
+    accumulator.emplace_unset<testing::component<0>>();
+    accumulator.emplace_set<testing::component<0>>();
 
     coalescer.consume(accumulator);
     coalesced_changes changes = coalescer.coalesce();
@@ -148,7 +156,7 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: unset prevent set env")
     CHECK(changes.set_envs.empty());
 
     REQUIRE_EQ(changes.unset_envs.size(), 1);
-    CHECK_EQ(changes.unset_envs[0].meta, &schema.meta_of<component<0>>());
+    CHECK_EQ(changes.unset_envs[0].meta, &schema.meta_of<testing::component<0>>());
 }
 
 }} // namespace ant::detail

@@ -5,7 +5,7 @@
 
 namespace ant::detail { namespace {
 
-[[maybe_unused]] auto system(component<0>) -> void
+[[maybe_unused]] auto system(testing::component<0>) -> void
 {
 }
 

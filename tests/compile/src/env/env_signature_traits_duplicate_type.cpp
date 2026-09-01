@@ -5,8 +5,8 @@
 namespace ant { namespace {
 
 using signature = env_signature<
-    const component<0>*,
-    component<0>>;
+    const testing::component<0>*,
+    testing::component<0>>;
 using signature_traits = env_signature_traits<signature>;
 
 [[maybe_unused]] constexpr auto _ = signature_traits::size;

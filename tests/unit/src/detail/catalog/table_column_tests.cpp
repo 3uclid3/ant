@@ -1,20 +1,74 @@
 #include <ant/detail/catalog/table_column.hpp>
 #include <doctest/doctest.h>
 
-#include <ant.testing/component.hpp>
-#include <ant/schema.hpp>
+#include <cstddef>
+#include <type_traits>
+#include <utility>
 
 namespace ant::detail { namespace {
 
-struct fixture : component_fixture
+struct operation_counts
 {
-    using component_t = component<0>;
+    std::size_t ctor{};
+    std::size_t dtor{};
+    std::size_t move{};
+    std::size_t copy{};
+};
+
+struct tracked_component
+{
+    tracked_component() noexcept
+    {
+        ++operations.ctor;
+    }
+
+    tracked_component(const tracked_component& other) noexcept
+        : value(other.value)
+    {
+        ++operations.copy;
+    }
+
+    tracked_component(tracked_component&& other) noexcept
+        : value(std::exchange(other.value, 0))
+    {
+        ++operations.move;
+    }
+
+    ~tracked_component() noexcept
+    {
+        ++operations.dtor;
+    }
+
+    auto operator=(const tracked_component&) -> tracked_component& = delete;
+    auto operator=(tracked_component&&) -> tracked_component& = delete;
+
+    static auto reset_operations() -> void
+    {
+        operations = {};
+    }
+
+    static inline operation_counts operations;
+
+    std::size_t value{};
+};
+
+struct fixture
+{
+    using component_t = tracked_component;
 
     static inline const component_meta meta = make_component_meta<component_t>();
 
-    auto track() const -> const component_track&
+    fixture()
     {
-        return component_tracker::track<component_t>();
+        component_t::reset_operations();
+    }
+
+    auto check_operations(operation_counts expected) const -> void
+    {
+        CHECK_EQ(component_t::operations.ctor, expected.ctor);
+        CHECK_EQ(component_t::operations.dtor, expected.dtor);
+        CHECK_EQ(component_t::operations.move, expected.move);
+        CHECK_EQ(component_t::operations.copy, expected.copy);
     }
 
     auto emplace_indexed(std::size_t size, table_column& column) -> void
@@ -26,8 +80,7 @@ struct fixture : component_fixture
             column.at<component_t>(initial_size + i).value = i;
         }
 
-        // reset tracker after setup
-        component_tracker::reset();
+        component_t::reset_operations();
     }
 
     auto emplace_indexed(std::size_t size) -> void
@@ -54,7 +107,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::ctor_move: transfers elements without 
 
     CHECK_EQ(moved.size(), size);
     CHECK(column.empty());
-    CHECK_EQ(track(), component_track{});
+    check_operations({});
 
     for (std::size_t i = 0; i < size; ++i)
     {
@@ -75,7 +128,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::move_assign: destroys existing element
 
     CHECK_EQ(column.size(), src_size);
     CHECK(source.empty());
-    CHECK_EQ(track(), component_track{.dtor = dest_size});
+    check_operations({.dtor = dest_size});
 
     for (std::size_t i = 0; i < src_size; ++i)
     {
@@ -92,7 +145,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::move_assign: from empty source destroy
     column = std::move(empty_source);
 
     CHECK(column.empty());
-    CHECK_EQ(track(), component_track{.dtor = size});
+    check_operations({.dtor = size});
 }
 
 TEST_CASE_FIXTURE(fixture, "table_column::move_assign: to empty dest transfers without destroying")
@@ -106,7 +159,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::move_assign: to empty dest transfers w
 
     CHECK_EQ(column.size(), size);
     CHECK(source.empty());
-    CHECK_EQ(track(), component_track{});
+    check_operations({});
 
     for (std::size_t i = 0; i < size; ++i)
     {
@@ -123,7 +176,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::move_assign: self-assignment is a no-o
     column = std::move(*self);
 
     CHECK_EQ(column.size(), size);
-    CHECK_EQ(track(), component_track{});
+    check_operations({});
 
     for (std::size_t i = 0; i < size; ++i)
     {
@@ -141,7 +194,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::emplace_back: construct component")
     }
 
     CHECK_EQ(column.size(), size);
-    CHECK_EQ(track(), component_track{.ctor = size});
+    check_operations({.ctor = size});
 }
 
 TEST_CASE_FIXTURE(fixture, "table_column::splice_back: relocate component")
@@ -162,7 +215,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::splice_back: relocate component")
     CHECK_EQ(source.size(), size - 1);
     CHECK_EQ(source.template at<component_t>(index).value, size - 1);
 
-    CHECK_EQ(track(), component_track{.dtor = 2, .move = 2});
+    check_operations({.dtor = 2, .move = 2});
 }
 
 TEST_CASE_FIXTURE(fixture, "table_column::splice_back: relocate last component")
@@ -183,7 +236,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::splice_back: relocate last component")
 
     if constexpr (!std::is_trivially_destructible_v<component_t> && !std::is_trivially_move_constructible_v<component_t>)
     {
-        CHECK_EQ(track(), component_track{.dtor = 1, .move = 1});
+        check_operations({.dtor = 1, .move = 1});
     }
 }
 
@@ -211,7 +264,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::swap_and_pop(non last): relocates last
         }
     }
 
-    CHECK_EQ(track(), component_track{.dtor = 2, .move = 1});
+    check_operations({.dtor = 2, .move = 1});
 }
 
 TEST_CASE_FIXTURE(fixture, "table_column::swap_and_pop(last): destroys last only")
@@ -231,7 +284,7 @@ TEST_CASE_FIXTURE(fixture, "table_column::swap_and_pop(last): destroys last only
         CHECK_EQ(column.template at<component_t>(i).value, i);
     }
 
-    CHECK_EQ(track(), component_track{.dtor = 1});
+    check_operations({.dtor = 1});
 }
 
 }} // namespace ant::detail

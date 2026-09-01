@@ -14,24 +14,24 @@ namespace ant { namespace {
     cs.destroy(entity{0});
 }
 
-[[maybe_unused]] auto attach(changeset_of<attach<component<0>>> cs) -> void
+[[maybe_unused]] auto attach(changeset_of<attach<testing::component<0>>> cs) -> void
 {
-    cs.attach<component<0>>(entity{0});
+    cs.attach<testing::component<0>>(entity{0});
 }
 
-[[maybe_unused]] auto detach(changeset_of<detach<component<0>>> cs) -> void
+[[maybe_unused]] auto detach(changeset_of<detach<testing::component<0>>> cs) -> void
 {
-    cs.detach<component<0>>(entity{0});
+    cs.detach<testing::component<0>>(entity{0});
 }
 
-[[maybe_unused]] auto set_env(changeset_of<set_env<component<0>>> cs) -> void
+[[maybe_unused]] auto set_env(changeset_of<set_env<testing::component<0>>> cs) -> void
 {
-    cs.set_env<component<0>>();
+    cs.set_env<testing::component<0>>();
 }
 
-[[maybe_unused]] auto unset_env(changeset_of<unset_env<component<0>>> cs) -> void
+[[maybe_unused]] auto unset_env(changeset_of<unset_env<testing::component<0>>> cs) -> void
 {
-    cs.unset_env<component<0>>();
+    cs.unset_env<testing::component<0>>();
 }
 
 }} // namespace ant
