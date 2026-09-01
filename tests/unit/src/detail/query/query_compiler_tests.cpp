@@ -17,25 +17,25 @@ struct fixture
     template<typename Signature>
     auto compile_query() -> compiled_query<Signature>
     {
-        return query_compiler::compile<Signature>(catalog);
+        return query_compiler::compile<Signature>(_catalog);
     }
     template<typename Signature>
     auto recompile_query(compiled_query<Signature>& cq) -> void
     {
-        query_compiler::recompile<Signature>(catalog, cq);
+        query_compiler::recompile<Signature>(_catalog, cq);
     }
 
-    ant::schema schema{testing::make_indexed_schema<4>()};
-    ant::detail::entity_registry entity_registry;
-    ant::detail::catalog catalog{schema};
-    entity_creator creator{schema, entity_registry, catalog};
+    schema _schema{testing::make_indexed_schema<4>()};
+    entity_registry _entity_registry;
+    catalog _catalog{_schema};
+    entity_creator _creator{_schema, _entity_registry, _catalog};
 };
 
 TEST_CASE_FIXTURE(fixture, "query_compiler::compile: supports sequential query construction")
 {
-    const entity e0 = creator.create_entity<0>();
-    const entity e1 = creator.create_entity<1>();
-    const entity e2 = creator.create_entity<0, 1>();
+    const entity e0 = _creator.create_entity<0>();
+    const entity e1 = _creator.create_entity<1>();
+    const entity e2 = _creator.create_entity<0, 1>();
 
     using signature0 = query_signature<testing::component<0>>;
     using signature1 = query_signature<testing::component<1>>;
@@ -69,12 +69,12 @@ TEST_CASE_FIXTURE(fixture, "query_compiler::recompile: recompiles query when cat
 {
     using signature = query_signature<testing::component<0>>;
 
-    const entity _ = creator.create_entity<0>();
+    const entity _ = _creator.create_entity<0>();
 
     compiled_query cquery = compile_query<signature>();
     const auto epoch = cquery.epoch();
 
-    const entity _ = creator.create_entity<0, 1>();
+    const entity _ = _creator.create_entity<0, 1>();
 
     recompile_query<signature>(cquery);
 

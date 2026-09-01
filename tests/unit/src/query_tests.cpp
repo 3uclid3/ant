@@ -17,21 +17,21 @@ struct fixture
     template<typename Signature>
     auto compile_query() -> compiled_query<Signature>
     {
-        return query_compiler::compile<Signature>(catalog);
+        return query_compiler::compile<Signature>(_catalog);
     }
 
-    ant::schema schema{testing::make_indexed_schema<16>()};
-    ant::detail::entity_registry entity_registry;
-    ant::detail::catalog catalog{schema};
-    entity_creator creator{schema, entity_registry, catalog};
+    schema _schema{testing::make_indexed_schema<16>()};
+    detail::entity_registry _entity_registry;
+    detail::catalog _catalog{_schema};
+    entity_creator _creator{_schema, _entity_registry, _catalog};
 };
 
 TEST_CASE_FIXTURE(fixture, "basic_query: supports multiple excluded component types")
 {
-    const entity e0 = creator.create_entity<0>();
-    const entity e1 = creator.create_entity<0, 2>();
-    const entity e2 = creator.create_entity<0, 3>();
-    const entity e3 = creator.create_entity<0, 2, 3>();
+    const entity e0 = _creator.create_entity<0>();
+    const entity e1 = _creator.create_entity<0, 2>();
+    const entity e2 = _creator.create_entity<0, 3>();
+    const entity e3 = _creator.create_entity<0, 2, 3>();
 
     using signature = query_signature<testing::component<0>, exclude<testing::component<2>, testing::component<3>>>;
     compiled_query cquery = compile_query<signature>();
@@ -46,8 +46,8 @@ TEST_CASE_FIXTURE(fixture, "basic_query: supports multiple excluded component ty
 
 TEST_CASE_FIXTURE(fixture, "basic_query::row: returns nullopt for non-matching entities")
 {
-    const entity e0 = creator.create_entity<0, 1>();
-    const entity e1 = creator.create_entity<1>();
+    const entity e0 = _creator.create_entity<0, 1>();
+    const entity e1 = _creator.create_entity<1>();
 
     using signature = query_signature<testing::component<0>, testing::component<1>>;
     compiled_query cquery = compile_query<signature>();
@@ -61,7 +61,7 @@ TEST_CASE_FIXTURE(fixture, "basic_query::row: returns nullopt for non-matching e
 TEST_CASE_FIXTURE(fixture, "basic_query::begin: equals end when all matching tables are empty")
 {
     // ensure_of creates the table but no entity is inserted, so it is empty
-    [[maybe_unused]] auto _ = catalog.ensure_of(component_bitset_of<testing::component<0>>());
+    [[maybe_unused]] auto _ = _catalog.ensure_of(component_bitset_of<testing::component<0>>());
 
     using signature = query_signature<testing::component<0>>;
     compiled_query cquery = compile_query<signature>();
@@ -73,10 +73,10 @@ TEST_CASE_FIXTURE(fixture, "basic_query::begin: equals end when all matching tab
 TEST_CASE_FIXTURE(fixture, "basic_query::begin: skips leading empty tables")
 {
     // first table matching the query is empty
-    [[maybe_unused]] auto _ = catalog.ensure_of(component_bitset_of<testing::component<0>>());
+    [[maybe_unused]] auto _ = _catalog.ensure_of(component_bitset_of<testing::component<0>>());
 
     // second table matching the query has one entity
-    const entity e0 = creator.create_entity<0, 1>();
+    const entity e0 = _creator.create_entity<0, 1>();
 
     using signature = query_signature<testing::component<0>>;
     compiled_query cquery = compile_query<signature>();
@@ -88,8 +88,8 @@ TEST_CASE_FIXTURE(fixture, "basic_query::begin: skips leading empty tables")
 
 TEST_CASE_FIXTURE(fixture, "basic_query::iterator: postfix increment returns previous iterator")
 {
-    const entity e0 = creator.create_entity<0>();
-    const entity e1 = creator.create_entity<0>();
+    const entity e0 = _creator.create_entity<0>();
+    const entity e1 = _creator.create_entity<0>();
 
     using signature = query_signature<testing::component<0>>;
     compiled_query cquery = compile_query<signature>();
@@ -110,8 +110,8 @@ TEST_CASE_FIXTURE(fixture, "basic_query::iterator: postfix increment returns pre
 
 TEST_CASE_FIXTURE(fixture, "query_row: has and get optional stay consistent")
 {
-    const entity e0 = creator.create_entity<0>();
-    const entity e1 = creator.create_entity<0, 3>();
+    const entity e0 = _creator.create_entity<0>();
+    const entity e1 = _creator.create_entity<0, 3>();
 
     using signature = query_signature<testing::component<0>, const testing::component<3>*>;
     compiled_query cquery = compile_query<signature>();
@@ -132,7 +132,7 @@ TEST_CASE_FIXTURE(fixture, "query_row: has and get optional stay consistent")
 
 TEST_CASE_FIXTURE(fixture, "query_row::get: mutable access writes through")
 {
-    const entity e0 = creator.create_entity<0>();
+    const entity e0 = _creator.create_entity<0>();
 
     using signature = query_signature<testing::component<0>>;
     compiled_query cquery = compile_query<signature>();
@@ -149,8 +149,8 @@ TEST_CASE_FIXTURE(fixture, "query_row::get: mutable access writes through")
 
 TEST_CASE_FIXTURE(fixture, "query_row::get optional mutable: writes through pointer")
 {
-    const entity e0 = creator.create_entity<0, 1>();
-    const entity e1 = creator.create_entity<0>();
+    const entity e0 = _creator.create_entity<0, 1>();
+    const entity e1 = _creator.create_entity<0>();
 
     using signature = query_signature<testing::component<0>, testing::component<1>*>;
     compiled_query cquery = compile_query<signature>();
@@ -173,7 +173,7 @@ TEST_CASE_FIXTURE(fixture, "query_row::get optional mutable: writes through poin
 
 TEST_CASE_FIXTURE(fixture, "query_row::operator bool: true for valid row")
 {
-    const entity e0 = creator.create_entity<0>();
+    const entity e0 = _creator.create_entity<0>();
 
     using signature = query_signature<testing::component<0>>;
     compiled_query cquery = compile_query<signature>();

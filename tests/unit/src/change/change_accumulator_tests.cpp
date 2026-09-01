@@ -9,19 +9,19 @@ namespace ant::detail { namespace {
 
 struct fixture
 {
-    ant::schema schema{testing::make_indexed_schema<8>()};
-    change_accumulator accumulator{schema};
+    schema _schema{testing::make_indexed_schema<8>()};
+    change_accumulator _accumulator{_schema};
 };
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_destroy: emplace destroy change")
 {
     entity e0{0};
 
-    accumulator.emplace_destroy(e0);
+    _accumulator.emplace_destroy(e0);
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<destroy_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<destroy_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
@@ -31,49 +31,49 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: emplace attach c
 {
     entity e0{0};
 
-    accumulator.emplace_attach<testing::component<0>>(e0);
+    _accumulator.emplace_attach<testing::component<0>>(e0);
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
     CHECK_EQ(change->ctor.fn, nullptr);
-    CHECK_EQ(change->ctor.meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(change->ctor.meta, &_schema.meta_of<testing::component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: emplace attach change with ctor with value")
 {
     entity e0{0};
 
-    accumulator.emplace_attach<testing::component<0>>(e0, 42u);
+    _accumulator.emplace_attach<testing::component<0>>(e0, 42u);
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
     CHECK_NE(change->ctor.fn, nullptr);
-    CHECK_EQ(change->ctor.meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(change->ctor.meta, &_schema.meta_of<testing::component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: override pending attach change for same entity and component")
 {
     entity e0{0};
 
-    accumulator.emplace_attach<testing::component<0>>(e0);
-    accumulator.emplace_attach<testing::component<0>>(e0, 42u);
+    _accumulator.emplace_attach<testing::component<0>>(e0);
+    _accumulator.emplace_attach<testing::component<0>>(e0, 42u);
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<attach_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
     CHECK_NE(change->ctor.fn, nullptr);
-    CHECK_EQ(change->ctor.meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(change->ctor.meta, &_schema.meta_of<testing::component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: does not override pending attach change for different entity")
@@ -81,16 +81,16 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: does not overrid
     entity e0{0};
     entity e1{1};
 
-    accumulator.emplace_attach<testing::component<0>>(e0);
-    accumulator.emplace_attach<testing::component<0>>(e1, 42u);
+    _accumulator.emplace_attach<testing::component<0>>(e0);
+    _accumulator.emplace_attach<testing::component<0>>(e1, 42u);
 
-    REQUIRE_EQ(accumulator.size(), 2u);
+    REQUIRE_EQ(_accumulator.size(), 2u);
 
-    const auto* first = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* first = std::get_if<attach_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(first != nullptr);
     CHECK_EQ(first->entity, e0);
 
-    const auto* second = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[1]);
+    const auto* second = std::get_if<attach_change>(&change_accumulator_consumer::changes(_accumulator)[1]);
     REQUIRE(second != nullptr);
     CHECK_EQ(second->entity, e1);
 }
@@ -99,101 +99,101 @@ TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_attach: does not overrid
 {
     entity e0{0};
 
-    accumulator.emplace_attach<testing::component<0>>(e0);
-    accumulator.emplace_attach<testing::component<1>>(e0, 42u);
+    _accumulator.emplace_attach<testing::component<0>>(e0);
+    _accumulator.emplace_attach<testing::component<1>>(e0, 42u);
 
-    REQUIRE_EQ(accumulator.size(), 2u);
+    REQUIRE_EQ(_accumulator.size(), 2u);
 
-    const auto* first = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* first = std::get_if<attach_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(first != nullptr);
-    CHECK_EQ(first->ctor.meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(first->ctor.meta, &_schema.meta_of<testing::component<0>>());
 
-    const auto* second = std::get_if<attach_change>(&change_accumulator_consumer::changes(accumulator)[1]);
+    const auto* second = std::get_if<attach_change>(&change_accumulator_consumer::changes(_accumulator)[1]);
     REQUIRE(second != nullptr);
-    CHECK_EQ(second->ctor.meta, &schema.meta_of<testing::component<1>>());
+    CHECK_EQ(second->ctor.meta, &_schema.meta_of<testing::component<1>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_detach: emplace detach change")
 {
     entity e0{0};
 
-    accumulator.emplace_detach<testing::component<0>>(e0);
+    _accumulator.emplace_detach<testing::component<0>>(e0);
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<detach_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<detach_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->entity, e0);
-    CHECK_EQ(change->meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(change->meta, &_schema.meta_of<testing::component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_set: emplace set env change with default ctor")
 {
-    accumulator.emplace_set<testing::component<0>>();
+    _accumulator.emplace_set<testing::component<0>>();
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_EQ(change->ctor.fn, nullptr);
-    CHECK_EQ(change->ctor.meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(change->ctor.meta, &_schema.meta_of<testing::component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_set: emplace set env change with ctor with value")
 {
-    accumulator.emplace_set<testing::component<0>>(42u);
+    _accumulator.emplace_set<testing::component<0>>(42u);
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_NE(change->ctor.fn, nullptr);
-    CHECK_EQ(change->ctor.meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(change->ctor.meta, &_schema.meta_of<testing::component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_set: override pending set change for same component")
 {
-    accumulator.emplace_set<testing::component<0>>();
-    accumulator.emplace_set<testing::component<0>>(42u);
+    _accumulator.emplace_set<testing::component<0>>();
+    _accumulator.emplace_set<testing::component<0>>(42u);
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<set_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
     CHECK_NE(change->ctor.fn, nullptr);
-    CHECK_EQ(change->ctor.meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(change->ctor.meta, &_schema.meta_of<testing::component<0>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_set: does not override pending set change for different component")
 {
-    accumulator.emplace_set<testing::component<0>>();
-    accumulator.emplace_set<testing::component<1>>(42u);
+    _accumulator.emplace_set<testing::component<0>>();
+    _accumulator.emplace_set<testing::component<1>>(42u);
 
-    REQUIRE_EQ(accumulator.size(), 2u);
+    REQUIRE_EQ(_accumulator.size(), 2u);
 
-    const auto* first = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* first = std::get_if<set_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(first != nullptr);
-    CHECK_EQ(first->ctor.meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(first->ctor.meta, &_schema.meta_of<testing::component<0>>());
 
-    const auto* second = std::get_if<set_change>(&change_accumulator_consumer::changes(accumulator)[1]);
+    const auto* second = std::get_if<set_change>(&change_accumulator_consumer::changes(_accumulator)[1]);
     REQUIRE(second != nullptr);
-    CHECK_EQ(second->ctor.meta, &schema.meta_of<testing::component<1>>());
+    CHECK_EQ(second->ctor.meta, &_schema.meta_of<testing::component<1>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_accumulator::emplace_unset: emplace unset change")
 {
-    accumulator.emplace_unset<testing::component<0>>();
+    _accumulator.emplace_unset<testing::component<0>>();
 
-    REQUIRE_EQ(accumulator.size(), 1u);
+    REQUIRE_EQ(_accumulator.size(), 1u);
 
-    const auto* change = std::get_if<unset_change>(&change_accumulator_consumer::changes(accumulator)[0]);
+    const auto* change = std::get_if<unset_change>(&change_accumulator_consumer::changes(_accumulator)[0]);
     REQUIRE(change != nullptr);
 
-    CHECK_EQ(change->meta, &schema.meta_of<testing::component<0>>());
+    CHECK_EQ(change->meta, &_schema.meta_of<testing::component<0>>());
 }
 
 }} // namespace ant::detail
