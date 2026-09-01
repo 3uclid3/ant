@@ -3,6 +3,7 @@
 
 #include <ant/database.hpp>
 #include <ant/scheduler.hpp>
+#include <ant/scheduler/stage.hpp>
 
 #include <ant.mock/component.hpp>
 #include <ant.mock/detail/catalog.hpp>
@@ -21,6 +22,24 @@ TEST_CASE_FIXTURE(fixture, "scheduler::stage_handle::add: permits the same syste
 
     CHECK_NOTHROW(scheduler.stage<struct schedule, struct stage0>().add(system));
     CHECK_NOTHROW(scheduler.stage<struct schedule, struct stage1>().add(system));
+}
+
+TEST_CASE_FIXTURE(fixture, "scheduler::stage: infers the schedule from the stage")
+{
+    struct schedule
+    {
+        struct stage : stage_of<schedule>
+        {
+        };
+    };
+
+    int called = 0;
+    scheduler.stage<schedule::stage>().add([&called](env_of<component<0>*>) { ++called; });
+    scheduler.compile<schedule>();
+
+    scheduler.execute<schedule>();
+
+    CHECK_EQ(called, 1);
 }
 
 TEST_CASE_FIXTURE(fixture, "scheduler::execute: empty schedule does nothing")

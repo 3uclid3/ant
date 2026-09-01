@@ -47,6 +47,10 @@ public:
     template<typename Schedule, typename Stage>
     auto stage() -> stage_handle;
 
+    template<typename Stage>
+    requires(requires { typename Stage::schedule_type; })
+    auto stage() -> stage_handle;
+
     template<typename Schedule>
     auto compile() -> void;
 
@@ -116,6 +120,13 @@ template<typename Schedule, typename Stage>
 auto scheduler::stage() -> stage_handle
 {
     return stage_impl(schedule_type_indexer::get<Schedule>(), stage_type_indexer::get<Stage>());
+}
+
+template<typename Stage>
+requires(requires { typename Stage::schedule_type; })
+auto scheduler::stage() -> stage_handle
+{
+    return stage<typename Stage::schedule_type, Stage>();
 }
 
 template<typename Schedule>

@@ -78,6 +78,7 @@ target_sources(ant
       include/ant/memory.hpp
       include/ant/query.hpp
       include/ant/scheduler.hpp
+      include/ant/scheduler/stage.hpp
       include/ant/schema.hpp
   PRIVATE
     src/change/change_accumulator.cpp
