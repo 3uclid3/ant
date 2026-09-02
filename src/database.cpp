@@ -19,8 +19,9 @@ auto database::flush(std::span<change_accumulator> accumulators) -> void
     }
 
     detail::coalesced_changes changes = coalescer.coalesce();
-    detail::change_executor executor(_store.entities, _store.envs, _store.catalog);
-    executor.execute(changes);
+    change_accumulator lifecycle_accumulator(_store.schema);
+    detail::change_executor executor(_store, _lifecycle);
+    executor.execute(changes, lifecycle_accumulator);
 }
 
 } // namespace ant

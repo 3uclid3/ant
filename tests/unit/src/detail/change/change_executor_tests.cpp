@@ -8,6 +8,8 @@
 #include <ant/detail/change/change_coalescer.hpp>
 #include <ant/detail/entity/entity_registry.hpp>
 #include <ant/detail/env/env_registry.hpp>
+#include <ant/detail/lifecycle/lifecycle_registry.hpp>
+#include <ant/detail/store.hpp>
 
 #include "../entity_creator.hpp"
 
@@ -50,7 +52,7 @@ struct fixture
     {
         _coalescer.consume(_accumulator);
         coalesced_changes changes = _coalescer.coalesce();
-        _executor.execute(changes);
+        _executor.execute(changes, _accumulator);
     }
 
     template<std::size_t I>
@@ -88,14 +90,16 @@ struct fixture
         CHECK_FALSE(_catalog.at(loc.table).contains(e));
     }
 
-    schema _schema{testing::make_indexed_schema<8>()};
-    entity_registry _entity_registry;
-    catalog _catalog{_schema};
+    store _store{testing::make_indexed_schema<8>()};
+    schema& _schema{_store.schema};
+    entity_registry& _entity_registry{_store.entities};
+    catalog& _catalog{_store.catalog};
+    env_registry& _env_registry{_store.envs};
     entity_creator _creator{_schema, _entity_registry, _catalog};
-    env_registry _env_registry{_schema};
     change_accumulator _accumulator{_schema};
     change_coalescer _coalescer{_schema, _entity_registry, _catalog};
-    change_executor _executor{_entity_registry, _env_registry, _catalog};
+    lifecycle_registry _lifecycle_registry{_store.schema.range()};
+    change_executor _executor{_store, _lifecycle_registry};
 };
 
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities erase entity from catalog")

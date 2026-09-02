@@ -1,7 +1,4 @@
-
 #include <ant/binding.hpp>
-#include <ant/database.hpp>
-#include <ant/detail/change/change_accumulator_consumer.hpp>
 #include <doctest/doctest.h>
 
 #include <memory>
@@ -9,6 +6,11 @@
 
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
+#include <ant/detail/change/change_accumulator_consumer.hpp>
+#include <ant/detail/change/change_coalescer.hpp>
+#include <ant/detail/change/change_executor.hpp>
+#include <ant/detail/lifecycle/lifecycle_registry.hpp>
+#include <ant/detail/store.hpp>
 
 namespace ant { namespace {
 
@@ -17,7 +19,7 @@ struct binding_fixture
     template<std::size_t... Indices>
     auto create_entity() -> entity
     {
-        auto changes = _db.changeset<changeset_signature<create, attach<testing::component<Indices>...>>>(_accumulator);
+        changeset_of<create, attach<testing::component<Indices>...>> changes{_accumulator, _store.entities};
         const entity e = changes.create();
         (changes.template attach<testing::component<Indices>>(e), ...);
         flush();
@@ -26,11 +28,16 @@ struct binding_fixture
 
     auto flush() -> void
     {
-        _db.flush(std::span<change_accumulator>{&_accumulator, 1});
+        detail::change_coalescer coalescer{_store.schema, _store.entities, _store.catalog};
+        coalescer.consume(_accumulator);
+        detail::coalesced_changes changes = coalescer.coalesce();
+        detail::change_executor executor{_store, _lifecycle};
+        executor.execute(changes, _accumulator);
     }
 
-    database _db{testing::make_indexed_schema<4>()};
-    change_accumulator _accumulator{_db.schema()};
+    detail::store _store{testing::make_indexed_schema<4>()};
+    detail::lifecycle_registry _lifecycle{_store.schema.range()};
+    change_accumulator _accumulator{_store.schema};
 };
 
 TEST_CASE("binding_descriptor::ctor: default is invalid")
@@ -251,7 +258,7 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: invokes the function")
         called = true;
     };
 
-    binding b = _db.bind(sys);
+    binding b{_store, sys};
     b.invoke(_accumulator);
 
     CHECK(called);
@@ -259,37 +266,37 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: invokes the function")
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::is_ready: false when a required env component is missing")
 {
-    binding b = _db.bind([](env_of<testing::component<0>>) {});
+    binding b{_store, [](env_of<testing::component<0>>) {}};
 
     CHECK_FALSE(b.is_ready());
 }
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::is_ready: true when all required env components are set")
 {
-    auto setup = _db.changeset<changeset_signature<set_env<testing::component<0>>, set_env<testing::component<1>>>>(_accumulator);
+    changeset_of<set_env<testing::component<0>>, set_env<testing::component<1>>> setup{_accumulator, _store.entities};
     setup.set_env<testing::component<0>>();
     setup.set_env<testing::component<1>>();
     flush();
 
-    binding b = _db.bind([](env_of<testing::component<0>, const testing::component<1>>) {});
+    binding b{_store, [](env_of<testing::component<0>, const testing::component<1>>) {}};
 
     CHECK(b.is_ready());
 }
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::is_ready: false when any required env component is missing")
 {
-    auto setup = _db.changeset<changeset_signature<set_env<testing::component<0>>>>(_accumulator);
+    changeset_of<set_env<testing::component<0>>> setup{_accumulator, _store.entities};
     setup.set_env<testing::component<0>>();
     flush();
 
-    binding b = _db.bind([](env_of<testing::component<0>, const testing::component<1>>) {});
+    binding b{_store, [](env_of<testing::component<0>, const testing::component<1>>) {}};
 
     CHECK_FALSE(b.is_ready());
 }
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::is_ready: true when an optional env component is missing")
 {
-    binding b = _db.bind([](env_of<testing::component<0>*>) {});
+    binding b{_store, [](env_of<testing::component<0>*>) {}};
 
     CHECK(b.is_ready());
 }
@@ -298,27 +305,24 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: supplies arguments in decla
 {
     [[maybe_unused]] const entity e = create_entity<0>();
 
-    auto setup = _db.changeset<changeset_signature<set_env<testing::component<2>>>>(_accumulator);
+    changeset_of<set_env<testing::component<2>>> setup{_accumulator, _store.entities};
     setup.set_env<testing::component<2>>(2);
     flush();
 
     bool called = false;
-    binding b = _db.bind([&called](
-                             query_of<const testing::component<0>> query,
-                             changeset_of<set_env<testing::component<1>>> changes,
-                             env_of<testing::component<2>> env) {
-        CHECK_EQ(query.count_rows(), 1u);
-        changes.set_env<testing::component<1>>(1);
-        env.get<testing::component<2>>().value = 42;
-        called = true;
-    });
+    binding b{_store, [&called](query_of<const testing::component<0>> query, changeset_of<set_env<testing::component<1>>> changes, env_of<testing::component<2>> env) {
+                  CHECK_EQ(query.count_rows(), 1u);
+                  changes.set_env<testing::component<1>>(1);
+                  env.get<testing::component<2>>().value = 42;
+                  called = true;
+              }};
 
     b.invoke(_accumulator);
 
     CHECK(called);
     REQUIRE_EQ(_accumulator.size(), 1u);
     CHECK(std::holds_alternative<detail::set_change>(detail::change_accumulator_consumer::changes(_accumulator)[0]));
-    CHECK_EQ(_db.env<env_signature<const testing::component<2>>>().get<testing::component<2>>().value, 42u);
+    CHECK_EQ(env_of<const testing::component<2>>{_store.envs}.get<testing::component<2>>().value, 42u);
 }
 
 TEST_CASE_FIXTURE(binding_fixture, "basic_binding::invoke: forwards supplied arguments before injected arguments")
@@ -326,11 +330,11 @@ TEST_CASE_FIXTURE(binding_fixture, "basic_binding::invoke: forwards supplied arg
     bool called = false;
     int supplied = 42;
 
-    basic_binding<int> b = _db.bind<int>([&called](int value, env_of<testing::component<0>*> env) {
-        CHECK_EQ(value, 42);
-        CHECK_FALSE(env.has<testing::component<0>>());
-        called = true;
-    });
+    basic_binding<int> b{_store, [&called](int value, env_of<testing::component<0>*> env) {
+                             CHECK_EQ(value, 42);
+                             CHECK_FALSE(env.has<testing::component<0>>());
+                             called = true;
+                         }};
 
     b.invoke(_accumulator, supplied);
 
@@ -339,9 +343,9 @@ TEST_CASE_FIXTURE(binding_fixture, "basic_binding::invoke: forwards supplied arg
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: changeset writes into the provided accumulator")
 {
-    binding b = _db.bind([](changeset_of<set_env<testing::component<0>>> changes) {
-        changes.set_env<testing::component<0>>(42);
-    });
+    binding b{_store, [](changeset_of<set_env<testing::component<0>>> changes) {
+                  changes.set_env<testing::component<0>>(42);
+              }};
 
     b.invoke(_accumulator);
 
@@ -351,17 +355,17 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: changeset writes into the p
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: env writes through to the registry")
 {
-    auto setup = _db.changeset<changeset_signature<set_env<testing::component<0>>>>(_accumulator);
+    changeset_of<set_env<testing::component<0>>> setup{_accumulator, _store.entities};
     setup.set_env<testing::component<0>>(1);
     flush();
 
-    binding b = _db.bind([](env_of<testing::component<0>> env) {
-        env.get<testing::component<0>>().value = 42;
-    });
+    binding b{_store, [](env_of<testing::component<0>> env) {
+                  env.get<testing::component<0>>().value = 42;
+              }};
 
     b.invoke(_accumulator);
 
-    CHECK_EQ(_db.env<env_signature<const testing::component<0>>>().get<testing::component<0>>().value, 42u);
+    CHECK_EQ(env_of<const testing::component<0>>{_store.envs}.get<testing::component<0>>().value, 42u);
 }
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: compiles query on first invocation")
@@ -369,9 +373,9 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: compiles query on first inv
     [[maybe_unused]] const entity e = create_entity<0>();
     std::size_t row_count = 0;
 
-    binding b = _db.bind([&row_count](query_of<const testing::component<0>> query) {
-        row_count = query.count_rows();
-    });
+    binding b{_store, [&row_count](query_of<const testing::component<0>> query) {
+                  row_count = query.count_rows();
+              }};
 
     b.invoke(_accumulator);
 
@@ -383,9 +387,9 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: recompiles cached query aft
     [[maybe_unused]] const entity e0 = create_entity<0>();
     std::size_t row_count = 0;
 
-    binding b = _db.bind([&row_count](query_of<const testing::component<0>> query) {
-        row_count = query.count_rows();
-    });
+    binding b{_store, [&row_count](query_of<const testing::component<0>> query) {
+                  row_count = query.count_rows();
+              }};
 
     b.invoke(_accumulator);
     REQUIRE_EQ(row_count, 1u);
@@ -399,9 +403,9 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: recompiles cached query aft
 TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: supports move-only callable state")
 {
     int value = 0;
-    binding b = _db.bind([state = std::make_unique<int>(0), &value](env_of<testing::component<0>*>) mutable {
-        value = ++*state;
-    });
+    binding b{_store, [state = std::make_unique<int>(0), &value](env_of<testing::component<0>*>) mutable {
+                  value = ++*state;
+              }};
 
     b.invoke(_accumulator);
     CHECK_EQ(value, 1);
@@ -418,14 +422,14 @@ TEST_CASE_FIXTURE(binding_fixture, "binding: is movable and non-copyable")
     static_assert(!std::is_copy_assignable_v<binding>);
 
     int calls = 0;
-    binding source = _db.bind([&calls](env_of<testing::component<0>*>) {
-        ++calls;
-    });
+    binding source{_store, [&calls](env_of<testing::component<0>*>) {
+                       ++calls;
+                   }};
 
     binding moved(std::move(source));
     moved.invoke(_accumulator);
 
-    binding assigned = _db.bind([](env_of<testing::component<0>*>) {});
+    binding assigned{_store, [](env_of<testing::component<0>*>) {}};
     assigned = std::move(moved);
     assigned.invoke(_accumulator);
 

@@ -34,7 +34,9 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy entities")
     _coalescer.consume(accumulator);
     coalesced_changes changes = _coalescer.coalesce();
 
-    CHECK(std::ranges::is_permutation(changes.destroy_entities, vector<entity>{e0, e1}));
+    REQUIRE_EQ(changes.destroy_entities.size(), 2);
+    CHECK(std::ranges::any_of(changes.destroy_entities, [e0](const auto& change) { return change.entity == e0; }));
+    CHECK(std::ranges::any_of(changes.destroy_entities, [e1](const auto& change) { return change.entity == e1; }));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy prevents any changes on the entity")
@@ -49,7 +51,8 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroy prevents any cha
     _coalescer.consume(accumulator);
     coalesced_changes changes = _coalescer.coalesce();
 
-    CHECK_EQ(changes.destroy_entities, vector<entity>{e0});
+    REQUIRE_EQ(changes.destroy_entities.size(), 1);
+    CHECK_EQ(changes.destroy_entities[0].entity, e0);
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: attach")
@@ -73,6 +76,8 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: attach")
     CHECK_EQ(coalesced_e.entity, e0);
     CHECK_EQ(coalesced_e.table_index, entity_location::invalid.table);
     CHECK_EQ(coalesced_e.new_table_index, _catalog.ensure_of(expected));
+    CHECK_EQ(coalesced_e.logical_attach_components, expected);
+    CHECK(coalesced_e.logical_detach_components.none());
 
     REQUIRE_EQ(coalesced_e.ctors.size(), 2);
     CHECK_EQ(coalesced_e.ctors[0].meta, &_schema.meta_of<testing::component<0>>());
@@ -96,6 +101,39 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach")
     CHECK_EQ(coalesced_e.entity, e0);
     CHECK_EQ(coalesced_e.table_index, _entity_registry.locate(e0).table);
     CHECK_EQ(coalesced_e.new_table_index, _catalog.index_of(component_bitset_of<testing::component<2>>()));
+    CHECK(coalesced_e.logical_attach_components.none());
+    CHECK_EQ(coalesced_e.logical_detach_components, component_bitset_of<testing::component<0>, testing::component<1>>());
+}
+
+TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: reports only effective component changes")
+{
+    const entity e0 = _creator.create_entity<0>();
+
+    change_accumulator accumulator{_schema};
+    accumulator.emplace_attach<testing::component<0>>(e0);
+    accumulator.emplace_detach<testing::component<1>>(e0);
+
+    _coalescer.consume(accumulator);
+    coalesced_changes changes = _coalescer.coalesce();
+
+    REQUIRE_EQ(changes.entities.size(), 1);
+    CHECK(changes.entities[0].logical_attach_components.none());
+    CHECK(changes.entities[0].logical_detach_components.none());
+}
+
+TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroying an entity detaches all its components")
+{
+    const entity e0 = _creator.create_entity<0, 2>();
+
+    change_accumulator accumulator{_schema};
+    accumulator.emplace_destroy(e0);
+
+    _coalescer.consume(accumulator);
+    coalesced_changes changes = _coalescer.coalesce();
+
+    REQUIRE_EQ(changes.destroy_entities.size(), 1);
+    CHECK_EQ(changes.destroy_entities[0].entity, e0);
+    CHECK_EQ(changes.destroy_entities[0].detached_components, component_bitset_of<testing::component<0>, testing::component<2>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach prevent attach")

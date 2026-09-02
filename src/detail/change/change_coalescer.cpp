@@ -33,20 +33,15 @@ auto change_coalescer::coalesce() -> coalesced_changes
     {
         const auto loc = _entity_registry.locate(e);
 
-        component_bitset bitset = loc == entity_location::invalid ? component_bitset{} : _catalog.at(loc.table).components();
-        bitset |= coalesce_e.attach_components;
+        const component_bitset old_components = loc == entity_location::invalid ? component_bitset{} : _catalog.at(loc.table).components();
 
-        if (coalesce_e.detach_components.any())
-        {
-            const std::size_t size = std::max(bitset.size(), coalesce_e.attach_components.size());
+        component_bitset logical_attach_components = coalesce_e.attach_components;
+        logical_attach_components.and_not(old_components);
+        component_bitset logical_detach_components = coalesce_e.detach_components & old_components;
 
-            if (coalesce_e.detach_components.size() < size)
-            {
-                coalesce_e.detach_components.resize(size);
-            }
-
-            bitset &= ~coalesce_e.detach_components;
-        }
+        component_bitset bitset = old_components;
+        bitset |= logical_attach_components;
+        bitset.and_not(logical_detach_components);
 
         vector<component_construct> ctors{std::move(coalesce_e.attach_component_ctors)};
         ctors.reserve(bitset.count());
@@ -64,7 +59,9 @@ auto change_coalescer::coalesce() -> coalesced_changes
             {.entity = e,
              .table_index = loc.table,
              .new_table_index = _catalog.ensure_of(bitset),
-             .ctors = std::move(ctors)});
+             .ctors = std::move(ctors),
+             .logical_attach_components = std::move(logical_attach_components),
+             .logical_detach_components = std::move(logical_detach_components)});
     }
 
     return std::move(_changes);
@@ -72,16 +69,25 @@ auto change_coalescer::coalesce() -> coalesced_changes
 
 auto change_coalescer::consume_change(destroy_change& change) -> void
 {
-    if (std::ranges::none_of(_changes.destroy_entities, [&change](entity e) { return e == change.entity; }))
+    if (std::ranges::none_of(_changes.destroy_entities, [&change](const auto& coalesced_change) { return coalesced_change.entity == change.entity; }))
     {
-        _changes.destroy_entities.emplace_back(change.entity);
+        const entity_location location = _entity_registry.locate(change.entity);
+
+        coalesced_destroy_entity_change coalesced_change{.entity = change.entity, .detached_components = {}};
+
+        if (location != entity_location::invalid)
+        {
+            coalesced_change.detached_components = _catalog.at(location.table).components();
+        }
+
+        _changes.destroy_entities.emplace_back(std::move(coalesced_change));
         _changing_entities.erase(change.entity); // destroy has priority, make sure we dont insert afterward
     }
 }
 
 auto change_coalescer::consume_change(attach_change& change) -> void
 {
-    if (std::ranges::any_of(_changes.destroy_entities, [&change](entity e) { return e == change.entity; }))
+    if (std::ranges::any_of(_changes.destroy_entities, [&change](const auto& coalesced_change) { return coalesced_change.entity == change.entity; }))
     {
         return;
     }
@@ -103,7 +109,7 @@ auto change_coalescer::consume_change(attach_change& change) -> void
 
 auto change_coalescer::consume_change(detach_change& change) -> void
 {
-    if (std::ranges::any_of(_changes.destroy_entities, [&change](entity e) { return e == change.entity; }))
+    if (std::ranges::any_of(_changes.destroy_entities, [&change](const auto& coalesced_change) { return coalesced_change.entity == change.entity; }))
     {
         return;
     }

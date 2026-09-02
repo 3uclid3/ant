@@ -2,6 +2,7 @@
 
 #include <ant/binding.hpp>
 #include <ant/changeset.hpp>
+#include <ant/detail/assert.hpp>
 #include <ant/detail/lifecycle/lifecycle_registry.hpp>
 #include <ant/detail/query/query_compiler.hpp>
 #include <ant/detail/store.hpp>
@@ -26,8 +27,8 @@ public:
     auto schema() const noexcept -> const ant::schema&;
     auto inspect() const noexcept -> inspector;
 
-    template<typename... Supplied, typename T>
-    auto bind(T&& func) -> basic_binding<Supplied...>;
+    template<typename T>
+    auto bind(T&& func) -> binding;
 
     template<typename Component, typename T>
     auto on_attach(T&& func) -> void;
@@ -60,7 +61,7 @@ public:
 
 private:
     detail::store _store;
-    detail::lifecycle_registry _lifecycle{_store};
+    detail::lifecycle_registry _lifecycle{_store.schema.range()};
 };
 
 inline auto database::schema() const noexcept -> const ant::schema&
@@ -73,22 +74,24 @@ inline auto database::inspect() const noexcept -> inspector
     return inspector(_store);
 }
 
-template<typename... Supplied, typename T>
-auto database::bind(T&& func) -> basic_binding<Supplied...>
+template<typename T>
+auto database::bind(T&& func) -> binding
 {
-    return basic_binding<Supplied...>(_store, std::forward<T>(func));
+    return binding(_store, std::forward<T>(func));
 }
 
 template<typename Component, typename T>
 auto database::on_attach(T&& func) -> void
 {
-    _lifecycle.on_attach<Component>(std::forward<T>(func));
+    ANT_ASSERT(_store.schema.is_defined<Component>(), "component is not defined in schema");
+    _lifecycle.on_attach<Component>(basic_binding<entity, Component&>(_store, std::forward<T>(func)));
 }
 
 template<typename Component, typename T>
 auto database::on_detach(T&& func) -> void
 {
-    _lifecycle.on_detach<Component>(std::forward<T>(func));
+    ANT_ASSERT(_store.schema.is_defined<Component>(), "component is not defined in schema");
+    _lifecycle.on_detach<Component>(basic_binding<entity, const Component&>(_store, std::forward<T>(func)));
 }
 
 template<typename Signature>
