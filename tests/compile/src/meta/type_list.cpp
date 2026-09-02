@@ -21,6 +21,14 @@ static_assert(!type_list_contains_v<short, type_list<>>);
 using concat_result = type_list_concat_t<type_list<int, float>, type_list<double, char>>;
 static_assert(std::is_same_v<concat_result, type_list<int, float, double, char>>);
 
+// drop
+using drop_input = type_list<int, float, double, char>;
+static_assert(std::is_same_v<type_list_drop_t<0, drop_input>, drop_input>);
+static_assert(std::is_same_v<type_list_drop_t<1, drop_input>, type_list<float, double, char>>);
+static_assert(std::is_same_v<type_list_drop_t<2, drop_input>, type_list<double, char>>);
+static_assert(std::is_same_v<type_list_drop_t<4, drop_input>, type_list<>>);
+static_assert(std::is_same_v<type_list_drop_t<0, type_list<>>, type_list<>>);
+
 // fold_concat
 using fold_concat_result = type_list_fold_concat_t<type_list<int>, type_list<float, double>, type_list<char>>;
 static_assert(std::is_same_v<fold_concat_result, type_list<int, float, double, char>>);

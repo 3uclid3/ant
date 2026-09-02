@@ -43,6 +43,7 @@ endfunction()
 ## typelist
 ant_compile_test(type_list meta)
 ant_compile_fail_test(type_list_index_of_not_found meta)
+ant_compile_fail_test(type_list_drop_out_of_range meta)
 
 ## function_traits
 ant_compile_test(function_traits detail)

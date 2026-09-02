@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <limits>
 #include <type_traits>
 
@@ -113,6 +114,31 @@ struct type_list_concat<type_list<Lhs...>, type_list<Rhs...>>
 
 template<typename Lhs, typename Rhs>
 using type_list_concat_t = typename type_list_concat<Lhs, Rhs>::type;
+
+// drop the first Count types from a type_list
+template<std::size_t Count, typename TypeList>
+struct type_list_drop;
+
+template<typename... Types>
+struct type_list_drop<0, type_list<Types...>>
+{
+    using type = type_list<Types...>;
+};
+
+template<std::size_t Count, typename Head, typename... Tail>
+requires(Count > 0)
+struct type_list_drop<Count, type_list<Head, Tail...>> : type_list_drop<Count - 1, type_list<Tail...>>
+{};
+
+template<std::size_t Count>
+requires(Count > 0)
+struct type_list_drop<Count, type_list<>>
+{
+    static_assert(Count == 0, "type_list_drop: count exceeds type_list size");
+};
+
+template<std::size_t Count, typename TypeList>
+using type_list_drop_t = typename type_list_drop<Count, TypeList>::type;
 
 // fold concatenate multiple type_lists
 template<typename... TypeLists>
