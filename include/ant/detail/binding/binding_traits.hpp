@@ -49,24 +49,31 @@ struct is_binding_arg : std::bool_constant<is_binding_changeset_v<Arg> || is_bin
 template<typename Arg>
 inline constexpr bool is_binding_arg_v = is_binding_arg<Arg>::value;
 
-template<typename F>
+template<typename F, typename... Supplied>
 struct binding_traits
 {
+    // all arguments
     using arguments = function_traits<std::remove_cvref_t<F>>::argument_types;
 
+    // supplied on invoke arguments
+    using supplied_arguments = type_list<Supplied...>;
+
+    // injected when binding is construct arguments
+    using injected_arguments = type_list_drop_t<sizeof...(Supplied), arguments>;
+
     // type_list of queries
-    using queries = type_list_filter_t<is_binding_query, arguments>;
+    using queries = type_list_filter_t<is_binding_query, injected_arguments>;
 
     // changeset or std::nullptr_t
-    using changeset = type_list_front_or_t<type_list_filter_t<is_binding_changeset, arguments>, std::nullptr_t>;
+    using changeset = type_list_front_or_t<type_list_filter_t<is_binding_changeset, injected_arguments>, std::nullptr_t>;
 
     // env or std::nullptr_t
-    using env = type_list_front_or_t<type_list_filter_t<is_binding_env, arguments>, std::nullptr_t>;
+    using env = type_list_front_or_t<type_list_filter_t<is_binding_env, injected_arguments>, std::nullptr_t>;
 
-    static_assert(type_list_size_v<arguments> > 0, "No binding function arguments found");
-    static_assert(std::is_same_v<arguments, type_list_filter_t<is_binding_arg, arguments>>, "Invalid binding function arguments, expect type changeset<...>, env<...> and/or query<...>");
-    static_assert(type_list_size_v<type_list_filter_t<is_binding_changeset, arguments>> <= 1, "Multiple changeset<> arguments found");
-    static_assert(type_list_size_v<type_list_filter_t<is_binding_env, arguments>> <= 1, "Multiple env<> arguments found");
+    static_assert(type_list_size_v<injected_arguments> > 0, "No binding function arguments found");
+    static_assert(std::is_same_v<injected_arguments, type_list_filter_t<is_binding_arg, injected_arguments>>, "Invalid binding function arguments, expect type changeset<...>, env<...> and/or query<...>");
+    static_assert(type_list_size_v<type_list_filter_t<is_binding_changeset, injected_arguments>> <= 1, "Multiple changeset<> arguments found");
+    static_assert(type_list_size_v<type_list_filter_t<is_binding_env, injected_arguments>> <= 1, "Multiple env<> arguments found");
 };
 
 template<typename T>

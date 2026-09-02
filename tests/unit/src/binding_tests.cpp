@@ -304,9 +304,9 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: supplies arguments in decla
 
     bool called = false;
     binding b = _db.bind([&called](
-                  query_of<const testing::component<0>> query,
-                  changeset_of<set_env<testing::component<1>>> changes,
-                  env_of<testing::component<2>> env) {
+                             query_of<const testing::component<0>> query,
+                             changeset_of<set_env<testing::component<1>>> changes,
+                             env_of<testing::component<2>> env) {
         CHECK_EQ(query.count_rows(), 1u);
         changes.set_env<testing::component<1>>(1);
         env.get<testing::component<2>>().value = 42;
@@ -319,6 +319,21 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: supplies arguments in decla
     REQUIRE_EQ(_accumulator.size(), 1u);
     CHECK(std::holds_alternative<detail::set_change>(detail::change_accumulator_consumer::changes(_accumulator)[0]));
     CHECK_EQ(_db.env<env_signature<const testing::component<2>>>().get<testing::component<2>>().value, 42u);
+}
+
+TEST_CASE_FIXTURE(binding_fixture, "basic_binding::invoke: forwards supplied arguments before injected arguments")
+{
+    bool called = false;
+
+    basic_binding<int> b = _db.bind<int>([&called](int supplied, env_of<testing::component<0>*> env) {
+        CHECK_EQ(supplied, 42);
+        CHECK_FALSE(env.has<testing::component<0>>());
+        called = true;
+    });
+
+    b.invoke(_accumulator, 42);
+
+    CHECK(called);
 }
 
 TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: changeset writes into the provided accumulator")

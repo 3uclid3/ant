@@ -25,8 +25,8 @@ public:
     auto schema() const noexcept -> const ant::schema&;
     auto inspect() const noexcept -> inspector;
 
-    template<typename T>
-    auto bind(T&& func) -> binding;
+    template<typename... Supplied, typename T>
+    auto bind(T&& func) -> basic_binding<Supplied...>;
 
     template<typename Signature>
     auto env() -> ant::env<Signature>;
@@ -65,10 +65,10 @@ inline auto database::inspect() const noexcept -> inspector
     return inspector(_store);
 }
 
-template<typename T>
-auto database::bind(T&& func) -> binding
+template<typename... Supplied, typename T>
+auto database::bind(T&& func) -> basic_binding<Supplied...>
 {
-    return binding(_store, std::forward<T>(func));
+    return basic_binding<Supplied...>(_store, std::forward<T>(func));
 }
 
 template<typename Signature>

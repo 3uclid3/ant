@@ -114,7 +114,7 @@ template<typename T>
 auto scheduler::stage_handle::add(T&& system) -> system_handle
 {
     using system_type = std::remove_pointer_t<std::remove_cvref_t<T>>;
-    return _scheduler.add_system_impl(_schedule_index, _stage_index, system_type_indexer::get<system_type>(), _scheduler._db.bind<T>(std::forward<T>(system)));
+    return _scheduler.add_system_impl(_schedule_index, _stage_index, system_type_indexer::get<system_type>(), _scheduler._db.bind(std::forward<T>(system)));
 }
 
 template<typename Schedule, typename Stage>

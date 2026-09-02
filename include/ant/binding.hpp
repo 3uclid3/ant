@@ -61,7 +61,7 @@ struct binding_descriptor
         component_bitset excludes;
     };
 
-    template<typename F>
+    template<typename F, typename... Supplied>
     static constexpr auto describe() -> binding_descriptor;
 
     auto is_valid() const noexcept -> bool;
@@ -71,24 +71,25 @@ struct binding_descriptor
     queries_descriptor queries;
 };
 
-class binding
+template<typename... Supplied>
+class basic_binding
 {
 public:
     template<typename F>
-    binding(detail::store& store, F&& func);
+    basic_binding(detail::store& store, F&& func);
 
-    binding(binding&&) = default;
-    binding& operator=(binding&&) = default;
+    basic_binding(basic_binding&&) = default;
+    basic_binding& operator=(basic_binding&&) = default;
 
-    binding(const binding&) = delete;
-    binding& operator=(const binding&) = delete;
+    basic_binding(const basic_binding&) = delete;
+    basic_binding& operator=(const basic_binding&) = delete;
 
     auto is_ready() const noexcept -> bool;
-    auto invoke(change_accumulator& accumulator) -> void;
+    auto invoke(change_accumulator& accumulator, Supplied&&... supplied) -> void;
     auto descriptor() const noexcept -> const binding_descriptor&;
 
 private:
-    using fn = std::move_only_function<void(detail::store& store, change_accumulator&)>;
+    using fn = std::move_only_function<void(detail::store& store, change_accumulator&, Supplied&&...)>;
 
     template<typename T>
     struct fn_argument;
@@ -124,16 +125,18 @@ private:
     static auto make_fn_args(type_list<T...>) -> std::tuple<fn_argument<T>...>;
 
     template<typename F, typename... T>
-    static auto invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, std::tuple<fn_argument<T>...>& tuple) -> void;
+    static auto invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, Supplied&&... supplied, std::tuple<fn_argument<T>...>& tuple) -> void;
 
     template<typename F, typename... T, std::size_t... I>
-    static auto invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, std::tuple<fn_argument<T>...>& tuple, std::index_sequence<I...>) -> void;
+    static auto invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, Supplied&&... supplied, std::tuple<fn_argument<T>...>& tuple, std::index_sequence<I...>) -> void;
 
 private:
     binding_descriptor _descriptor;
     fn _fn;
     detail::store* _store{nullptr};
 };
+
+using binding = basic_binding<>;
 
 template<typename Signature>
 constexpr auto binding_descriptor::changeset_descriptor::describe() -> binding_descriptor::changeset_descriptor
@@ -205,10 +208,10 @@ inline auto binding_descriptor::queries_descriptor::is_valid() const noexcept ->
     return reads.any() || writes.any();
 }
 
-template<typename F>
+template<typename F, typename... Supplied>
 constexpr auto binding_descriptor::describe() -> binding_descriptor
 {
-    using traits = detail::binding_traits<F>;
+    using traits = detail::binding_traits<F, Supplied...>;
 
     binding_descriptor descriptor;
 
@@ -241,78 +244,90 @@ inline auto binding_descriptor::is_valid() const noexcept -> bool
     return changeset.is_valid() || env.is_valid() || queries.is_valid();
 }
 
+template<typename... Supplied>
 template<typename Signature>
-auto binding::fn_argument<changeset<Signature>>::get(detail::store& store, change_accumulator& accumulator) -> changeset<Signature>
+auto basic_binding<Supplied...>::fn_argument<changeset<Signature>>::get(detail::store& store, change_accumulator& accumulator) -> changeset<Signature>
 {
     return changeset<Signature>(accumulator, store.entities);
 }
 
+template<typename... Supplied>
 template<typename Signature>
-auto binding::fn_argument<env<Signature>>::get(detail::store& store, [[maybe_unused]] change_accumulator& accumulator) -> env<Signature>
+auto basic_binding<Supplied...>::fn_argument<env<Signature>>::get(detail::store& store, [[maybe_unused]] change_accumulator& accumulator) -> env<Signature>
 {
     return env<Signature>(store.envs);
 }
 
+template<typename... Supplied>
 template<typename Signature>
-auto binding::fn_argument<query<Signature>>::get(detail::store& store, [[maybe_unused]] change_accumulator& accumulator) -> query<Signature>
+auto basic_binding<Supplied...>::fn_argument<query<Signature>>::get(detail::store& store, [[maybe_unused]] change_accumulator& accumulator) -> query<Signature>
 {
     detail::query_compiler::recompile<Signature>(store.catalog, compiled);
     return compiled.query();
 }
 
+template<typename... Supplied>
 template<typename F>
-binding::binding(detail::store& store, F&& func)
-    : _descriptor(binding_descriptor::describe<F>())
+basic_binding<Supplied...>::basic_binding(detail::store& store, F&& func)
+    : _descriptor(binding_descriptor::describe<F, Supplied...>())
     , _fn(make_fn(std::forward<F>(func)))
     , _store(&store)
 {
 }
 
-inline auto binding::is_ready() const noexcept -> bool
+template<typename... Supplied>
+auto basic_binding<Supplied...>::is_ready() const noexcept -> bool
 {
     return _descriptor.env.requireds.none() || _store->envs.contains(_descriptor.env.requireds);
 }
 
-inline auto binding::invoke(change_accumulator& accumulator) -> void
+template<typename... Supplied>
+auto basic_binding<Supplied...>::invoke(change_accumulator& accumulator, Supplied&&... supplied) -> void
 {
-    _fn(*_store, accumulator);
+    _fn(*_store, accumulator, std::forward<Supplied>(supplied)...);
 }
 
-inline auto binding::descriptor() const noexcept -> const binding_descriptor&
+template<typename... Supplied>
+auto basic_binding<Supplied...>::descriptor() const noexcept -> const binding_descriptor&
 {
     return _descriptor;
 }
 
+template<typename... Supplied>
 template<typename F>
-auto binding::make_fn(F&& func) -> fn
+auto basic_binding<Supplied...>::make_fn(F&& func) -> fn
 {
-    return [func = std::forward<F>(func), args = make_fn_args<F>()](detail::store& store, change_accumulator& accumulator) mutable {
-        invoke_fn(func, store, accumulator, args);
+    return [func = std::forward<F>(func), args = make_fn_args<F>()](detail::store& store, change_accumulator& accumulator, Supplied&&... supplied) mutable {
+        invoke_fn(func, store, accumulator, std::forward<Supplied>(supplied)..., args);
     };
 }
 
+template<typename... Supplied>
 template<typename F>
-auto binding::make_fn_args()
+auto basic_binding<Supplied...>::make_fn_args()
 {
-    return make_fn_args(typename detail::binding_traits<F>::arguments{});
+    return make_fn_args(typename detail::binding_traits<F, Supplied...>::injected_arguments{});
 }
 
+template<typename... Supplied>
 template<typename... T>
-auto binding::make_fn_args(type_list<T...>) -> std::tuple<fn_argument<T>...>
+auto basic_binding<Supplied...>::make_fn_args(type_list<T...>) -> std::tuple<fn_argument<T>...>
 {
     return std::make_tuple(fn_argument<T>()...);
 }
 
+template<typename... Supplied>
 template<typename F, typename... T>
-auto binding::invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, std::tuple<fn_argument<T>...>& tuple) -> void
+auto basic_binding<Supplied...>::invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, Supplied&&... supplied, std::tuple<fn_argument<T>...>& tuple) -> void
 {
-    invoke_fn(func, store, accumulator, tuple, std::make_index_sequence<sizeof...(T)>());
+    invoke_fn(func, store, accumulator, std::forward<Supplied>(supplied)..., tuple, std::make_index_sequence<sizeof...(T)>());
 }
 
+template<typename... Supplied>
 template<typename F, typename... T, std::size_t... I>
-auto binding::invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, std::tuple<fn_argument<T>...>& tuple, std::index_sequence<I...>) -> void
+auto basic_binding<Supplied...>::invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, Supplied&&... supplied, std::tuple<fn_argument<T>...>& tuple, std::index_sequence<I...>) -> void
 {
-    func(std::get<I>(tuple).get(store, accumulator)...);
+    func(std::forward<Supplied>(supplied)..., std::get<I>(tuple).get(store, accumulator)...);
 }
 
 } // namespace ant
