@@ -35,7 +35,7 @@ ctest --test-dir build -L compile --output-on-failure
 
 - Add runtime unit tests under `tests/unit/src` using doctest.
 - Add compile-time API checks under `tests/compile/src`; this suite intentionally includes tests that must fail to compile.
-- Test files use the same include order, preceded by the tested file and doctest as separate groups.
+- Test files place the tested file first, immediately followed by doctest, then use the same blank-line-separated include groups.
 - Update the relevant test `CMakeLists.txt` when adding a test file.
 - Build and run the full test suite before finishing a code change.
 

@@ -1,4 +1,3 @@
-
 #include <ant/detail/env/env_registry.hpp>
 #include <doctest/doctest.h>
 

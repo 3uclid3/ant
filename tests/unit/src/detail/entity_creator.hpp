@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstddef>
+#include <span>
+
 #include <ant.testing/component.hpp>
 #include <ant/component/component_bitset.hpp>
 #include <ant/detail/catalog/catalog.hpp>
@@ -7,9 +10,6 @@
 #include <ant/detail/containers.hpp>
 #include <ant/detail/entity/entity_registry.hpp>
 #include <ant/schema.hpp>
-
-#include <cstddef>
-#include <span>
 
 namespace ant::detail {
 

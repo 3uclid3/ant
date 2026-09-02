@@ -1,12 +1,11 @@
-#include <ant/query.hpp>
-#include <doctest/doctest.h>
-
-#include <ant/database.hpp>
 #include <ant/scheduler.hpp>
-#include <ant/scheduler/stage.hpp>
+#include <doctest/doctest.h>
 
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
+#include <ant/database.hpp>
+#include <ant/query.hpp>
+#include <ant/scheduler/stage.hpp>
 
 namespace ant { namespace {
 

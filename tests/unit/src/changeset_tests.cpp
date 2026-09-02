@@ -1,10 +1,9 @@
-
 #include <ant/changeset.hpp>
-#include <ant/detail/change/change_accumulator_consumer.hpp>
 #include <doctest/doctest.h>
 
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
+#include <ant/detail/change/change_accumulator_consumer.hpp>
 
 namespace ant { namespace {
 

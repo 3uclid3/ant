@@ -1,12 +1,11 @@
-#include <ant/query.hpp>
-#include <doctest/doctest.h>
-
 #include <ant/detail/query/query_compiler.hpp>
+#include <doctest/doctest.h>
 
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
 #include <ant/detail/catalog/catalog.hpp>
 #include <ant/detail/entity/entity_registry.hpp>
+#include <ant/query.hpp>
 
 #include "../entity_creator.hpp"
 
