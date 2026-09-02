@@ -2,10 +2,15 @@
 
 #include <functional>
 
+#include <ant/change/change_accumulator.hpp>
+#include <ant/changeset.hpp>
 #include <ant/component.hpp>
-#include <ant/database.hpp>
 #include <ant/detail/binding/binding_traits.hpp>
+#include <ant/detail/query/query_compiler.hpp>
+#include <ant/detail/store.hpp>
+#include <ant/env.hpp>
 #include <ant/meta/type_list.hpp>
+#include <ant/query.hpp>
 
 namespace ant {
 
@@ -66,32 +71,11 @@ struct binding_descriptor
     queries_descriptor queries;
 };
 
-class binding_context
-{
-public:
-    binding_context(database& db, change_accumulator& accumulator) noexcept;
-
-    auto has_env(const component_bitset& required) const noexcept -> bool;
-
-    template<typename Signature>
-    auto env() noexcept -> ant::env<Signature>;
-
-    template<typename Signature>
-    auto changeset() noexcept -> ant::changeset<Signature>;
-
-    template<typename Signature>
-    auto recompile_query(ant::compiled_query<Signature>& cquery) -> void;
-
-private:
-    database& _db;
-    change_accumulator& _accumulator;
-};
-
 class binding
 {
 public:
     template<typename F>
-    binding(F&& func);
+    binding(detail::store& store, F&& func);
 
     binding(binding&&) = default;
     binding& operator=(binding&&) = default;
@@ -99,12 +83,12 @@ public:
     binding(const binding&) = delete;
     binding& operator=(const binding&) = delete;
 
-    auto is_ready(binding_context& ctx) const noexcept -> bool;
-    auto invoke(binding_context& ctx) -> void;
+    auto is_ready() const noexcept -> bool;
+    auto invoke(change_accumulator& accumulator) -> void;
     auto descriptor() const noexcept -> const binding_descriptor&;
 
 private:
-    using fn = std::move_only_function<void(binding_context&)>;
+    using fn = std::move_only_function<void(detail::store& store, change_accumulator&)>;
 
     template<typename T>
     struct fn_argument;
@@ -112,21 +96,21 @@ private:
     template<typename Signature>
     struct fn_argument<changeset<Signature>>
     {
-        auto get(binding_context& ctx) -> changeset<Signature>;
+        auto get(detail::store& store, change_accumulator& accumulator) -> changeset<Signature>;
     };
 
     template<typename Signature>
     struct fn_argument<env<Signature>>
     {
-        auto get(binding_context& ctx) -> env<Signature>;
+        auto get(detail::store& store, change_accumulator& accumulator) -> env<Signature>;
     };
 
     template<typename Signature>
     struct fn_argument<query<Signature>>
     {
-        auto get(binding_context& ctx) -> query<Signature>;
+        auto get(detail::store& store, change_accumulator& accumulator) -> query<Signature>;
 
-        compiled_query<Signature> cquery;
+        compiled_query<Signature> compiled;
     };
 
 private:
@@ -140,14 +124,15 @@ private:
     static auto make_fn_args(type_list<T...>) -> std::tuple<fn_argument<T>...>;
 
     template<typename F, typename... T>
-    static auto invoke_fn(F& func, binding_context& ctx, std::tuple<fn_argument<T>...>& tuple) -> void;
+    static auto invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, std::tuple<fn_argument<T>...>& tuple) -> void;
 
     template<typename F, typename... T, std::size_t... I>
-    static auto invoke_fn(F& func, binding_context& ctx, std::tuple<fn_argument<T>...>& tuple, std::index_sequence<I...>) -> void;
+    static auto invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, std::tuple<fn_argument<T>...>& tuple, std::index_sequence<I...>) -> void;
 
 private:
     binding_descriptor _descriptor;
     fn _fn;
+    detail::store* _store{nullptr};
 };
 
 template<typename Signature>
@@ -256,69 +241,41 @@ inline auto binding_descriptor::is_valid() const noexcept -> bool
     return changeset.is_valid() || env.is_valid() || queries.is_valid();
 }
 
-inline binding_context::binding_context(database& db, change_accumulator& accumulator) noexcept
-    : _db(db)
-    , _accumulator(accumulator)
+template<typename Signature>
+auto binding::fn_argument<changeset<Signature>>::get(detail::store& store, change_accumulator& accumulator) -> changeset<Signature>
 {
-}
-
-inline auto binding_context::has_env(const component_bitset& required) const noexcept -> bool
-{
-    return _db.has_env(required);
+    return changeset<Signature>(accumulator, store.entities);
 }
 
 template<typename Signature>
-auto binding_context::env() noexcept -> ant::env<Signature>
+auto binding::fn_argument<env<Signature>>::get(detail::store& store, [[maybe_unused]] change_accumulator& accumulator) -> env<Signature>
 {
-    return _db.env<Signature>();
+    return env<Signature>(store.envs);
 }
 
 template<typename Signature>
-auto binding_context::changeset() noexcept -> ant::changeset<Signature>
+auto binding::fn_argument<query<Signature>>::get(detail::store& store, [[maybe_unused]] change_accumulator& accumulator) -> query<Signature>
 {
-    return _db.changeset<Signature>(_accumulator);
-}
-
-template<typename Signature>
-auto binding_context::recompile_query(ant::compiled_query<Signature>& cquery) -> void
-{
-    _db.recompile_query(cquery);
-}
-
-template<typename Signature>
-auto binding::fn_argument<changeset<Signature>>::get(binding_context& ctx) -> changeset<Signature>
-{
-    return ctx.changeset<Signature>();
-}
-
-template<typename Signature>
-auto binding::fn_argument<env<Signature>>::get(binding_context& ctx) -> env<Signature>
-{
-    return ctx.env<Signature>();
-}
-
-template<typename Signature>
-auto binding::fn_argument<query<Signature>>::get(binding_context& ctx) -> query<Signature>
-{
-    ctx.recompile_query(cquery);
-    return cquery.query();
+    detail::query_compiler::recompile<Signature>(store.catalog, compiled);
+    return compiled.query();
 }
 
 template<typename F>
-binding::binding(F&& func)
+binding::binding(detail::store& store, F&& func)
     : _descriptor(binding_descriptor::describe<F>())
     , _fn(make_fn(std::forward<F>(func)))
+    , _store(&store)
 {
 }
 
-inline auto binding::is_ready(binding_context& ctx) const noexcept -> bool
+inline auto binding::is_ready() const noexcept -> bool
 {
-    return _descriptor.env.requireds.none() || ctx.has_env(_descriptor.env.requireds);
+    return _descriptor.env.requireds.none() || _store->envs.contains(_descriptor.env.requireds);
 }
 
-inline auto binding::invoke(binding_context& ctx) -> void
+inline auto binding::invoke(change_accumulator& accumulator) -> void
 {
-    _fn(ctx);
+    _fn(*_store, accumulator);
 }
 
 inline auto binding::descriptor() const noexcept -> const binding_descriptor&
@@ -329,8 +286,8 @@ inline auto binding::descriptor() const noexcept -> const binding_descriptor&
 template<typename F>
 auto binding::make_fn(F&& func) -> fn
 {
-    return [func = std::forward<F>(func), args = make_fn_args<F>()](binding_context& ctx) mutable {
-        invoke_fn(func, ctx, args);
+    return [func = std::forward<F>(func), args = make_fn_args<F>()](detail::store& store, change_accumulator& accumulator) mutable {
+        invoke_fn(func, store, accumulator, args);
     };
 }
 
@@ -347,15 +304,15 @@ auto binding::make_fn_args(type_list<T...>) -> std::tuple<fn_argument<T>...>
 }
 
 template<typename F, typename... T>
-auto binding::invoke_fn(F& func, binding_context& ctx, std::tuple<fn_argument<T>...>& tuple) -> void
+auto binding::invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, std::tuple<fn_argument<T>...>& tuple) -> void
 {
-    invoke_fn(func, ctx, tuple, std::make_index_sequence<sizeof...(T)>());
+    invoke_fn(func, store, accumulator, tuple, std::make_index_sequence<sizeof...(T)>());
 }
 
 template<typename F, typename... T, std::size_t... I>
-auto binding::invoke_fn(F& func, binding_context& ctx, std::tuple<fn_argument<T>...>& tuple, std::index_sequence<I...>) -> void
+auto binding::invoke_fn(F& func, detail::store& store, change_accumulator& accumulator, std::tuple<fn_argument<T>...>& tuple, std::index_sequence<I...>) -> void
 {
-    func(std::get<I>(tuple).get(ctx)...);
+    func(std::get<I>(tuple).get(store, accumulator)...);
 }
 
 } // namespace ant

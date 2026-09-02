@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ant/binding.hpp>
+#include <ant/database.hpp>
 #include <ant/detail/containers.hpp>
 #include <ant/detail/type_indexer.hpp>
 
@@ -106,14 +107,14 @@ private:
 template<typename T>
 auto scheduler::stage_handle::add() -> system_handle
 {
-    return _scheduler.add_system_impl(_schedule_index, _stage_index, system_type_indexer::get<T>(), T());
+    return _scheduler.add_system_impl(_schedule_index, _stage_index, system_type_indexer::get<T>(), _scheduler._db.bind<T>(T()));
 }
 
 template<typename T>
 auto scheduler::stage_handle::add(T&& system) -> system_handle
 {
     using system_type = std::remove_pointer_t<std::remove_cvref_t<T>>;
-    return _scheduler.add_system_impl(_schedule_index, _stage_index, system_type_indexer::get<system_type>(), std::forward<T>(system));
+    return _scheduler.add_system_impl(_schedule_index, _stage_index, system_type_indexer::get<system_type>(), _scheduler._db.bind<T>(std::forward<T>(system)));
 }
 
 template<typename Schedule, typename Stage>

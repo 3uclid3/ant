@@ -62,6 +62,7 @@ target_sources(ant
       include/ant/detail/function_traits.hpp
       include/ant/detail/memory.hpp
       include/ant/detail/signature_traits.hpp
+      include/ant/detail/store.hpp
       include/ant/env/env_signature.hpp
       include/ant/env/env_signature_traits.hpp
       include/ant/env/fwd.hpp

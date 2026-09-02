@@ -1,10 +1,9 @@
 #pragma once
 
+#include <ant/binding.hpp>
 #include <ant/changeset.hpp>
-#include <ant/detail/catalog/catalog.hpp>
-#include <ant/detail/entity/entity_registry.hpp>
-#include <ant/detail/env/env_registry.hpp>
 #include <ant/detail/query/query_compiler.hpp>
+#include <ant/detail/store.hpp>
 #include <ant/env.hpp>
 #include <ant/inspect/inspector.hpp>
 #include <ant/query.hpp>
@@ -17,10 +16,17 @@ class database
 public:
     explicit database(ant::schema schema);
 
+    database(const database&) = delete;
+    auto operator=(const database&) -> database& = delete;
+
+    database(database&&) = delete;
+    auto operator=(database&&) -> database& = delete;
+
     auto schema() const noexcept -> const ant::schema&;
     auto inspect() const noexcept -> inspector;
 
-    [[nodiscard]] auto has_env(const component_bitset& required) const noexcept -> bool;
+    template<typename T>
+    auto bind(T&& func) -> binding;
 
     template<typename Signature>
     auto env() -> ant::env<Signature>;
@@ -46,53 +52,56 @@ public:
     auto flush(std::span<change_accumulator> accumulators) -> void;
 
 private:
-    ant::schema _schema;
-    detail::env_registry _envs{_schema};
-    detail::entity_registry _entities;
-    detail::catalog _catalog{_schema};
+    detail::store _store;
 };
 
 inline auto database::schema() const noexcept -> const ant::schema&
 {
-    return _schema;
+    return _store.schema;
 }
 
 inline auto database::inspect() const noexcept -> inspector
 {
-    return inspector(&_schema, &_envs, &_entities, &_catalog);
+    return inspector(_store);
+}
+
+template<typename T>
+auto database::bind(T&& func) -> binding
+{
+    return binding(_store, std::forward<T>(func));
 }
 
 template<typename Signature>
 auto database::env() -> ant::env<Signature>
 {
     static_assert(is_env_signature_v<Signature>, "expect ant::env_signature");
-    return ant::env<Signature>(_envs);
+    return ant::env<Signature>(_store.envs);
 }
 
 template<typename... Components>
 auto database::env_of() -> ant::env_of<Components...>
 {
-    return ant::env_of<Components...>(_envs);
+    return ant::env_of<Components...>(_store.envs);
 }
 
 template<typename Signature>
 auto database::changeset(change_accumulator& accumulator) -> ant::changeset<Signature>
 {
     static_assert(is_changeset_signature_v<Signature>, "expect ant::changeset_signature");
-    return ant::changeset<Signature>(accumulator, _entities);
+    return ant::changeset<Signature>(accumulator, _store.entities);
 }
 
 template<typename... Parameters>
 auto database::changeset_of(change_accumulator& accumulator) -> ant::changeset_of<Parameters...>
 {
-    return ant::changeset_of<Parameters...>(accumulator, _entities);
+    return ant::changeset_of<Parameters...>(accumulator, _store.entities);
 }
 
 template<typename Signature>
 auto database::compile_query() -> compiled_query<Signature>
 {
     static_assert(is_query_signature_v<Signature>, "expect ant::query_signature");
-    return detail::query_compiler::compile<Signature>(_catalog);
+    return detail::query_compiler::compile<Signature>(_store.catalog);
 }
 
 template<typename... Parameters>
@@ -104,7 +113,7 @@ auto database::compile_query_of() -> compiled_query_of<Parameters...>
 template<typename Signature>
 auto database::recompile_query(compiled_query<Signature>& cquery) -> void
 {
-    detail::query_compiler::recompile<Signature>(_catalog, cquery);
+    detail::query_compiler::recompile<Signature>(_store.catalog, cquery);
 }
 
 } // namespace ant

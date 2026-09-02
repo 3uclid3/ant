@@ -6,25 +6,20 @@
 namespace ant {
 
 database::database(ant::schema schema)
-    : _schema(std::move(schema))
+    : _store(std::move(schema))
 {
-}
-
-auto database::has_env(const component_bitset& required) const noexcept -> bool
-{
-    return _envs.contains(required);
 }
 
 auto database::flush(std::span<change_accumulator> accumulators) -> void
 {
-    detail::change_coalescer coalescer(_schema, _entities, _catalog);
+    detail::change_coalescer coalescer(_store.schema, _store.entities, _store.catalog);
     for (change_accumulator& accumulator : accumulators)
     {
         coalescer.consume(accumulator);
     }
 
     detail::coalesced_changes changes = coalescer.coalesce();
-    detail::change_executor executor(_entities, _envs, _catalog);
+    detail::change_executor executor(_store.entities, _store.envs, _store.catalog);
     executor.execute(changes);
 }
 

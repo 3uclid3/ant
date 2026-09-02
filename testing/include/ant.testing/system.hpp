@@ -97,9 +97,7 @@ struct system_fixture
     auto execute(T&& system) -> void
     {
         change_accumulator accumulator{_database.schema()};
-        binding_context ctx{_database, accumulator};
-        binding execution{std::forward<T>(system)};
-        execution.invoke(ctx);
+        _database.bind<T>(std::forward<T>(system)).invoke(accumulator);
         _database.flush(std::span{&accumulator, 1});
     }
 
