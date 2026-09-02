@@ -400,6 +400,42 @@ TEST_CASE("dynamic_bitset::operator&=: AND bits")
     CHECK_EQ(to, expected);
 }
 
+TEST_CASE("dynamic_bitset::and_not: clears matching bits")
+{
+    bitset to{all_bitset(128)};
+    bitset from{even_bitset(128)};
+
+    bitset& result = to.and_not(from);
+
+    CHECK_EQ(&result, &to);
+    CHECK_EQ(to, odd_bitset(128));
+}
+
+TEST_CASE("dynamic_bitset::and_not: shorter other preserves self size and remaining bits")
+{
+    bitset to{all_bitset(128)};
+    bitset from{all_bitset(64)};
+
+    to.and_not(from);
+
+    CHECK_EQ(to.size(), 128u);
+    for (std::size_t i = 0; i < 128; ++i)
+    {
+        CHECK_EQ(to.test(i), i >= 64);
+    }
+}
+
+TEST_CASE("dynamic_bitset::and_not: longer other preserves self size")
+{
+    small_bitset to{all_bitset(64)};
+    bitset from{all_bitset(128)};
+
+    to.and_not(from);
+
+    CHECK_EQ(to.size(), 64u);
+    CHECK(to.none());
+}
+
 TEST_CASE("dynamic_bitset::operator|=: empty")
 {
     bitset to;

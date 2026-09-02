@@ -73,6 +73,9 @@ public:
     template<std::size_t C, typename U>
     constexpr auto operator^=(const basic_dynamic_bitset<C, U>& other) -> basic_dynamic_bitset&;
 
+    template<std::size_t C, typename U>
+    constexpr auto and_not(const basic_dynamic_bitset<C, U>& other) -> basic_dynamic_bitset&;
+
     [[nodiscard]] constexpr auto test(size_type bit_idx) const noexcept -> bool;
     [[nodiscard]] constexpr auto all() const noexcept -> bool;
     [[nodiscard]] constexpr auto any() const noexcept -> bool;
@@ -335,6 +338,14 @@ constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::operator|=(cons
     }
 
     return for_each_other_blocks(other, other.size(), [](block_type& self, block_type other) { self |= other; });
+}
+
+template<std::size_t InplaceCapacity, typename Allocator>
+template<std::size_t C, typename U>
+constexpr auto basic_dynamic_bitset<InplaceCapacity, Allocator>::and_not(const basic_dynamic_bitset<C, U>& other) -> basic_dynamic_bitset&
+{
+    const std::size_t size_bits = std::min(_size, other.size());
+    return for_each_other_blocks(other, size_bits, [](block_type& self, block_type other) { self &= ~other; });
 }
 
 template<std::size_t InplaceCapacity, typename Allocator>
