@@ -324,14 +324,15 @@ TEST_CASE_FIXTURE(binding_fixture, "binding::invoke: supplies arguments in decla
 TEST_CASE_FIXTURE(binding_fixture, "basic_binding::invoke: forwards supplied arguments before injected arguments")
 {
     bool called = false;
+    int supplied = 42;
 
-    basic_binding<int> b = _db.bind<int>([&called](int supplied, env_of<testing::component<0>*> env) {
-        CHECK_EQ(supplied, 42);
+    basic_binding<int> b = _db.bind<int>([&called](int value, env_of<testing::component<0>*> env) {
+        CHECK_EQ(value, 42);
         CHECK_FALSE(env.has<testing::component<0>>());
         called = true;
     });
 
-    b.invoke(_accumulator, 42);
+    b.invoke(_accumulator, supplied);
 
     CHECK(called);
 }

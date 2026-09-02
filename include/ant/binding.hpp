@@ -85,7 +85,7 @@ public:
     basic_binding& operator=(const basic_binding&) = delete;
 
     auto is_ready() const noexcept -> bool;
-    auto invoke(change_accumulator& accumulator, Supplied&&... supplied) -> void;
+    auto invoke(change_accumulator& accumulator, Supplied... supplied) -> void;
     auto descriptor() const noexcept -> const binding_descriptor&;
 
 private:
@@ -282,7 +282,7 @@ auto basic_binding<Supplied...>::is_ready() const noexcept -> bool
 }
 
 template<typename... Supplied>
-auto basic_binding<Supplied...>::invoke(change_accumulator& accumulator, Supplied&&... supplied) -> void
+auto basic_binding<Supplied...>::invoke(change_accumulator& accumulator, Supplied... supplied) -> void
 {
     _fn(*_store, accumulator, std::forward<Supplied>(supplied)...);
 }

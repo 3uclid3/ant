@@ -2,6 +2,7 @@
 
 #include <ant/binding.hpp>
 #include <ant/changeset.hpp>
+#include <ant/detail/lifecycle/lifecycle_registry.hpp>
 #include <ant/detail/query/query_compiler.hpp>
 #include <ant/detail/store.hpp>
 #include <ant/env.hpp>
@@ -28,6 +29,12 @@ public:
     template<typename... Supplied, typename T>
     auto bind(T&& func) -> basic_binding<Supplied...>;
 
+    template<typename Component, typename T>
+    auto on_attach(T&& func) -> void;
+
+    template<typename Component, typename T>
+    auto on_detach(T&& func) -> void;
+
     template<typename Signature>
     auto env() -> ant::env<Signature>;
 
@@ -53,6 +60,7 @@ public:
 
 private:
     detail::store _store;
+    detail::lifecycle_registry _lifecycle{_store};
 };
 
 inline auto database::schema() const noexcept -> const ant::schema&
@@ -69,6 +77,18 @@ template<typename... Supplied, typename T>
 auto database::bind(T&& func) -> basic_binding<Supplied...>
 {
     return basic_binding<Supplied...>(_store, std::forward<T>(func));
+}
+
+template<typename Component, typename T>
+auto database::on_attach(T&& func) -> void
+{
+    _lifecycle.on_attach<Component>(std::forward<T>(func));
+}
+
+template<typename Component, typename T>
+auto database::on_detach(T&& func) -> void
+{
+    _lifecycle.on_detach<Component>(std::forward<T>(func));
 }
 
 template<typename Signature>

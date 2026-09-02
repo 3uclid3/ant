@@ -107,7 +107,7 @@ private:
 template<typename T>
 auto scheduler::stage_handle::add() -> system_handle
 {
-    return _scheduler.add_system_impl(_schedule_index, _stage_index, system_type_indexer::get<T>(), _scheduler._db.bind<T>(T()));
+    return _scheduler.add_system_impl(_schedule_index, _stage_index, system_type_indexer::get<T>(), _scheduler._db.bind(T()));
 }
 
 template<typename T>

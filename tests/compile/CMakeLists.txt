@@ -61,6 +61,9 @@ ant_compile_fail_test(binding_traits_multiple_envs detail/binding)
 ant_compile_fail_test(binding_traits_no_args detail/binding)
 ant_compile_fail_test(binding_traits_unsupported_type detail/binding)
 
+## lifecycle
+ant_compile_fail_test(lifecycle_on_detach_mutable_component lifecycle)
+
 ## changeset
 ant_compile_test(changeset changeset)
 ant_compile_fail_test(changeset_unsupported_create changeset)
