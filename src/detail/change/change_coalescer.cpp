@@ -64,6 +64,7 @@ auto change_coalescer::coalesce() -> coalesced_changes
              .logical_detach_components = std::move(logical_detach_components)});
     }
 
+    _changing_entities.clear();
     return std::move(_changes);
 }
 
@@ -73,11 +74,11 @@ auto change_coalescer::consume_change(destroy_change& change) -> void
     {
         const entity_location location = _entity_registry.locate(change.entity);
 
-        coalesced_destroy_entity_change coalesced_change{.entity = change.entity, .detached_components = {}};
+        coalesced_destroy_entity_change coalesced_change{.entity = change.entity, .logical_detach_components = {}};
 
         if (location != entity_location::invalid)
         {
-            coalesced_change.detached_components = _catalog.at(location.table).components();
+            coalesced_change.logical_detach_components = _catalog.at(location.table).components();
         }
 
         _changes.destroy_entities.emplace_back(std::move(coalesced_change));

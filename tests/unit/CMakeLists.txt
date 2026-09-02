@@ -27,6 +27,7 @@ add_executable(ant_unit
   src/detail/entity_creator.hpp
   src/binding_tests.cpp
   src/changeset_tests.cpp
+  src/database_tests.cpp
   src/env_tests.cpp
   src/query_tests.cpp
   src/scheduler_tests.cpp

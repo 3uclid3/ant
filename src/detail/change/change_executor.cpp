@@ -46,7 +46,7 @@ auto change_executor::execute_destroy_entities(coalesced_changes& changes, chang
             if (const entity_location loc = _store.entities.locate(entity); loc != entity_location::invalid)
             {
                 table& storage = _store.catalog.at(loc.table);
-                change.detached_components.for_each_set([this, entity, loc, &storage, &lifecycle_accumulator](component_bitset::size_type index) {
+                change.logical_detach_components.for_each_set([this, entity, loc, &storage, &lifecycle_accumulator](component_bitset::size_type index) {
                     _lifecycle_registry.invoke_detach({lifecycle_accumulator, entity, storage, loc.row, static_cast<component_index>(index)});
                 });
 
@@ -60,8 +60,20 @@ auto change_executor::execute_destroy_entities(coalesced_changes& changes, chang
     changes.destroy_entities.clear();
 }
 
-auto change_executor::execute_entities(coalesced_changes& changes, change_accumulator&) -> void
+auto change_executor::execute_entities(coalesced_changes& changes, change_accumulator& lifecycle_accumulator) -> void
 {
+    for (auto& change : changes.entities)
+    {
+        if (change.table_index != entity_location::invalid.table)
+        {
+            const entity_location loc = _store.entities.locate(change.entity);
+            table& storage = _store.catalog.at(loc.table);
+            change.logical_detach_components.for_each_set([this, &change, loc, &storage, &lifecycle_accumulator](component_bitset::size_type index) {
+                _lifecycle_registry.invoke_detach({lifecycle_accumulator, change.entity, storage, loc.row, static_cast<component_index>(index)});
+            });
+        }
+    }
+
     for (auto& change : changes.entities)
     {
         std::size_t row = entity_location::invalid.row;
@@ -80,6 +92,18 @@ auto change_executor::execute_entities(coalesced_changes& changes, change_accumu
         }
 
         _store.entities.relocate(change.entity, {.table = change.new_table_index, .row = row});
+    }
+
+    for (auto& change : changes.entities)
+    {
+        if (change.new_table_index != entity_location::invalid.table)
+        {
+            const entity_location loc = _store.entities.locate(change.entity);
+            table& storage = _store.catalog.at(loc.table);
+            change.logical_attach_components.for_each_set([this, &change, loc, &storage, &lifecycle_accumulator](component_bitset::size_type index) {
+                _lifecycle_registry.invoke_attach({lifecycle_accumulator, change.entity, storage, loc.row, static_cast<component_index>(index)});
+            });
+        }
     }
 
     changes.entities.clear();

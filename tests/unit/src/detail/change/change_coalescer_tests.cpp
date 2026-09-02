@@ -133,7 +133,7 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: destroying an entity det
 
     REQUIRE_EQ(changes.destroy_entities.size(), 1);
     CHECK_EQ(changes.destroy_entities[0].entity, e0);
-    CHECK_EQ(changes.destroy_entities[0].detached_components, component_bitset_of<testing::component<0>, testing::component<2>>());
+    CHECK_EQ(changes.destroy_entities[0].logical_detach_components, component_bitset_of<testing::component<0>, testing::component<2>>());
 }
 
 TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach prevent attach")
