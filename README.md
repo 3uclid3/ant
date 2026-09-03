@@ -35,8 +35,12 @@ target_link_libraries(your_target PRIVATE ant::ant)
 ### Scheduler
 
 Scheduling support is provided by the optional `ant::scheduler` companion library. It links core `ant` transitively.
+Enable it before making `ant` available:
 
 ```cmake
+set(ANT_BUILD_SCHEDULER ON)
+FetchContent_MakeAvailable(ant)
+
 target_link_libraries(your_target PRIVATE ant::scheduler)
 ```
 

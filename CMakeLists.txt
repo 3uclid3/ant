@@ -108,33 +108,27 @@ target_sources(ant
 
 # tests
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  option(ANT_BUILD_TESTING "Build ant.testing library" ON)
+  option(ANT_BUILD_SCHEDULER "Build ant.scheduler library" ON)
+
   option(ANT_BUILD_TESTS "Build ant tests" ON)
 else()
+  option(ANT_BUILD_TESTING "Build ant.testing library" OFF)
+  option(ANT_BUILD_SCHEDULER "Build ant.scheduler library" OFF)
+
   option(ANT_BUILD_TESTS "Build ant tests" OFF)
 endif()
 
-option(ANT_TESTING "Build ant testing library" ON)
-
 if(ANT_BUILD_TESTS)
-  include(FetchContent)
-  FetchContent_Declare(
-    doctest
-    GIT_REPOSITORY https://github.com/doctest/doctest.git
-    GIT_TAG        v2.5.2
-  )
-  FetchContent_MakeAvailable(doctest)
-
   enable_testing()
-  include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
+  add_subdirectory(tests)
 endif()
 
-if(ANT_TESTING OR ANT_BUILD_TESTS)
+# others
+if(ANT_BUILD_TESTING OR ANT_BUILD_TESTS)
   add_subdirectory(testing)
 endif()
 
-add_subdirectory(scheduler)
-
-if(ANT_BUILD_TESTS)
-  add_subdirectory(tests/compile)
-  add_subdirectory(tests/unit)
+if(ANT_BUILD_SCHEDULER)
+  add_subdirectory(scheduler)
 endif()
