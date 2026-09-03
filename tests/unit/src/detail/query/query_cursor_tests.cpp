@@ -4,7 +4,7 @@
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
 #include <ant/component/component_bitset.hpp>
-#include <ant/detail/catalog/catalog.hpp>
+#include <ant/detail/store/catalog.hpp>
 
 namespace ant::detail { namespace {
 

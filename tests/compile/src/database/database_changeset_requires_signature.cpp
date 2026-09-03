@@ -2,7 +2,7 @@
 
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
-#include <ant/change/change_accumulator.hpp>
+#include <ant/change_accumulator.hpp>
 
 namespace ant { namespace {
 

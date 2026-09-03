@@ -1,9 +1,9 @@
 #pragma once
 
 #include <ant/binding.hpp>
-#include <ant/change/change_accumulator.hpp>
+#include <ant/change_accumulator.hpp>
 #include <ant/database.hpp>
-#include <ant/inspect/inspector.hpp>
+#include <ant/inspector.hpp>
 
 namespace ant::testing {
 

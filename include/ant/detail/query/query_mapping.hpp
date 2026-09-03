@@ -2,8 +2,8 @@
 
 #include <span>
 
-#include <ant/detail/containers.hpp>
-#include <ant/detail/entity/entity_traits.hpp>
+#include <ant/detail/core/containers.hpp>
+#include <ant/detail/store/entity_traits.hpp>
 
 namespace ant::detail {
 

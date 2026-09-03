@@ -4,16 +4,16 @@
 #include <numeric>
 #include <optional>
 
-#include <ant/detail/catalog/catalog.hpp>
-#include <ant/detail/catalog/table.hpp>
-#include <ant/detail/containers.hpp>
+#include <ant/detail/core/containers.hpp>
 #include <ant/detail/query/query_cursor.hpp>
 #include <ant/detail/query/query_mapping.hpp>
+#include <ant/detail/store/catalog.hpp>
+#include <ant/detail/store/table.hpp>
 #include <ant/entity.hpp>
-#include <ant/meta/type_list.hpp>
-#include <ant/query/fwd.hpp>
-#include <ant/query/query_iterator.hpp>
-#include <ant/query/query_signature_traits.hpp>
+#include <ant/query_fwd.hpp>
+#include <ant/query_iterator.hpp>
+#include <ant/signature/query_signature_traits.hpp>
+#include <ant/type_list.hpp>
 
 namespace ant {
 namespace detail {

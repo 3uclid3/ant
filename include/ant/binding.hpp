@@ -2,15 +2,15 @@
 
 #include <functional>
 
-#include <ant/change/change_accumulator.hpp>
+#include <ant/change_accumulator.hpp>
 #include <ant/changeset.hpp>
 #include <ant/component.hpp>
-#include <ant/detail/binding/binding_traits.hpp>
 #include <ant/detail/query/query_compiler.hpp>
-#include <ant/detail/store.hpp>
+#include <ant/detail/store/store.hpp>
+#include <ant/detail/type_traits/binding_traits.hpp>
 #include <ant/env.hpp>
-#include <ant/meta/type_list.hpp>
 #include <ant/query.hpp>
+#include <ant/type_list.hpp>
 
 namespace ant {
 

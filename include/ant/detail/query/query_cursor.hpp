@@ -2,7 +2,7 @@
 
 #include <span>
 
-#include <ant/detail/catalog/table.hpp>
+#include <ant/detail/store/table.hpp>
 #include <ant/entity.hpp>
 
 namespace ant { namespace detail {

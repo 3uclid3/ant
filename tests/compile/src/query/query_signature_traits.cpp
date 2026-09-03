@@ -1,4 +1,4 @@
-#include <ant/query/query_signature_traits.hpp>
+#include <ant/signature/query_signature_traits.hpp>
 
 #include <type_traits>
 

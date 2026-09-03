@@ -3,7 +3,7 @@
 
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
-#include <ant/detail/change/change_accumulator_consumer.hpp>
+#include <ant/detail/changeset/change_accumulator_consumer.hpp>
 
 namespace ant { namespace {
 

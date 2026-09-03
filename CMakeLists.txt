@@ -25,79 +25,85 @@ target_sources(ant
     BASE_DIRS
       include
     FILES
-      include/ant/change/change_accumulator.hpp
-      include/ant/changeset/changeset_signature.hpp
-      include/ant/changeset/changeset_signature_traits.hpp
-      include/ant/changeset/fwd.hpp
+      include/ant/assert.hpp
+      include/ant/binding.hpp
+      include/ant/change_accumulator.hpp
+      include/ant/changeset.hpp
+      include/ant/changeset_fwd.hpp
+      include/ant/component.hpp
+      include/ant/database.hpp
+      include/ant/entity.hpp
+      include/ant/env.hpp
+      include/ant/env_fwd.hpp
+      include/ant/inspector.hpp
+      include/ant/memory.hpp
+      include/ant/query.hpp
+      include/ant/query_fwd.hpp
+      include/ant/query_iterator.hpp
+      include/ant/scheduler.hpp
+      include/ant/schema.hpp
+      include/ant/type_list.hpp
       include/ant/component/component_bitset.hpp
       include/ant/component/component_index.hpp
       include/ant/component/component_meta.hpp
       include/ant/component/component_name.hpp
       include/ant/component/component_vtable.hpp
-      include/ant/detail/catalog/catalog.hpp
-      include/ant/detail/catalog/table.hpp
-      include/ant/detail/catalog/table_column.hpp
-      include/ant/detail/change/change.hpp
-      include/ant/detail/change/change_coalescer.hpp
-      include/ant/detail/change/change_executor.hpp
-      include/ant/detail/change/coalesced_change.hpp
-      include/ant/detail/changeset/changeset_signature_traits.hpp
+      include/ant/detail/changeset/change.hpp
+      include/ant/detail/changeset/change_accumulator_consumer.hpp
+      include/ant/detail/changeset/change_coalescer.hpp
+      include/ant/detail/changeset/change_executor.hpp
+      include/ant/detail/changeset/coalesced_change.hpp
+      include/ant/detail/changeset/lifecycle_registry.hpp
       include/ant/detail/component/component_construct.hpp
       include/ant/detail/component/component_index.hpp
       include/ant/detail/component/component_meta.hpp
       include/ant/detail/component/component_vtable.hpp
-      include/ant/detail/entity/entity_location.hpp
-      include/ant/detail/entity/entity_registry.hpp
-      include/ant/detail/entity/entity_traits.hpp
-      include/ant/detail/env/env_registry.hpp
+      include/ant/detail/core/algorithm.hpp
+      include/ant/detail/core/allocator.hpp
+      include/ant/detail/core/assert.hpp
+      include/ant/detail/core/containers.hpp
+      include/ant/detail/core/dynamic_bitset.hpp
+      include/ant/detail/core/memory.hpp
+      include/ant/detail/core/type_indexer.hpp
+      include/ant/detail/store/catalog.hpp
+      include/ant/detail/store/entity_location.hpp
+      include/ant/detail/store/entity_registry.hpp
+      include/ant/detail/store/entity_traits.hpp
+      include/ant/detail/store/env_registry.hpp
+      include/ant/detail/store/store.hpp
+      include/ant/detail/store/table.hpp
+      include/ant/detail/store/table_column.hpp
       include/ant/detail/query/query_compiler.hpp
       include/ant/detail/query/query_cursor.hpp
       include/ant/detail/query/query_mapping.hpp
-      include/ant/detail/query/query_signature_traits.hpp
-      include/ant/detail/algorithm.hpp
-      include/ant/detail/allocator.hpp
-      include/ant/detail/assert.hpp
-      include/ant/detail/containers.hpp
-      include/ant/detail/dynamic_bitset.hpp
-      include/ant/detail/function_traits.hpp
-      include/ant/detail/lifecycle/lifecycle_registry.hpp
-      include/ant/detail/memory.hpp
-      include/ant/detail/signature_traits.hpp
-      include/ant/detail/store.hpp
-      include/ant/env/env_signature.hpp
-      include/ant/env/env_signature_traits.hpp
-      include/ant/env/fwd.hpp
-      include/ant/inspect/inspector.hpp
-      include/ant/meta/type_list.hpp
-      include/ant/query/fwd.hpp
-      include/ant/query/query_iterator.hpp
-      include/ant/query/query_signature.hpp
-      include/ant/query/query_signature_traits.hpp
-      include/ant/assert.hpp
-      include/ant/changeset.hpp
-      include/ant/entity.hpp
-      include/ant/env.hpp
-      include/ant/memory.hpp
-      include/ant/query.hpp
-      include/ant/scheduler.hpp
+      include/ant/detail/type_traits/binding_traits.hpp
+      include/ant/detail/type_traits/changeset_signature_traits.hpp
+      include/ant/detail/type_traits/function_traits.hpp
+      include/ant/detail/type_traits/query_signature_traits.hpp
+      include/ant/detail/type_traits/signature_traits.hpp
       include/ant/scheduler/stage.hpp
-      include/ant/schema.hpp
+      include/ant/signature/changeset_signature.hpp
+      include/ant/signature/changeset_signature_traits.hpp
+      include/ant/signature/env_signature.hpp
+      include/ant/signature/env_signature_traits.hpp
+      include/ant/signature/query_signature.hpp
+      include/ant/signature/query_signature_traits.hpp
   PRIVATE
-    src/change/change_accumulator.cpp
-    src/detail/catalog/catalog.cpp
-    src/detail/catalog/table.cpp
-    src/detail/catalog/table_column.cpp
-    src/detail/change/change_accumulator_consumer.cpp
-    src/detail/change/change_coalescer.cpp
-    src/detail/change/change_executor.cpp
+    src/changeset/change_accumulator.cpp
+    src/detail/changeset/change_accumulator_consumer.cpp
+    src/detail/changeset/change_coalescer.cpp
+    src/detail/changeset/change_executor.cpp
+    src/detail/changeset/lifecycle_registry.cpp
     src/detail/component/component_index.cpp
-    src/detail/entity/entity_registry.cpp
-    src/detail/env/env_registry.cpp
-    src/detail/lifecycle/lifecycle_registry.cpp
+    src/detail/core/assert.cpp
+    src/detail/core/memory.cpp
+    src/detail/store/catalog.cpp
+    src/detail/store/entity_registry.cpp
+    src/detail/store/env_registry.cpp
+    src/detail/store/table.cpp
+    src/detail/store/table_column.cpp
     src/detail/query/query_compiler.cpp
     src/detail/query/query_cursor.cpp
-    src/detail/assert.cpp
-    src/detail/memory.cpp
     src/database.cpp
     src/scheduler.cpp
     src/schema.cpp

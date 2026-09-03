@@ -2,8 +2,8 @@
 
 #include <ant/binding.hpp>
 #include <ant/database.hpp>
-#include <ant/detail/containers.hpp>
-#include <ant/detail/type_indexer.hpp>
+#include <ant/detail/core/containers.hpp>
+#include <ant/detail/core/type_indexer.hpp>
 
 namespace ant {
 

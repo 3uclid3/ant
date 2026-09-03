@@ -1,11 +1,11 @@
 #pragma once
 
-#include <ant/change/change_accumulator.hpp>
-#include <ant/changeset/changeset_signature_traits.hpp>
-#include <ant/changeset/fwd.hpp>
-#include <ant/detail/catalog/table.hpp>
-#include <ant/detail/entity/entity_registry.hpp>
+#include <ant/change_accumulator.hpp>
+#include <ant/changeset_fwd.hpp>
+#include <ant/detail/store/entity_registry.hpp>
+#include <ant/detail/store/table.hpp>
 #include <ant/entity.hpp>
+#include <ant/signature/changeset_signature_traits.hpp>
 
 namespace ant {
 

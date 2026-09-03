@@ -41,12 +41,12 @@ endfunction()
 # core
 
 ## typelist
-ant_compile_test(type_list meta)
-ant_compile_fail_test(type_list_index_of_not_found meta)
-ant_compile_fail_test(type_list_drop_out_of_range meta)
+ant_compile_test(type_list "")
+ant_compile_fail_test(type_list_index_of_not_found "")
+ant_compile_fail_test(type_list_drop_out_of_range "")
 
 ## function_traits
-ant_compile_test(function_traits detail)
+ant_compile_test(function_traits detail/type_traits)
 
 # database
 
@@ -55,11 +55,11 @@ ant_compile_fail_test(database_env_requires_signature database)
 ant_compile_fail_test(database_query_requires_signature database)
 
 ## binding
-ant_compile_test(binding_traits detail/binding)
-ant_compile_fail_test(binding_traits_multiple_changesets detail/binding)
-ant_compile_fail_test(binding_traits_multiple_envs detail/binding)
-ant_compile_fail_test(binding_traits_no_args detail/binding)
-ant_compile_fail_test(binding_traits_unsupported_type detail/binding)
+ant_compile_test(binding_traits detail/type_traits)
+ant_compile_fail_test(binding_traits_multiple_changesets detail/type_traits)
+ant_compile_fail_test(binding_traits_multiple_envs detail/type_traits)
+ant_compile_fail_test(binding_traits_no_args detail/type_traits)
+ant_compile_fail_test(binding_traits_unsupported_type detail/type_traits)
 
 ## lifecycle
 ant_compile_fail_test(lifecycle_on_detach_mutable_component lifecycle)

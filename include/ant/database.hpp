@@ -2,12 +2,12 @@
 
 #include <ant/binding.hpp>
 #include <ant/changeset.hpp>
-#include <ant/detail/assert.hpp>
-#include <ant/detail/lifecycle/lifecycle_registry.hpp>
+#include <ant/detail/changeset/lifecycle_registry.hpp>
+#include <ant/detail/core/assert.hpp>
 #include <ant/detail/query/query_compiler.hpp>
-#include <ant/detail/store.hpp>
+#include <ant/detail/store/store.hpp>
 #include <ant/env.hpp>
-#include <ant/inspect/inspector.hpp>
+#include <ant/inspector.hpp>
 #include <ant/query.hpp>
 #include <ant/schema.hpp>
 

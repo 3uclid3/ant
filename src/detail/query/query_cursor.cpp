@@ -1,6 +1,6 @@
 #include <ant/detail/query/query_cursor.hpp>
 
-#include <ant/detail/assert.hpp>
+#include <ant/detail/core/assert.hpp>
 
 namespace ant { namespace detail {
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <ant/detail/env/env_registry.hpp>
-#include <ant/env/env_signature_traits.hpp>
-#include <ant/env/fwd.hpp>
+#include <ant/detail/store/env_registry.hpp>
+#include <ant/env_fwd.hpp>
+#include <ant/signature/env_signature_traits.hpp>
 
 namespace ant {
 

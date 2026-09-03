@@ -9,22 +9,22 @@ FetchContent_MakeAvailable(doctest)
 
 # ant_unit
 add_executable(ant_unit
-  src/change/change_accumulator_tests.cpp
+  src/changeset/change_accumulator_tests.cpp
   src/component/component_meta_tests.cpp
   src/component/component_vtable_tests.cpp
-  src/detail/catalog/catalog_tests.cpp
-  src/detail/catalog/table_column_tests.cpp
-  src/detail/catalog/table_tests.cpp
-  src/detail/change/change_coalescer_tests.cpp
-  src/detail/change/change_executor_tests.cpp
-  src/detail/entity/entity_registry_tests.cpp
-  src/detail/entity/entity_traits_tests.cpp
-  src/detail/env/env_registry_tests.cpp
-  src/detail/lifecycle/lifecycle_registry_tests.cpp
+  src/detail/changeset/change_coalescer_tests.cpp
+  src/detail/changeset/change_executor_tests.cpp
+  src/detail/changeset/lifecycle_registry_tests.cpp
+  src/detail/core/dynamic_bitset_tests.cpp
+  src/detail/store/catalog_tests.cpp
+  src/detail/store/entity_creator.hpp
+  src/detail/store/entity_registry_tests.cpp
+  src/detail/store/entity_traits_tests.cpp
+  src/detail/store/env_registry_tests.cpp
+  src/detail/store/table_column_tests.cpp
+  src/detail/store/table_tests.cpp
   src/detail/query/query_compiler_tests.cpp
   src/detail/query/query_cursor_tests.cpp
-  src/detail/dynamic_bitset_tests.cpp
-  src/detail/entity_creator.hpp
   src/binding_tests.cpp
   src/changeset_tests.cpp
   src/database_tests.cpp

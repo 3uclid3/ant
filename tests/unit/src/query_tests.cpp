@@ -3,11 +3,11 @@
 
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
-#include <ant/detail/catalog/catalog.hpp>
-#include <ant/detail/entity/entity_registry.hpp>
 #include <ant/detail/query/query_compiler.hpp>
+#include <ant/detail/store/catalog.hpp>
+#include <ant/detail/store/entity_registry.hpp>
 
-#include "detail/entity_creator.hpp"
+#include "detail/store/entity_creator.hpp"
 
 namespace ant { namespace detail { namespace {
 

@@ -6,11 +6,11 @@
 
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
-#include <ant/detail/change/change_accumulator_consumer.hpp>
-#include <ant/detail/change/change_coalescer.hpp>
-#include <ant/detail/change/change_executor.hpp>
-#include <ant/detail/lifecycle/lifecycle_registry.hpp>
-#include <ant/detail/store.hpp>
+#include <ant/detail/changeset/change_accumulator_consumer.hpp>
+#include <ant/detail/changeset/change_coalescer.hpp>
+#include <ant/detail/changeset/change_executor.hpp>
+#include <ant/detail/changeset/lifecycle_registry.hpp>
+#include <ant/detail/store/store.hpp>
 
 namespace ant { namespace {
 

@@ -1,7 +1,7 @@
 #include <ant/database.hpp>
 
-#include <ant/detail/change/change_coalescer.hpp>
-#include <ant/detail/change/change_executor.hpp>
+#include <ant/detail/changeset/change_coalescer.hpp>
+#include <ant/detail/changeset/change_executor.hpp>
 
 namespace ant {
 

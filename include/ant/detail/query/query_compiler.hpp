@@ -1,12 +1,12 @@
 #pragma once
 
 #include <ant/component/component_bitset.hpp>
-#include <ant/detail/catalog/catalog.hpp>
-#include <ant/detail/containers.hpp>
+#include <ant/detail/core/containers.hpp>
 #include <ant/detail/query/query_mapping.hpp>
-#include <ant/meta/type_list.hpp>
+#include <ant/detail/store/catalog.hpp>
 #include <ant/query.hpp>
 #include <ant/schema.hpp>
+#include <ant/type_list.hpp>
 
 namespace ant { namespace detail {
 

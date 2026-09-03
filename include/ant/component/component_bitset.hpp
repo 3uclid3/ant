@@ -5,8 +5,8 @@
 #endif
 
 #include <ant/component/component_index.hpp>
-#include <ant/detail/dynamic_bitset.hpp>
-#include <ant/meta/type_list.hpp>
+#include <ant/detail/core/dynamic_bitset.hpp>
+#include <ant/type_list.hpp>
 
 namespace ant {
 

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include <ant/detail/assert.hpp>
+#include <ant/detail/core/assert.hpp>
 
 namespace ant {
 

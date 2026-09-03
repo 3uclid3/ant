@@ -5,7 +5,7 @@
 #include <ant/component/component_index.hpp>
 #include <ant/component/component_meta.hpp>
 #include <ant/detail/component/component_meta.hpp>
-#include <ant/detail/containers.hpp>
+#include <ant/detail/core/containers.hpp>
 
 namespace ant {
 
