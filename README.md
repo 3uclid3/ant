@@ -12,7 +12,7 @@ A database-oriented Entity Component System framework for C++.
 ## Requirements
 
 - GCC 16+ (or any C++26-conformant compiler)
-- CMake 3.28+
+- CMake 3.30+
 
 ## Getting Started
 
@@ -30,6 +30,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ant)
 
 target_link_libraries(your_target PRIVATE ant::ant)
+```
+
+### Scheduler
+
+Scheduling support is provided by the optional `ant::scheduler` companion library. It links core `ant` transitively.
+
+```cmake
+target_link_libraries(your_target PRIVATE ant::scheduler)
+```
+
+```cpp
+#include <ant/scheduler.hpp>
 ```
 
 ### Quick Example

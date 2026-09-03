@@ -40,7 +40,6 @@ target_sources(ant
       include/ant/query.hpp
       include/ant/query_fwd.hpp
       include/ant/query_iterator.hpp
-      include/ant/scheduler.hpp
       include/ant/schema.hpp
       include/ant/type_list.hpp
       include/ant/component/component_bitset.hpp
@@ -81,7 +80,6 @@ target_sources(ant
       include/ant/detail/type_traits/function_traits.hpp
       include/ant/detail/type_traits/query_signature_traits.hpp
       include/ant/detail/type_traits/signature_traits.hpp
-      include/ant/scheduler/stage.hpp
       include/ant/signature/changeset_signature.hpp
       include/ant/signature/changeset_signature_traits.hpp
       include/ant/signature/env_signature.hpp
@@ -105,7 +103,6 @@ target_sources(ant
     src/detail/query/query_compiler.cpp
     src/detail/query/query_cursor.cpp
     src/database.cpp
-    src/scheduler.cpp
     src/schema.cpp
 )
 
@@ -118,12 +115,26 @@ endif()
 
 option(ANT_TESTING "Build ant testing library" ON)
 
+if(ANT_BUILD_TESTS)
+  include(FetchContent)
+  FetchContent_Declare(
+    doctest
+    GIT_REPOSITORY https://github.com/doctest/doctest.git
+    GIT_TAG        v2.5.2
+  )
+  FetchContent_MakeAvailable(doctest)
+
+  enable_testing()
+  include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
+endif()
+
 if(ANT_TESTING OR ANT_BUILD_TESTS)
   add_subdirectory(testing)
 endif()
 
+add_subdirectory(scheduler)
+
 if(ANT_BUILD_TESTS)
-  enable_testing()
   add_subdirectory(tests/compile)
   add_subdirectory(tests/unit)
 endif()

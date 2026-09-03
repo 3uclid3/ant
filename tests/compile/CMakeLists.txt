@@ -10,7 +10,7 @@ function(ant_compile_test name path)
     PRIVATE
       ant_warnings
       ant::ant
-      ant::ant_testing)
+      ant::testing)
   set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
   add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target})
   set_tests_properties(${name} PROPERTIES LABELS compile)
@@ -28,7 +28,7 @@ function(ant_compile_fail_test name path)
     PRIVATE
       ant_warnings
       ant::ant
-      ant::ant_testing)
+      ant::testing)
   set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
   add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target})
   set_tests_properties(${name}

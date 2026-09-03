@@ -5,7 +5,7 @@
 #include <ant.testing/schema.hpp>
 #include <ant/database.hpp>
 #include <ant/query.hpp>
-#include <ant/scheduler/stage.hpp>
+#include <ant/stage.hpp>
 
 namespace ant { namespace {
 
