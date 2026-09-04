@@ -25,6 +25,8 @@ ctest --test-dir build -L compile --output-on-failure
 ## Code conventions
 
 - Follow the repository `.clang-format`; format changed C++ files with `clang-format -i`.
+- Keep function declarations and definitions separate, even in headers. Explicitly defaulted functions may remain in the enclosing class or struct, and valid correctness-driven exceptions are allowed.
+- Keep out-of-class definitions in declaration order: define nested class and struct methods first, each in their declaration order, then define the enclosing type's methods in declaration order.
 - Order includes in library files as follows, with one blank line between groups: standard-library headers, external-library headers, `ant`/`ant.testing` headers, then local quoted headers.
 - Keep public headers in `include/ant` and implementation details in `include/ant/detail` or `src/detail`.
 - Add new library source and public header files to `target_sources` in `CMakeLists.txt`.
