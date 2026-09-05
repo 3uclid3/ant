@@ -78,6 +78,7 @@ target_sources(ant
       include/ant/detail/type_traits/binding_traits.hpp
       include/ant/detail/type_traits/changeset_signature_traits.hpp
       include/ant/detail/type_traits/function_traits.hpp
+      include/ant/detail/type_traits/query_mapping_traits.hpp
       include/ant/detail/type_traits/query_signature_traits.hpp
       include/ant/detail/type_traits/signature_traits.hpp
       include/ant/signature/changeset_signature.hpp

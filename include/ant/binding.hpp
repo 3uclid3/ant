@@ -184,10 +184,15 @@ constexpr auto binding_descriptor::queries_descriptor::describe(type_list<Signat
     binding_descriptor::queries_descriptor descriptor;
     ([&descriptor] {
         using signature_traits = query_signature_traits<Signature>;
+        using included = type_list_concat_t<typename signature_traits::required, typename signature_traits::optional>;
 
-        descriptor.reads |= component_bitset_of<typename signature_traits::read>();
-        descriptor.writes |= component_bitset_of<typename signature_traits::write>();
-        descriptor.excludes |= component_bitset_of<typename signature_traits::excluded>();
+        using read_types = type_list_transform_t<std::remove_const, type_list_filter_t<detail::is_read, included>>;
+        using write_types = type_list_filter_t<detail::is_write, included>;
+        using excluded_types = typename signature_traits::excluded;
+
+        descriptor.reads |= component_bitset_of<read_types>();
+        descriptor.writes |= component_bitset_of<write_types>();
+        descriptor.excludes |= component_bitset_of<excluded_types>();
     }(),
      ...);
     return descriptor;

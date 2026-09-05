@@ -9,6 +9,6 @@ using signature = query_signature<
     testing::component<0>>;
 using signature_traits = query_signature_traits<signature>;
 
-[[maybe_unused]] constexpr auto _ = signature_traits::size;
+using t = signature_traits::flattened;
 
 }} // namespace ant

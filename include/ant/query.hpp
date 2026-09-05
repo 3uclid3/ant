@@ -9,6 +9,7 @@
 #include <ant/detail/query/query_mapping.hpp>
 #include <ant/detail/store/catalog.hpp>
 #include <ant/detail/store/table.hpp>
+#include <ant/detail/type_traits/query_mapping_traits.hpp>
 #include <ant/entity.hpp>
 #include <ant/query_fwd.hpp>
 #include <ant/query_iterator.hpp>
@@ -110,6 +111,9 @@ public:
     template<typename T>
     requires(signature_traits::template is_optional<T> || signature_traits::template is_optional<const T>)
     auto has() const noexcept -> bool;
+
+private:
+    using mapping_traits = detail::query_mapping_traits<Signature>;
 
 private:
     query_row(detail::query_cursor cursor, detail::query_mapping_view mapping) noexcept;
@@ -216,8 +220,8 @@ template<typename T>
 requires(query_row<Signature>::signature_traits::template is_required<T> || query_row<Signature>::signature_traits::template is_required<const T>)
 auto query_row<Signature>::get() const noexcept -> const T&
 {
-    constexpr std::size_t type_index = signature_traits::template index_of<T>;
-    constexpr std::size_t type_size = signature_traits::size;
+    constexpr std::size_t type_index = mapping_traits::template index_of<T>;
+    constexpr std::size_t type_size = mapping_traits::size;
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
@@ -229,8 +233,8 @@ template<typename T>
 requires(query_row<Signature>::signature_traits::template is_required<T>)
 auto query_row<Signature>::get() noexcept -> T&
 {
-    constexpr std::size_t type_index = signature_traits::template index_of<T>;
-    constexpr std::size_t type_size = signature_traits::size;
+    constexpr std::size_t type_index = mapping_traits::template index_of<T>;
+    constexpr std::size_t type_size = mapping_traits::size;
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
@@ -242,8 +246,8 @@ template<typename T>
 requires(query_row<Signature>::signature_traits::template is_optional<T> || query_row<Signature>::signature_traits::template is_optional<const T>)
 auto query_row<Signature>::get() const noexcept -> const T*
 {
-    constexpr std::size_t type_index = signature_traits::template index_of<T>;
-    constexpr std::size_t type_size = signature_traits::size;
+    constexpr std::size_t type_index = mapping_traits::template index_of<T>;
+    constexpr std::size_t type_size = mapping_traits::size;
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
@@ -255,8 +259,8 @@ template<typename T>
 requires(query_row<Signature>::signature_traits::template is_optional<T>)
 auto query_row<Signature>::get() noexcept -> T*
 {
-    constexpr std::size_t type_index = signature_traits::template index_of<T>;
-    constexpr std::size_t type_size = signature_traits::size;
+    constexpr std::size_t type_index = mapping_traits::template index_of<T>;
+    constexpr std::size_t type_size = mapping_traits::size;
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 
@@ -268,8 +272,8 @@ template<typename T>
 requires(query_row<Signature>::signature_traits::template is_optional<T> || query_row<Signature>::signature_traits::template is_optional<const T>)
 auto query_row<Signature>::has() const noexcept -> bool
 {
-    constexpr std::size_t type_index = signature_traits::template index_of<T>;
-    constexpr std::size_t type_size = signature_traits::size;
+    constexpr std::size_t type_index = mapping_traits::template index_of<T>;
+    constexpr std::size_t type_size = mapping_traits::size;
 
     const std::size_t column_index = _mapping[_cursor.table_index() * type_size + type_index];
 

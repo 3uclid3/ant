@@ -31,11 +31,12 @@ private:
 template<typename Signature>
 auto query_compiler::compile(catalog& catalog) -> compiled_query<Signature>
 {
-    using signature_traits = typename compiled_query<Signature>::signature_traits;
+    using signature_traits = query_signature_traits<Signature>;
+    using mapping_traits = detail::query_mapping_traits<Signature>;
 
     using required_types = type_list_transform_t<std::remove_const, typename signature_traits::required>;
     using excluded_types = typename signature_traits::excluded;
-    using included_types = type_list_transform_t<std::remove_const, typename signature_traits::included>;
+    using included_types = type_list_transform_t<std::remove_const, typename mapping_traits::ordered>;
 
     vector<table*> tables = compile_tables(catalog, component_bitset_of<required_types>(), component_bitset_of<excluded_types>());
     query_mapping mapping = compile_mapping(tables, included_types{});

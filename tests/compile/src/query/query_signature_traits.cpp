@@ -18,6 +18,5 @@ using signature_traits = query_signature_traits<signature>;
 static_assert(std::is_same_v<signature_traits::required, type_list<const testing::component<2>, testing::component<4>>>);
 static_assert(std::is_same_v<signature_traits::optional, type_list<const testing::component<0>, testing::component<3>>>);
 static_assert(std::is_same_v<signature_traits::excluded, type_list<testing::component<1>, testing::component<5>, testing::component<7>>>);
-static_assert(std::is_same_v<signature_traits::included, type_list<const testing::component<2>, testing::component<4>, const testing::component<0>, testing::component<3>>>);
 
 }} // namespace ant
