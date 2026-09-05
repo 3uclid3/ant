@@ -57,7 +57,6 @@ auto change_coalescer::coalesce() -> coalesced_changes
 
         _changes.entities.push_back(
             {.entity = e,
-             .table_index = loc.table,
              .new_table_index = _catalog.ensure_of(bitset),
              .ctors = std::move(ctors),
              .logical_attach_components = std::move(logical_attach_components),

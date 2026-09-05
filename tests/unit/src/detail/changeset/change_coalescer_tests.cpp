@@ -74,7 +74,6 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: attach")
     const coalesced_entity_change& coalesced_e = changes.entities.back();
 
     CHECK_EQ(coalesced_e.entity, e0);
-    CHECK_EQ(coalesced_e.table_index, entity_location::invalid.table);
     CHECK_EQ(coalesced_e.new_table_index, _catalog.ensure_of(expected));
     CHECK_EQ(coalesced_e.logical_attach_components, expected);
     CHECK(coalesced_e.logical_detach_components.none());
@@ -99,7 +98,6 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach")
     const coalesced_entity_change& coalesced_e = changes.entities.back();
 
     CHECK_EQ(coalesced_e.entity, e0);
-    CHECK_EQ(coalesced_e.table_index, _entity_registry.locate(e0).table);
     CHECK_EQ(coalesced_e.new_table_index, _catalog.index_of(component_bitset_of<testing::component<2>>()));
     CHECK(coalesced_e.logical_attach_components.none());
     CHECK_EQ(coalesced_e.logical_detach_components, component_bitset_of<testing::component<0>, testing::component<1>>());
@@ -151,7 +149,6 @@ TEST_CASE_FIXTURE(fixture, "change_coalescer::coalesce: detach prevent attach")
     const coalesced_entity_change& coalesced_e = changes.entities.back();
 
     CHECK_EQ(coalesced_e.entity, e0);
-    CHECK_EQ(coalesced_e.table_index, _entity_registry.locate(e0).table);
     CHECK_EQ(coalesced_e.new_table_index, _catalog.index_of(component_bitset_of<testing::component<1>, testing::component<2>>()));
 }
 

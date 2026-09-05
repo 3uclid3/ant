@@ -65,7 +65,7 @@ auto table::insert(entity e, std::span<component_construct> ctors) -> std::size_
     return _sparse_rows[index];
 }
 
-auto table::splice(entity e, table& source) -> std::size_t
+auto table::splice_swap_back(entity e, table& source) -> spliced
 {
     std::array<std::byte, sizeof(component_construct) * 256> buffer;
     std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size(), pmr::get_default_resource()};
@@ -77,10 +77,10 @@ auto table::splice(entity e, table& source) -> std::size_t
         ctors.emplace_back(component_construct{nullptr, &_columns[i].meta()});
     }
 
-    return splice(e, source, ctors);
+    return splice_swap_back(e, source, ctors);
 }
 
-auto table::splice(entity e, table& source, std::span<component_construct> ctors) -> std::size_t
+auto table::splice_swap_back(entity e, table& source, std::span<component_construct> ctors) -> spliced
 {
     ANT_ASSERT(ctors.size() == _columns.size(), "ctors count mismatch");
     ANT_ASSERT(source.contains(e), "entity not found in source");
@@ -119,16 +119,16 @@ auto table::splice(entity e, table& source, std::span<component_construct> ctors
     }
 
     constexpr bool erase_columns = false;
-    source.erase_impl(e, erase_columns);
+    const entity swapped = source.erase_swap_back_impl(e, erase_columns);
 
     ANT_ASSERT(std::ranges::all_of(_columns, [this](const table_column& c) { return c.size() == _rows.size(); }), "column size mismatch after splicing row");
 
-    return _sparse_rows[index];
+    return spliced{.row = _sparse_rows[index], .swapped = swapped};
 }
 
-auto table::erase(entity e) -> bool
+auto table::erase_swap_back(entity e) -> entity
 {
-    return erase_impl(e, true);
+    return erase_swap_back_impl(e, true);
 }
 
 auto table::column_of(component_index index) const noexcept -> std::size_t
@@ -148,7 +148,7 @@ auto table::entity_at(std::size_t row_index) const noexcept -> entity
     return _rows[row_index];
 }
 
-auto table::erase_impl(entity e, bool erase_columns) -> bool
+auto table::erase_swap_back_impl(entity e, bool erase_columns) -> entity
 {
     const auto index = entity_traits::to_index(e);
 
@@ -156,7 +156,7 @@ auto table::erase_impl(entity e, bool erase_columns) -> bool
 
     if (index >= _sparse_rows.size() || _sparse_rows[index] == npos)
     {
-        return false;
+        return entity_traits::invalid();
     }
 
     const auto row_index = _sparse_rows[index];
@@ -170,17 +170,21 @@ auto table::erase_impl(entity e, bool erase_columns) -> bool
     }
 
     ANT_ASSERT(!_rows.empty(), "rows cannot be empty when an entity is registered");
-    const auto last_row_index = _rows.size() - 1;
-    if (row_index != last_row_index)
+
+    entity replacement = entity_traits::invalid();
+
+    if (const auto last_row_index = _rows.size() - 1; row_index != last_row_index)
     {
-        _rows[row_index] = _rows.back();
+        replacement = _rows.back();
+
+        _rows[row_index] = replacement;
         _sparse_rows[entity_traits::to_index(_rows[last_row_index])] = row_index;
     }
 
     _sparse_rows[index] = npos;
     _rows.pop_back();
 
-    return true;
+    return replacement;
 }
 
 auto table::ensure_sparse_capacity(std::size_t capacity) -> void

@@ -18,6 +18,12 @@ namespace detail {
 class table
 {
 public:
+    struct spliced
+    {
+        std::size_t row;
+        entity swapped;
+    };
+
     static constexpr auto npos = entity_traits::index_npos;
 
     table() noexcept = default;
@@ -32,9 +38,9 @@ public:
     auto contains(entity e) const noexcept -> bool;
     auto insert(entity e) -> std::size_t;
     auto insert(entity e, std::span<component_construct> ctors) -> std::size_t; // ctors are invalid after this call
-    auto splice(entity e, table& source) -> std::size_t;
-    auto splice(entity e, table& source, std::span<component_construct> ctors) -> std::size_t; // ctors are invalid after this call
-    auto erase(entity e) -> bool;
+    auto splice_swap_back(entity e, table& source) -> spliced;
+    auto splice_swap_back(entity e, table& source, std::span<component_construct> ctors) -> spliced; // ctors are invalid after this call
+    auto erase_swap_back(entity e) -> entity;
 
     template<typename T>
     auto column_of() const noexcept -> std::size_t;
@@ -62,7 +68,7 @@ public:
     auto entities() const noexcept -> std::span<const entity>;
 
 private:
-    auto erase_impl(entity e, bool erase_columns = true) -> bool;
+    auto erase_swap_back_impl(entity e, bool erase_columns = true) -> entity;
 
     auto ensure_sparse_capacity(std::size_t capacity) -> void;
 

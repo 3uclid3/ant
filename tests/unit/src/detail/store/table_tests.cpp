@@ -117,7 +117,7 @@ TEST_CASE_FIXTURE(fixture, "table::insert: large index triggers sparse growth")
     CHECK(_table.contains(e));
 }
 
-TEST_CASE_FIXTURE(fixture, "table::erase: removes entity and maintains sizes")
+TEST_CASE_FIXTURE(fixture, "table::erase_swap_back: removes entity and maintains sizes")
 {
     const std::size_t n = GENERATE(1, 2, 4, 16);
 
@@ -129,17 +129,9 @@ TEST_CASE_FIXTURE(fixture, "table::erase: removes entity and maintains sizes")
     // erase out of order
     for (entity e : make_entities(n, true))
     {
-        CHECK(_table.erase(e));
+        _table.erase_swap_back(e);
         CHECK_FALSE(_table.contains(e));
     }
-}
-
-TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity returns false")
-{
-    _table.insert(entity_traits::construct(1));
-
-    CHECK_FALSE(_table.erase(entity_traits::construct(0)));      // in sparse range
-    CHECK_FALSE(_table.erase(entity_traits::construct(10'000))); // out of sparse range
 }
 
 TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destination table")
@@ -158,7 +150,7 @@ TEST_CASE_FIXTURE(fixture, "table::splice: moves entity from source to destinati
     {
         const entity e = entities[i];
 
-        CHECK_EQ(_table.splice(e, source), i);
+        CHECK_EQ(_table.splice_swap_back(e, source).row, i);
 
         CHECK_FALSE(source.contains(e));
         CHECK(_table.contains(e));
@@ -186,14 +178,6 @@ TEST_CASE_FIXTURE(fixture, "table::row_of: returns npos for non-existent entity"
 {
     CHECK_EQ(_table.row_of(entity_traits::construct(0)), detail::table::npos);      // in sparse range
     CHECK_EQ(_table.row_of(entity_traits::construct(10'000)), detail::table::npos); // out of sparse range
-}
-
-TEST_CASE_FIXTURE(fixture, "table::erase: non-existent entity after insertion returns false")
-{
-    _table.insert(entity_traits::construct(1));
-
-    CHECK_FALSE(_table.erase(entity_traits::construct(0)));      // in sparse range
-    CHECK_FALSE(_table.erase(entity_traits::construct(10'000))); // out of sparse range
 }
 
 }} // namespace ant::detail

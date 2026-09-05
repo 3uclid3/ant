@@ -84,12 +84,6 @@ struct fixture
         (check_component<I>(loc, static_cast<std::size_t>(values)), ...);
     }
 
-    auto check_entity_not_at(entity e, entity_location loc) -> void
-    {
-        REQUIRE_LT(loc.table, _catalog.size());
-        CHECK_FALSE(_catalog.at(loc.table).contains(e));
-    }
-
     store _store{testing::make_indexed_schema<8>()};
     schema& _schema{_store.schema};
     entity_registry& _entity_registry{_store.entities};
@@ -112,7 +106,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities erase ent
     execute();
 
     CHECK_FALSE(_entity_registry.contains(e0));
-    check_entity_not_at(e0, prev_loc);
+    CHECK_FALSE(_catalog.at(prev_loc.table).contains(e0));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities without components")
@@ -124,6 +118,62 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities without c
     execute();
 
     CHECK_FALSE(_entity_registry.contains(e0));
+}
+
+TEST_CASE_FIXTURE(fixture, "change_executor::execute: destruction relocates the swapped entity")
+{
+    const entity removed = _creator.create_entity<0>(10);
+    const entity survivor = _creator.create_entity<0>(20);
+    const entity_location vacated = _entity_registry.locate(removed);
+    const entity_location previous = _entity_registry.locate(survivor);
+    REQUIRE_EQ(previous.table, vacated.table);
+    REQUIRE_NE(previous.row, vacated.row);
+
+    emplace_destroy(removed);
+    execute();
+
+    CHECK_FALSE(_entity_registry.contains(removed));
+    REQUIRE_EQ(_entity_registry.locate(survivor), vacated);
+    CHECK_EQ(_catalog.at(vacated.table).row_of(survivor), vacated.row);
+    check_entity<0>(survivor, 20);
+}
+
+TEST_CASE_FIXTURE(fixture, "change_executor::execute: batched destruction relocates the survivor using the current row")
+{
+    const entity first = _creator.create_entity<0>(10);
+    const entity survivor = _creator.create_entity<0>(20);
+    const entity last = _creator.create_entity<0>(30);
+    const entity_location vacated = _entity_registry.locate(first);
+
+    // Destroying first moves last into its row before last is destroyed in the same batch.
+    emplace_destroy(first);
+    emplace_destroy(last);
+    execute();
+
+    CHECK_FALSE(_entity_registry.contains(first));
+    CHECK_FALSE(_entity_registry.contains(last));
+    REQUIRE(_entity_registry.contains(survivor));
+    CHECK_EQ(_catalog.at(vacated.table).row_of(survivor), vacated.row);
+    REQUIRE_EQ(_entity_registry.locate(survivor), vacated);
+    check_entity<0>(survivor, 20);
+}
+
+TEST_CASE_FIXTURE(fixture, "change_executor::execute: archetype migration relocates the swapped entity")
+{
+    const entity moved = _creator.create_entity<0>(10);
+    const entity survivor = _creator.create_entity<0>(20);
+    const entity_location vacated = _entity_registry.locate(moved);
+    const entity_location previous = _entity_registry.locate(survivor);
+    REQUIRE_EQ(previous.table, vacated.table);
+    REQUIRE_NE(previous.row, vacated.row);
+
+    emplace_attach<1>(moved, 30);
+    execute();
+
+    REQUIRE_EQ(_entity_registry.locate(survivor), vacated);
+    CHECK_EQ(_catalog.at(vacated.table).row_of(survivor), vacated.row);
+    check_entity<0>(survivor, 20);
+    check_entity<0, 1>(moved, 10, 30);
 }
 
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: attach insert new entity")
@@ -158,7 +208,27 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach all erase entity fr
     execute();
 
     CHECK_EQ(_entity_registry.locate(e0), entity_location::invalid);
-    check_entity_not_at(e0, prev_loc);
+    CHECK_FALSE(_catalog.at(prev_loc.table).contains(e0));
+}
+
+TEST_CASE_FIXTURE(fixture, "change_executor::execute: detaching the last component relocates the swapped entity")
+{
+    const entity removed = _creator.create_entity<0>(10);
+    const entity survivor = _creator.create_entity<0>(20);
+    const entity_location vacated = _entity_registry.locate(removed);
+    const entity_location previous = _entity_registry.locate(survivor);
+    REQUIRE_EQ(previous.table, vacated.table);
+    REQUIRE_NE(previous.row, vacated.row);
+
+    emplace_detach<0>(removed);
+    execute();
+
+    CHECK(_entity_registry.contains(removed));
+    CHECK_EQ(_entity_registry.locate(removed), entity_location::invalid);
+    CHECK_FALSE(_catalog.at(vacated.table).contains(removed));
+    REQUIRE_EQ(_entity_registry.locate(survivor), vacated);
+    CHECK_EQ(_catalog.at(vacated.table).row_of(survivor), vacated.row);
+    check_entity<0>(survivor, 20);
 }
 
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach moves entity to new table")
@@ -171,7 +241,7 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach moves entity to new
     execute();
 
     check_entity<1>(e0, 24);
-    check_entity_not_at(e0, prev_loc);
+    CHECK_FALSE(_catalog.at(prev_loc.table).contains(e0));
 }
 
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: set")

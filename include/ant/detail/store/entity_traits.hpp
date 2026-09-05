@@ -43,6 +43,7 @@ struct entity_traits
 
     [[nodiscard]] static constexpr auto construct(index_type value, version_type version = {}) noexcept -> value_type;
     [[nodiscard]] static constexpr auto bump(value_type value) noexcept -> value_type;
+    [[nodiscard]] static constexpr auto invalid() noexcept -> value_type;
 
     static_assert(sizeof(value_type) <= sizeof(integral_type), "value_type must fit within integral_type");
     static_assert(index_bits + version_bits <= sizeof(integral_type) * 8, "Not enough bits in integral_type");
@@ -82,6 +83,11 @@ constexpr auto entity_traits::bump(value_type value) noexcept -> value_type
     const version_type new_version = version >= version_max ? 0 : version + 1;
 
     return construct(to_index(value), new_version);
+}
+
+constexpr auto entity_traits::invalid() noexcept -> value_type
+{
+    return static_cast<value_type>(index_mask);
 }
 
 } // namespace ant::detail

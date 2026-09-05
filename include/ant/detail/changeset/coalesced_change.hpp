@@ -18,7 +18,6 @@ struct coalesced_destroy_entity_change
 struct coalesced_entity_change
 {
     ant::entity entity;
-    std::size_t table_index;
     std::size_t new_table_index;
     vector<component_construct> ctors;
     component_bitset logical_attach_components;
