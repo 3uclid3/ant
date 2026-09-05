@@ -2,8 +2,6 @@
 
 namespace ant {
 
-inline namespace decorator {
-
 struct create
 {};
 
@@ -25,8 +23,6 @@ struct set_env
 template<typename... Types>
 struct unset_env
 {};
-
-} // namespace decorator
 
 template<typename... Changes>
 class changeset_signature;
