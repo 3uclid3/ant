@@ -1,6 +1,8 @@
 #include <ant/detail/changeset/change_executor.hpp>
 #include <doctest/doctest.h>
 
+#include <algorithm>
+
 #include <ant.testing/component.hpp>
 #include <ant.testing/schema.hpp>
 #include <ant/change_accumulator.hpp>
@@ -96,6 +98,130 @@ struct fixture
     change_executor _executor{_store, _lifecycle_registry};
 };
 
+struct single_component_scenario_fixture : fixture
+{
+    const entity first{_creator.create_entity<0>(10)};
+    const entity survivor{_creator.create_entity<0>(20)};
+    const entity last{_creator.create_entity<0>(30)};
+    const std::size_t source{_entity_registry.locate(first).table};
+};
+
+struct attachment_scenario_fixture : single_component_scenario_fixture
+{
+    attachment_scenario_fixture();
+
+    int attaches{0};
+};
+
+struct detachment_scenario_fixture : fixture
+{
+    detachment_scenario_fixture();
+
+    const entity first{_creator.create_entity<0, 1>(10, 11)};
+    const entity survivor{_creator.create_entity<0, 1>(20, 21)};
+    const entity last{_creator.create_entity<0, 1>(30, 31)};
+    const std::size_t source{_entity_registry.locate(first).table};
+    int first_detaches{0};
+    int last_detaches{0};
+};
+
+struct single_component_conflict_scenario_fixture : fixture
+{
+    single_component_conflict_scenario_fixture();
+
+    const entity target{_creator.create_entity<0>(10)};
+    const entity survivor{_creator.create_entity<0>(20)};
+    const std::size_t source{_entity_registry.locate(target).table};
+    int attaches{0};
+    int detaches{0};
+};
+
+struct two_component_conflict_scenario_fixture : fixture
+{
+    two_component_conflict_scenario_fixture();
+
+    const entity target{_creator.create_entity<0, 1>(10, 11)};
+    const entity survivor{_creator.create_entity<0, 1>(20, 21)};
+    const std::size_t source{_entity_registry.locate(target).table};
+    int attaches{0};
+    int detaches{0};
+};
+
+struct swap_scenario_fixture : fixture
+{
+    swap_scenario_fixture();
+
+    const entity target{_creator.create_entity<0>(10)};
+    const entity survivor{_creator.create_entity<0>(20)};
+    const entity_location vacated{_entity_registry.locate(target)};
+};
+
+attachment_scenario_fixture::attachment_scenario_fixture()
+{
+    _lifecycle_registry.on_attach<testing::component<1>>(basic_binding<entity, testing::component<1>&>(
+        _store,
+        [this](entity actual, testing::component<1>& value) {
+            ++attaches;
+            CHECK_EQ(actual, last);
+            CHECK_EQ(value.value, 40);
+            check_entity<0, 1>(actual, 30, 40);
+        }));
+}
+
+detachment_scenario_fixture::detachment_scenario_fixture()
+{
+    _lifecycle_registry.on_detach<testing::component<0>>(basic_binding<entity, const testing::component<0>&>(
+        _store,
+        [this](entity actual, const testing::component<0>& value) {
+            REQUIRE((actual == first || actual == last));
+            if (actual == first)
+            {
+                ++first_detaches;
+                CHECK_EQ(value.value, 10);
+            }
+            else
+            {
+                ++last_detaches;
+                CHECK_EQ(value.value, 30);
+            }
+        }));
+}
+
+single_component_conflict_scenario_fixture::single_component_conflict_scenario_fixture()
+{
+    _lifecycle_registry.on_attach<testing::component<1>>(basic_binding<entity, testing::component<1>&>(
+        _store,
+        [this](entity, testing::component<1>&) { ++attaches; }));
+    _lifecycle_registry.on_detach<testing::component<0>>(basic_binding<entity, const testing::component<0>&>(
+        _store,
+        [this](entity actual, const testing::component<0>& value) {
+            ++detaches;
+            CHECK_EQ(actual, target);
+            CHECK_EQ(value.value, 10);
+        }));
+}
+
+two_component_conflict_scenario_fixture::two_component_conflict_scenario_fixture()
+{
+    _lifecycle_registry.on_attach<testing::component<0>>(basic_binding<entity, testing::component<0>&>(
+        _store,
+        [this](entity, testing::component<0>&) { ++attaches; }));
+    _lifecycle_registry.on_detach<testing::component<0>>(basic_binding<entity, const testing::component<0>&>(
+        _store,
+        [this](entity actual, const testing::component<0>& value) {
+            ++detaches;
+            CHECK_EQ(actual, target);
+            CHECK_EQ(value.value, 10);
+        }));
+}
+
+swap_scenario_fixture::swap_scenario_fixture()
+{
+    const entity_location previous = _entity_registry.locate(survivor);
+    REQUIRE_EQ(previous.table, vacated.table);
+    REQUIRE_NE(previous.row, vacated.row);
+}
+
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities erase entity from catalog")
 {
     const entity e0 = _creator.create_entity<0>(42);
@@ -120,29 +246,19 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: destroy entities without c
     CHECK_FALSE(_entity_registry.contains(e0));
 }
 
-TEST_CASE_FIXTURE(fixture, "change_executor::execute: destruction relocates the swapped entity")
+TEST_CASE_FIXTURE(swap_scenario_fixture, "change_executor::execute: destruction relocates the swapped entity")
 {
-    const entity removed = _creator.create_entity<0>(10);
-    const entity survivor = _creator.create_entity<0>(20);
-    const entity_location vacated = _entity_registry.locate(removed);
-    const entity_location previous = _entity_registry.locate(survivor);
-    REQUIRE_EQ(previous.table, vacated.table);
-    REQUIRE_NE(previous.row, vacated.row);
-
-    emplace_destroy(removed);
+    emplace_destroy(target);
     execute();
 
-    CHECK_FALSE(_entity_registry.contains(removed));
+    CHECK_FALSE(_entity_registry.contains(target));
     REQUIRE_EQ(_entity_registry.locate(survivor), vacated);
     CHECK_EQ(_catalog.at(vacated.table).row_of(survivor), vacated.row);
     check_entity<0>(survivor, 20);
 }
 
-TEST_CASE_FIXTURE(fixture, "change_executor::execute: batched destruction relocates the survivor using the current row")
+TEST_CASE_FIXTURE(single_component_scenario_fixture, "change_executor::execute: batched destruction relocates the survivor using the current row")
 {
-    const entity first = _creator.create_entity<0>(10);
-    const entity survivor = _creator.create_entity<0>(20);
-    const entity last = _creator.create_entity<0>(30);
     const entity_location vacated = _entity_registry.locate(first);
 
     // Destroying first moves last into its row before last is destroyed in the same batch.
@@ -158,22 +274,15 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: batched destruction reloca
     check_entity<0>(survivor, 20);
 }
 
-TEST_CASE_FIXTURE(fixture, "change_executor::execute: archetype migration relocates the swapped entity")
+TEST_CASE_FIXTURE(swap_scenario_fixture, "change_executor::execute: archetype migration relocates the swapped entity")
 {
-    const entity moved = _creator.create_entity<0>(10);
-    const entity survivor = _creator.create_entity<0>(20);
-    const entity_location vacated = _entity_registry.locate(moved);
-    const entity_location previous = _entity_registry.locate(survivor);
-    REQUIRE_EQ(previous.table, vacated.table);
-    REQUIRE_NE(previous.row, vacated.row);
-
-    emplace_attach<1>(moved, 30);
+    emplace_attach<1>(target, 30);
     execute();
 
     REQUIRE_EQ(_entity_registry.locate(survivor), vacated);
     CHECK_EQ(_catalog.at(vacated.table).row_of(survivor), vacated.row);
     check_entity<0>(survivor, 20);
-    check_entity<0, 1>(moved, 10, 30);
+    check_entity<0, 1>(target, 10, 30);
 }
 
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: attach insert new entity")
@@ -211,21 +320,14 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach all erase entity fr
     CHECK_FALSE(_catalog.at(prev_loc.table).contains(e0));
 }
 
-TEST_CASE_FIXTURE(fixture, "change_executor::execute: detaching the last component relocates the swapped entity")
+TEST_CASE_FIXTURE(swap_scenario_fixture, "change_executor::execute: detaching the last component relocates the swapped entity")
 {
-    const entity removed = _creator.create_entity<0>(10);
-    const entity survivor = _creator.create_entity<0>(20);
-    const entity_location vacated = _entity_registry.locate(removed);
-    const entity_location previous = _entity_registry.locate(survivor);
-    REQUIRE_EQ(previous.table, vacated.table);
-    REQUIRE_NE(previous.row, vacated.row);
-
-    emplace_detach<0>(removed);
+    emplace_detach<0>(target);
     execute();
 
-    CHECK(_entity_registry.contains(removed));
-    CHECK_EQ(_entity_registry.locate(removed), entity_location::invalid);
-    CHECK_FALSE(_catalog.at(vacated.table).contains(removed));
+    CHECK(_entity_registry.contains(target));
+    CHECK_EQ(_entity_registry.locate(target), entity_location::invalid);
+    CHECK_FALSE(_catalog.at(vacated.table).contains(target));
     REQUIRE_EQ(_entity_registry.locate(survivor), vacated);
     CHECK_EQ(_catalog.at(vacated.table).row_of(survivor), vacated.row);
     check_entity<0>(survivor, 20);
@@ -242,6 +344,307 @@ TEST_CASE_FIXTURE(fixture, "change_executor::execute: detach moves entity to new
 
     check_entity<1>(e0, 24);
     CHECK_FALSE(_catalog.at(prev_loc.table).contains(e0));
+}
+
+TEST_CASE_FIXTURE(attachment_scenario_fixture, "change_executor::execute: enqueue attach then destroy on different entities preserves attachment callback values")
+{
+    emplace_attach<1>(last, 40);
+    emplace_destroy(first);
+    execute();
+
+    CHECK_EQ(attaches, 1);
+    CHECK_FALSE(_entity_registry.contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0>(survivor, 20);
+    check_entity<0, 1>(last, 30, 40);
+}
+
+TEST_CASE_FIXTURE(attachment_scenario_fixture, "change_executor::execute: enqueue destroy then attach on different entities preserves attachment callback values")
+{
+    emplace_destroy(first);
+    emplace_attach<1>(last, 40);
+    execute();
+
+    CHECK_EQ(attaches, 1);
+    CHECK_FALSE(_entity_registry.contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0>(survivor, 20);
+    check_entity<0, 1>(last, 30, 40);
+}
+
+TEST_CASE_FIXTURE(detachment_scenario_fixture, "change_executor::execute: enqueue detach one component then destroy on different entities preserves detachment callback values")
+{
+    emplace_detach<0>(last);
+    emplace_destroy(first);
+    execute();
+
+    CHECK_EQ(first_detaches, 1);
+    CHECK_EQ(last_detaches, 1);
+    CHECK_FALSE(_entity_registry.contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0, 1>(survivor, 20, 21);
+    REQUIRE(_entity_registry.contains(last));
+    check_entity<1>(last, 31);
+}
+
+TEST_CASE_FIXTURE(detachment_scenario_fixture, "change_executor::execute: enqueue detach all components then destroy on different entities preserves detachment callback values")
+{
+    emplace_detach<0>(last);
+    emplace_detach<1>(last);
+    emplace_destroy(first);
+    execute();
+
+    CHECK_EQ(first_detaches, 1);
+    CHECK_EQ(last_detaches, 1);
+    CHECK_FALSE(_entity_registry.contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0, 1>(survivor, 20, 21);
+    REQUIRE(_entity_registry.contains(last));
+    CHECK_EQ(_entity_registry.locate(last), entity_location::invalid);
+}
+
+TEST_CASE_FIXTURE(detachment_scenario_fixture, "change_executor::execute: enqueue destroy then detach one component on different entities preserves detachment callback values")
+{
+    emplace_destroy(first);
+    emplace_detach<0>(last);
+    execute();
+
+    CHECK_EQ(first_detaches, 1);
+    CHECK_EQ(last_detaches, 1);
+    CHECK_FALSE(_entity_registry.contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0, 1>(survivor, 20, 21);
+    REQUIRE(_entity_registry.contains(last));
+    check_entity<1>(last, 31);
+}
+
+TEST_CASE_FIXTURE(detachment_scenario_fixture, "change_executor::execute: enqueue destroy then detach all components on different entities preserves detachment callback values")
+{
+    emplace_destroy(first);
+    emplace_detach<0>(last);
+    emplace_detach<1>(last);
+    execute();
+
+    CHECK_EQ(first_detaches, 1);
+    CHECK_EQ(last_detaches, 1);
+    CHECK_FALSE(_entity_registry.contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0, 1>(survivor, 20, 21);
+    REQUIRE(_entity_registry.contains(last));
+    CHECK_EQ(_entity_registry.locate(last), entity_location::invalid);
+}
+
+TEST_CASE_FIXTURE(single_component_scenario_fixture, "change_executor::execute: batched attachments preserve all entity locations when executing first row first")
+{
+    emplace_attach<1>(first, 11);
+    emplace_attach<1>(last, 31);
+    _coalescer.consume(_accumulator);
+    auto changes = _coalescer.coalesce();
+
+    REQUIRE_EQ(changes.entities.size(), 2);
+    std::ranges::sort(changes.entities, {}, &coalesced_entity_change::entity);
+
+    _executor.execute(changes, _accumulator);
+
+    REQUIRE(_entity_registry.contains(first));
+    REQUIRE(_entity_registry.contains(last));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0>(survivor, 20);
+    check_entity<0, 1>(first, 10, 11);
+    check_entity<0, 1>(last, 30, 31);
+}
+
+TEST_CASE_FIXTURE(single_component_scenario_fixture, "change_executor::execute: batched attachments preserve all entity locations when executing last row first")
+{
+    emplace_attach<1>(first, 11);
+    emplace_attach<1>(last, 31);
+    _coalescer.consume(_accumulator);
+    auto changes = _coalescer.coalesce();
+
+    REQUIRE_EQ(changes.entities.size(), 2);
+    std::ranges::sort(changes.entities, {}, &coalesced_entity_change::entity);
+    std::ranges::reverse(changes.entities);
+
+    _executor.execute(changes, _accumulator);
+
+    REQUIRE(_entity_registry.contains(first));
+    REQUIRE(_entity_registry.contains(last));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0>(survivor, 20);
+    check_entity<0, 1>(first, 10, 11);
+    check_entity<0, 1>(last, 30, 31);
+}
+
+TEST_CASE_FIXTURE(single_component_scenario_fixture, "change_executor::execute: batched detachments of all components preserve the survivor when executing first row first")
+{
+    emplace_detach<0>(first);
+    emplace_detach<0>(last);
+    _coalescer.consume(_accumulator);
+    auto changes = _coalescer.coalesce();
+
+    REQUIRE_EQ(changes.entities.size(), 2);
+    std::ranges::sort(changes.entities, {}, &coalesced_entity_change::entity);
+
+    _executor.execute(changes, _accumulator);
+
+    REQUIRE(_entity_registry.contains(first));
+    REQUIRE(_entity_registry.contains(last));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0>(survivor, 20);
+    CHECK_EQ(_entity_registry.locate(first), entity_location::invalid);
+    CHECK_EQ(_entity_registry.locate(last), entity_location::invalid);
+}
+
+TEST_CASE_FIXTURE(single_component_scenario_fixture, "change_executor::execute: batched detachments of all components preserve the survivor when executing last row first")
+{
+    emplace_detach<0>(first);
+    emplace_detach<0>(last);
+    _coalescer.consume(_accumulator);
+    auto changes = _coalescer.coalesce();
+
+    REQUIRE_EQ(changes.entities.size(), 2);
+    std::ranges::sort(changes.entities, {}, &coalesced_entity_change::entity);
+    std::ranges::reverse(changes.entities);
+
+    _executor.execute(changes, _accumulator);
+
+    REQUIRE(_entity_registry.contains(first));
+    REQUIRE(_entity_registry.contains(last));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0>(survivor, 20);
+    CHECK_EQ(_entity_registry.locate(first), entity_location::invalid);
+    CHECK_EQ(_entity_registry.locate(last), entity_location::invalid);
+}
+
+TEST_CASE_FIXTURE(single_component_scenario_fixture, "change_executor::execute: batched attachment and detachment preserve all entity locations when executing first row first")
+{
+    emplace_attach<1>(first, 11);
+    emplace_detach<0>(last);
+    _coalescer.consume(_accumulator);
+    auto changes = _coalescer.coalesce();
+
+    REQUIRE_EQ(changes.entities.size(), 2);
+    std::ranges::sort(changes.entities, {}, &coalesced_entity_change::entity);
+
+    _executor.execute(changes, _accumulator);
+
+    REQUIRE(_entity_registry.contains(first));
+    REQUIRE(_entity_registry.contains(last));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0>(survivor, 20);
+    check_entity<0, 1>(first, 10, 11);
+    CHECK_EQ(_entity_registry.locate(last), entity_location::invalid);
+}
+
+TEST_CASE_FIXTURE(single_component_scenario_fixture, "change_executor::execute: batched attachment and detachment preserve all entity locations when executing last row first")
+{
+    emplace_attach<1>(first, 11);
+    emplace_detach<0>(last);
+    _coalescer.consume(_accumulator);
+    auto changes = _coalescer.coalesce();
+
+    REQUIRE_EQ(changes.entities.size(), 2);
+    std::ranges::sort(changes.entities, {}, &coalesced_entity_change::entity);
+    std::ranges::reverse(changes.entities);
+
+    _executor.execute(changes, _accumulator);
+
+    REQUIRE(_entity_registry.contains(first));
+    REQUIRE(_entity_registry.contains(last));
+    CHECK_FALSE(_catalog.at(source).contains(first));
+    CHECK_FALSE(_catalog.at(source).contains(last));
+    check_entity<0>(survivor, 20);
+    check_entity<0, 1>(first, 10, 11);
+    CHECK_EQ(_entity_registry.locate(last), entity_location::invalid);
+}
+
+TEST_CASE_FIXTURE(single_component_conflict_scenario_fixture, "change_executor::execute: enqueue detach then destroy on the same entity destroys it once")
+{
+    emplace_detach<0>(target);
+    emplace_destroy(target);
+    execute();
+
+    CHECK_EQ(attaches, 0);
+    CHECK_EQ(detaches, 1);
+    CHECK_FALSE(_entity_registry.contains(target));
+    CHECK_FALSE(_catalog.at(source).contains(target));
+    check_entity<0>(survivor, 20);
+}
+
+TEST_CASE_FIXTURE(single_component_conflict_scenario_fixture, "change_executor::execute: enqueue attach then destroy on the same entity destroys it once")
+{
+    emplace_attach<1>(target, 11);
+    emplace_destroy(target);
+    execute();
+
+    CHECK_EQ(attaches, 0);
+    CHECK_EQ(detaches, 1);
+    CHECK_FALSE(_entity_registry.contains(target));
+    CHECK_FALSE(_catalog.at(source).contains(target));
+    check_entity<0>(survivor, 20);
+}
+
+TEST_CASE_FIXTURE(single_component_conflict_scenario_fixture, "change_executor::execute: enqueue destroy then detach on the same entity destroys it once")
+{
+    emplace_destroy(target);
+    emplace_detach<0>(target);
+    execute();
+
+    CHECK_EQ(attaches, 0);
+    CHECK_EQ(detaches, 1);
+    CHECK_FALSE(_entity_registry.contains(target));
+    CHECK_FALSE(_catalog.at(source).contains(target));
+    check_entity<0>(survivor, 20);
+}
+
+TEST_CASE_FIXTURE(single_component_conflict_scenario_fixture, "change_executor::execute: enqueue destroy then attach on the same entity destroys it once")
+{
+    emplace_destroy(target);
+    emplace_attach<1>(target, 11);
+    execute();
+
+    CHECK_EQ(attaches, 0);
+    CHECK_EQ(detaches, 1);
+    CHECK_FALSE(_entity_registry.contains(target));
+    CHECK_FALSE(_catalog.at(source).contains(target));
+    check_entity<0>(survivor, 20);
+}
+
+TEST_CASE_FIXTURE(two_component_conflict_scenario_fixture, "change_executor::execute: enqueue attach then detach on the same component detaches its original value")
+{
+    emplace_attach<0>(target, 99);
+    emplace_detach<0>(target);
+    execute();
+
+    CHECK_EQ(attaches, 0);
+    CHECK_EQ(detaches, 1);
+    CHECK_FALSE(_catalog.at(source).contains(target));
+    check_entity<1>(target, 11);
+    check_entity<0, 1>(survivor, 20, 21);
+}
+
+TEST_CASE_FIXTURE(two_component_conflict_scenario_fixture, "change_executor::execute: enqueue detach then attach on the same component detaches its original value")
+{
+    emplace_detach<0>(target);
+    emplace_attach<0>(target, 99);
+    execute();
+
+    CHECK_EQ(attaches, 0);
+    CHECK_EQ(detaches, 1);
+    CHECK_FALSE(_catalog.at(source).contains(target));
+    check_entity<1>(target, 11);
+    check_entity<0, 1>(survivor, 20, 21);
 }
 
 TEST_CASE_FIXTURE(fixture, "change_executor::execute: set")
