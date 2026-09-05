@@ -33,9 +33,6 @@ template<typename... Types>
 struct is_excluded<exclude<Types...>> : std::true_type
 {};
 
-template<typename T>
-struct is_included : std::bool_constant<!is_excluded<T>::value>
-{};
 
 template<typename T>
 struct remove_exclude
@@ -56,11 +53,5 @@ struct is_required<exclude<T>> : std::false_type
 template<typename T>
 struct is_optional<exclude<T>> : std::false_type
 {};
-
-template<typename T>
-struct query_signature_parameter_decay
-{
-    using type = std::remove_const_t<std::remove_pointer_t<T>>;
-};
 
 } // namespace ant::detail
