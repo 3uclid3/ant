@@ -6,6 +6,9 @@
 #include <ant/component/component_meta.hpp>
 #include <ant/detail/component/component_meta.hpp>
 #include <ant/detail/core/containers.hpp>
+#include <ant/detail/relation/rel_member.hpp>
+#include <ant/rel.hpp>
+#include <ant/rel_traits.hpp>
 
 namespace ant {
 
@@ -34,12 +37,18 @@ public:
         auto operator=(const builder&) -> builder& = delete;
 
         template<typename T>
+        requires(!detail::is_rel_v<T>)
         auto define(const component_options& options = default_component_options) -> builder&;
+
+        template<typename T>
+        requires detail::is_rel_v<T>
+        auto define() -> builder&;
 
         auto build() -> schema;
 
     private:
         auto define_impl(const component_options& options, meta_type&& meta) -> void;
+        auto define_rel_impl() -> void;
 
         detail::vector<meta_type> _metas;
     };
@@ -50,6 +59,10 @@ public:
 
     schema(schema&&) noexcept = default;
     schema& operator=(schema&&) noexcept = default;
+
+    template<typename T>
+    requires detail::is_rel_v<T>
+    [[nodiscard]] auto is_defined() const noexcept -> bool;
 
     template<typename T>
     [[nodiscard]] auto is_defined() const noexcept -> bool;
@@ -71,20 +84,44 @@ private:
 };
 
 template<typename T>
-inline auto schema::builder::define(const component_options& options) -> builder&
+requires(!detail::is_rel_v<T>)
+auto schema::builder::define(const component_options& options) -> builder&
 {
     define_impl(options, detail::make_component_meta<T>());
     return *this;
 }
 
 template<typename T>
-inline auto schema::is_defined() const noexcept -> bool
+requires detail::is_rel_v<T>
+auto schema::builder::define() -> builder&
+{
+    using first_role = typename rel_traits<T>::first::role;
+    using second_role = typename rel_traits<T>::second::role;
+
+    define<detail::rel_member<T, first_role>>();
+    define<detail::rel_member<T, second_role>>();
+    return *this;
+}
+
+template<typename T>
+requires detail::is_rel_v<T>
+auto schema::is_defined() const noexcept -> bool
+{
+    using first_role = typename rel_traits<T>::first::role;
+    using second_role = typename rel_traits<T>::second::role;
+
+    return is_defined<detail::rel_member<T, first_role>>()
+           && is_defined<detail::rel_member<T, second_role>>();
+}
+
+template<typename T>
+auto schema::is_defined() const noexcept -> bool
 {
     return is_defined(component_index_of<T>());
 }
 
 template<typename T>
-inline auto schema::meta_of() const noexcept -> const meta_type&
+auto schema::meta_of() const noexcept -> const meta_type&
 {
     return meta_of(component_index_of<T>());
 }

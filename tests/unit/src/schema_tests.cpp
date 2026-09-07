@@ -5,6 +5,23 @@
 
 namespace ant { namespace {
 
+TEST_CASE("schema::builder::define: store relation metadata correctly")
+{
+    struct role_first;
+    struct role_second;
+    struct relation : rel<one<struct role_first>, many<struct role_second>>
+    {};
+
+    schema built_schema = schema::builder()
+                              .define<relation>()
+                              .build();
+
+    CHECK_EQ(built_schema.count(), 2);
+    CHECK(built_schema.is_defined<relation>());
+    CHECK(built_schema.is_defined<detail::rel_member<relation, struct role_first>>());
+    CHECK(built_schema.is_defined<detail::rel_member<relation, struct role_second>>());
+}
+
 TEST_CASE_TEMPLATE("schema::builder::define: store component metadata correctly", T, testing::component<24>, testing::component<42>)
 {
     schema::builder builder;
