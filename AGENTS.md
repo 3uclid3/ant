@@ -38,4 +38,11 @@ ctest --test-dir build -L compile --output-on-failure
 - Before adding or changing tests, read [docs/testing.md](docs/testing.md) for testing philosophy and conventions.
 - Build and run the full test suite before finishing a code change.
 
+## Documentation
+
+- Keep documentation centralized under `docs/`.
+- `docs/architecture/` is normative: implemented architecture or approved target architecture.
+- `docs/draft/` contains unapproved proposals, not requirements.
+- Confirm architectural semantics with the user; implementation alone does not establish intended architecture.
+
 Keep changes focused, and update `README.md` when public usage or requirements change.
