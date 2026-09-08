@@ -9,8 +9,10 @@ parameter.
 A `query` reads live table contents; it is not a snapshot. Changes to rows in
 already selected tables are visible without recompilation. Deferred structural
 changes become visible to subsequent query use after `database::flush` applies
-them. Newly created matching tables require recompilation. A stale
-`compiled_query` remains usable but omits those tables and their entities.
+them. Their accumulation and application are specified by
+[Structural mutation](structural-mutation.md). Newly created matching tables
+require recompilation. A stale `compiled_query` remains usable but omits those
+tables and their entities.
 Constructing or using a `query` does not refresh its `compiled_query`.
 
 ## Use and lifetime

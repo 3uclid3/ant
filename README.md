@@ -94,6 +94,11 @@ Systems declare exactly what they access and mutate through typed signatures: `e
 **A foundation for smarter scheduling.**
 Explicit, typed access declarations are the groundwork for automatic task graph construction and lockless parallel dispatch. Whether that proves straightforward in practice remains to be seen, but the architecture is built with that goal in mind.
 
+Normative architecture documentation:
+
+- [Query lifecycle](docs/architecture/query-lifecycle.md)
+- [Structural mutation](docs/architecture/structural-mutation.md)
+
 ## Testing
 
 See [Testing ant](docs/testing.md) for test organization, commands, and conventions.
