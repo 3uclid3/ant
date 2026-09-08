@@ -12,16 +12,16 @@ changes become visible to subsequent query use after `database::flush` applies
 them. Their accumulation and application are specified by
 [Structural mutation](structural-mutation.md). Newly created matching tables
 require recompilation. A stale `compiled_query` remains usable but omits those
-tables and their entities.
-Constructing or using a `query` does not refresh its `compiled_query`.
+tables and their entities. A `compiled_query` does not refresh itself;
+constructing or using a `query` does not request recompilation.
 
 ## Use and lifetime
 
 Retain the `compiled_query` and construct a transient `query` for each use.
 Before constructing a `query`, direct callers request
 `database::recompile_query` when they need an up-to-date table selection.
-Bindings refresh the `compiled_query` before supplying a `query` and keep it
-alive throughout invocation.
+Bindings request recompilation before supplying a `query` and keep the
+`compiled_query` alive throughout invocation.
 
 The database must outlive the `compiled_query`. A `query`, its iterators, and rows
 borrow from the `compiled_query`, which must remain alive and must not be
@@ -38,5 +38,6 @@ database may overlap flush.
 
 Do not retain `query`, `query_row`, iterators, or component pointers or references
 across flush. Retain the `compiled_query`; after flush, request recompilation
-before use when an up-to-date table selection is required, then construct a fresh
-`query` and reacquire its rows, iterators, and component access.
+when an up-to-date table selection is required, then construct a fresh `query`
+and reacquire its rows, iterators, and component access. Recompilation
+invalidates previously borrowed views.
