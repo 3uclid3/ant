@@ -16,6 +16,7 @@ add_executable(ant_unit
   src/detail/store/table_tests.cpp
   src/detail/query/query_compiler_tests.cpp
   src/detail/query/query_cursor_tests.cpp
+  src/detail/system/system_arguments_tests.cpp
   src/binding_tests.cpp
   src/changeset_tests.cpp
   src/database_tests.cpp

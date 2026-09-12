@@ -50,7 +50,7 @@ struct function_traits<Return (Class::*)(Args...) const noexcept>
 };
 
 template<typename T>
-requires(!std::is_function_v<T> && !std::is_pointer_v<T> && !std::is_member_function_pointer_v<T>)
+requires requires { &T::operator(); }
 struct function_traits<T> : function_traits<decltype(&T::operator())>
 {
 };

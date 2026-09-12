@@ -18,9 +18,13 @@ TEST_CASE("database::flush: executes cascading lifecycle changes until empty")
     });
 
     change_accumulator accumulator{db.schema()};
-    auto changes = db.changeset_of<create, attach<testing::component<0>>>(accumulator);
-    const entity e = changes.create();
-    changes.attach<testing::component<0>>(e);
+    const entity e = db.execute(
+        [](changeset_of<create, attach<testing::component<0>>> cs) {
+            const entity e = cs.create();
+            cs.attach<testing::component<0>>(e);
+            return e;
+        },
+        accumulator);
 
     db.flush(std::span<change_accumulator>{&accumulator, 1});
 
@@ -46,9 +50,13 @@ TEST_CASE("database::flush: lifecycle changes can destroy an entity")
     });
 
     change_accumulator accumulator{db.schema()};
-    auto changes = db.changeset_of<create, attach<testing::component<0>>>(accumulator);
-    const entity e = changes.create();
-    changes.attach<testing::component<0>>(e, 42);
+    const entity e = db.execute(
+        [](changeset_of<create, attach<testing::component<0>>> cs) {
+            const entity e = cs.create();
+            cs.attach<testing::component<0>>(e, 42);
+            return e;
+        },
+        accumulator);
 
     db.flush(std::span<change_accumulator>{&accumulator, 1});
 
