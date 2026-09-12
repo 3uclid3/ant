@@ -4,8 +4,8 @@
 #include <ant/changeset.hpp>
 #include <ant/detail/changeset/lifecycle_registry.hpp>
 #include <ant/detail/core/assert.hpp>
-#include <ant/detail/query/query_compiler.hpp>
 #include <ant/detail/store/store.hpp>
+#include <ant/detail/system/system_arguments.hpp>
 #include <ant/env.hpp>
 #include <ant/inspector.hpp>
 #include <ant/query.hpp>
@@ -27,35 +27,20 @@ public:
     auto schema() const noexcept -> const ant::schema&;
     auto inspect() const noexcept -> inspector;
 
-    template<typename T>
-    auto bind(T&& func) -> binding;
-
     template<typename Component, typename T>
     auto on_attach(T&& func) -> void;
 
     template<typename Component, typename T>
     auto on_detach(T&& func) -> void;
 
-    template<typename Signature>
-    auto env() -> ant::env<Signature>;
+    template<typename T>
+    auto bind(T&& func) -> binding;
 
-    template<typename... Components>
-    auto env_of() -> ant::env_of<Components...>;
+    template<typename T>
+    auto execute(T&& func) -> typename detail::function_traits<T>::return_type;
 
-    template<typename Signature>
-    auto changeset(change_accumulator& accumulator) -> ant::changeset<Signature>;
-
-    template<typename... Parameters>
-    auto changeset_of(change_accumulator& accumulator) -> ant::changeset_of<Parameters...>;
-
-    template<typename Signature>
-    auto compile_query() -> compiled_query<Signature>;
-
-    template<typename... Parameters>
-    auto compile_query_of() -> compiled_query_of<Parameters...>;
-
-    template<typename Signature>
-    auto recompile_query(compiled_query<Signature>& cquery) -> void;
+    template<typename T>
+    auto execute(T&& func, change_accumulator& accumulator) -> detail::function_traits<T>::return_type;
 
     auto flush(std::span<change_accumulator> accumulators) -> void;
 
@@ -74,12 +59,6 @@ inline auto database::inspect() const noexcept -> inspector
     return inspector(_store);
 }
 
-template<typename T>
-auto database::bind(T&& func) -> binding
-{
-    return binding(_store, std::forward<T>(func));
-}
-
 template<typename Component, typename T>
 auto database::on_attach(T&& func) -> void
 {
@@ -94,49 +73,24 @@ auto database::on_detach(T&& func) -> void
     _lifecycle.on_detach<Component>(basic_binding<entity, const Component&>(_store, std::forward<T>(func)));
 }
 
-template<typename Signature>
-auto database::env() -> ant::env<Signature>
+template<typename T>
+auto database::bind(T&& func) -> binding
 {
-    static_assert(is_env_signature_v<Signature>, "expect ant::env_signature");
-    return ant::env<Signature>(_store.envs);
+    return binding(_store, std::forward<T>(func));
 }
 
-template<typename... Components>
-auto database::env_of() -> ant::env_of<Components...>
+template<typename T>
+auto database::execute(T&& func) -> typename detail::function_traits<T>::return_type
 {
-    return ant::env_of<Components...>(_store.envs);
+    detail::system_arguments<typename detail::function_traits<T>::argument_types> arguments;
+    return arguments.invoke(_store, std::forward<T>(func));
 }
 
-template<typename Signature>
-auto database::changeset(change_accumulator& accumulator) -> ant::changeset<Signature>
+template<typename T>
+auto database::execute(T&& func, change_accumulator& accumulator) -> detail::function_traits<T>::return_type
 {
-    static_assert(is_changeset_signature_v<Signature>, "expect ant::changeset_signature");
-    return ant::changeset<Signature>(accumulator, _store.entities);
-}
-
-template<typename... Parameters>
-auto database::changeset_of(change_accumulator& accumulator) -> ant::changeset_of<Parameters...>
-{
-    return ant::changeset_of<Parameters...>(accumulator, _store.entities);
-}
-
-template<typename Signature>
-auto database::compile_query() -> compiled_query<Signature>
-{
-    static_assert(is_query_signature_v<Signature>, "expect ant::query_signature");
-    return detail::query_compiler::compile<Signature>(_store.catalog);
-}
-
-template<typename... Parameters>
-auto database::compile_query_of() -> compiled_query_of<Parameters...>
-{
-    return compile_query<query_signature<Parameters...>>();
-}
-
-template<typename Signature>
-auto database::recompile_query(compiled_query<Signature>& cquery) -> void
-{
-    detail::query_compiler::recompile<Signature>(_store.catalog, cquery);
+    detail::system_arguments<typename detail::function_traits<T>::argument_types> arguments;
+    return arguments.invoke(_store, std::forward<T>(func), accumulator);
 }
 
 } // namespace ant
