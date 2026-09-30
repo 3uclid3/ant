@@ -102,18 +102,29 @@ struct type_list_contains<T, type_list<Types...>> : std::bool_constant<(std::is_
 template<typename T, typename TypeList>
 static inline constexpr bool type_list_contains_v = type_list_contains<T, TypeList>::value;
 
-// concatenate two type_lists
-template<typename Lhs, typename Rhs>
+// concatenate type_lists
+template<typename... TypeLists>
 struct type_list_concat;
 
-template<typename... Lhs, typename... Rhs>
-struct type_list_concat<type_list<Lhs...>, type_list<Rhs...>>
+template<>
+struct type_list_concat<>
 {
-    using type = type_list<Lhs..., Rhs...>;
+    using type = type_list<>;
 };
 
-template<typename Lhs, typename Rhs>
-using type_list_concat_t = typename type_list_concat<Lhs, Rhs>::type;
+template<typename... Types>
+struct type_list_concat<type_list<Types...>>
+{
+    using type = type_list<Types...>;
+};
+
+template<typename... Lhs, typename... Rhs, typename... Rest>
+struct type_list_concat<type_list<Lhs...>, type_list<Rhs...>, Rest...>
+    : type_list_concat<type_list<Lhs..., Rhs...>, Rest...>
+{};
+
+template<typename... TypeLists>
+using type_list_concat_t = typename type_list_concat<TypeLists...>::type;
 
 // drop the first Count types from a type_list
 template<std::size_t Count, typename TypeList>
@@ -207,6 +218,15 @@ struct type_list_filter<Pred, type_list<Head, Tail...>>
 
 template<template<typename> typename Pred, typename List>
 using type_list_filter_t = typename type_list_filter<Pred, List>::type;
+
+template<template<typename> typename Pred, typename List>
+struct type_list_filter_one
+{
+    using type = type_list_front_or_t<type_list_filter_t<Pred, List>, std::nullptr_t>;
+};
+
+template<template<typename> typename Pred, typename List>
+using type_list_filter_one_t = typename type_list_filter_one<Pred, List>::type;
 
 template<template<typename> typename Transformer, typename List>
 struct type_list_transform;

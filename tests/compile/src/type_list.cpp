@@ -18,6 +18,10 @@ static_assert(!type_list_contains_v<short, type_list<int, float, double>>);
 static_assert(!type_list_contains_v<short, type_list<>>);
 
 // concat
+static_assert(std::is_same_v<type_list_concat_t<>, type_list<>>);
+static_assert(std::is_same_v<type_list_concat_t<type_list<int, float>>, type_list<int, float>>);
+static_assert(std::is_same_v<type_list_concat_t<type_list<int>, type_list<>, type_list<float, int>, type_list<char>>,
+                             type_list<int, float, int, char>>);
 using concat_result = type_list_concat_t<type_list<int, float>, type_list<double, char>>;
 static_assert(std::is_same_v<concat_result, type_list<int, float, double, char>>);
 
