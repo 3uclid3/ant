@@ -31,7 +31,7 @@ public:
     [[nodiscard]] auto index_of(const component_bitset& components) const noexcept -> std::size_t;
 
     // returns existing index or inserts new table
-    [[nodiscard]] auto ensure_of(const component_bitset& components) -> std::size_t;
+    auto ensure_of(const component_bitset& components) -> std::size_t;
 
     // assert if index is npos or out of bounds
     [[nodiscard]] auto at(std::size_t index) const noexcept -> const table&;

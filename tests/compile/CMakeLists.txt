@@ -97,6 +97,9 @@ ant_compile_test(query_signature_traits query)
 ant_compile_fail_test(query_signature_traits_duplicate_parameter query)
 ant_compile_fail_test(query_signature_traits_duplicate_type query)
 
+## query layout
+ant_compile_test(query_layout detail/query)
+
 ## query mapping
 ant_compile_test(query_mapping_traits detail/type_traits)
 

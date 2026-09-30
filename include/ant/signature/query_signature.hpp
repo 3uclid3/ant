@@ -6,6 +6,10 @@ template<typename... Types>
 struct exclude
 {};
 
+template<typename Rel, typename Role, typename... Parameters>
+struct join
+{};
+
 template<typename... Parameters>
 class query_signature;
 
